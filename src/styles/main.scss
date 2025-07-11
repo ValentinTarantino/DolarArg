@@ -1,14 +1,25 @@
 // src/styles/main.scss
 
+// 1. **MÓDULOS ESENCIALES DE BOOTSTRAP PRIMERO:**
+//    Cargamos funciones, variables por defecto y mixins de Bootstrap.
+//    Esto asegura que las bases de Bootstrap estén presentes.
 @import "bootstrap/scss/functions";
-@import "bootstrap/scss/variables";
-@import "bootstrap/scss/maps";
-@import "bootstrap/scss/mixins";
-@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/variables"; // Variables por defecto de Bootstrap
+@import "bootstrap/scss/maps"; // Necesario para algunas funciones de Bootstrap
+@import "bootstrap/scss/mixins";    // Mixins de Bootstrap
+@import "bootstrap/scss/utilities"; // Utilidades de Bootstrap
 
-@import "variables";
-@import "mixins";
+// 2. **TUS VARIABLES Y MIXINS PERSONALIZADOS DESPUÉS:**
+//    Ahora, importa tus variables. Estas sobrescribirán las de Bootstrap y añadirán las tuyas.
+//    Es CRUCIAL que "_variables.scss" contenga TODAS las definiciones de variables.
+@import "variables"; // <-- ¡Tu archivo _variables.scss!
+@import "mixins";    // <-- Tu archivo _mixins.scss (puede estar vacío)
 
+
+// 3. **COMPONENTES Y UTILIDADES DE BOOTSTRAP (AHORA CON TUS VARIABLES DISPONIBLES):**
+//    Importa solo los módulos de Bootstrap que REALMENTE usas.
+//    Dado que las variables y mixins ya están cargados, los componentes
+//    usarán las versiones de tus variables si las sobrescribiste.
 @import "bootstrap/scss/root";
 @import "bootstrap/scss/reboot";
 @import "bootstrap/scss/type";
@@ -18,9 +29,8 @@
 @import "bootstrap/scss/tables";
 @import "bootstrap/scss/forms";
 @import "bootstrap/scss/buttons";
-@import "bootstrap/scss/card";
+@import "bootstrap/scss/card"; 
 @import "bootstrap/scss/alert";
-
 
 body {
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -34,7 +44,7 @@ body {
 }
 
 .app-container {
-    max-width: 960px;
+    max-width: 1350px;
     margin: 0 auto;
     padding: 30px;
     background-color: $app-container-bg;
@@ -70,14 +80,14 @@ body {
 }
 
 .error-message {
-    color: $danger-price;
+    color: $price-danger-color; // <-- ¡CORRECTO! Usando $price-danger-color
     font-weight: bold;
 }
 
 .last-update-time {
     text-align: center;
     font-size: 0.95rem;
-    color: $text-muted-dark-bg; // El color de la hora de actualización puede seguir siendo atenuado
+    color: $text-muted-dark-bg;
     margin-top: 30px;
     padding-bottom: 20px;
 }
@@ -107,26 +117,24 @@ body {
             font-weight: bold;
         }
         p {
-            color: $text-light; // <-- ¡Texto de "Compra/Venta" a blanco!
+            color: $text-light;
             font-weight: bold;
         }
     }
 
-    .card-text { // Para el texto de la fuente
-        color: $text-light !important; // <-- ¡Texto de la fuente a blanco!
+    .card-text {
+        color: $text-light !important;
     }
 }
 
-// Colores de texto de compra/venta ahora usarán los nuevos colores de precio
 .text-success {
-    color: $price-success-color !important; // <-- ¡CORREGIDO! Ahora usa $price-success-color
+    color: $price-success-color !important;
 }
 
 .text-danger {
-    color: $price-danger-color !important; // <-- ¡CORREGIDO! Ahora usa $price-danger-color
+    color: $price-danger-color !important;
 }
 
-// Clases para los fondos específicos de cada tarjeta de dólar
 .dolar-card-bg-oficial { background-color: $dolar-card-bg-oficial !important; }
 .dolar-card-bg-blue { background-color: $dolar-card-bg-blue !important; }
 .dolar-card-bg-bolsa { background-color: $dolar-card-bg-bolsa !important; }
@@ -135,7 +143,6 @@ body {
 .dolar-card-bg-cripto { background-color: $dolar-card-bg-cripto !important; }
 .dolar-card-bg-mayorista { background-color: $dolar-card-bg-mayorista !important; }
 
-// Tus clases personalizadas para los bordes de las tarjetas
 .border-primary { border-color: $border-primary !important; border-width: 3px !important; }
 .border-success { border-color: $border-success !important; border-width: 3px !important; }
 .border-warning { border-color: $border-warning !important; border-width: 3px !important; }
@@ -144,11 +151,9 @@ body {
 .border-dark { border-color: $border-dark !important; border-width: 3px !important; }
 .border-secondary { border-color: $border-secondary !important; border-width: 3px !important; }
 
-// --- Separación entre tarjetas ---
-// Aumenta el gap en la fila para más separación entre las columnas
 .row {
-    --bs-gutter-x: 2.5rem; // Espacio horizontal (ej. 2.5rem = 40px)
-    --bs-gutter-y: 2.5rem; // Espacio vertical
+    --bs-gutter-x: 2.5rem;
+    --bs-gutter-y: 2.5rem;
     margin-left: calc(var(--bs-gutter-x) * -.5);
     margin-right: calc(var(--bs-gutter-x) * -.5);
 }
@@ -156,5 +161,5 @@ body {
 .col-12, .col-md-6, .col-lg-4 {
     padding-left: calc(var(--bs-gutter-x) * .5);
     padding-right: calc(var(--bs-gutter-x) * .5);
-    margin-bottom: var(--bs-gutter-y); // Usa el gutter vertical para el mb
+    margin-bottom: var(--bs-gutter-y);
 }

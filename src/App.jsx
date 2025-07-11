@@ -1,5 +1,4 @@
-// src/App.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DolarCard from './components/DolarCard';
 
 const API_URL = 'https://dolarapi.com/v1/dolares';
@@ -10,17 +9,14 @@ function App() {
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
 
-    // Definir el orden y los tipos de dólar que nos interesan,
-    // usando los nombres EXACTOS de la propiedad 'casa' que vienen de la API (en minúsculas).
-    // ¡Dólar Mayorista movido debajo de Tarjeta!
     const desiredTypesOrder = [
         "oficial",
         "blue",
         "bolsa",
         "contadoconliqui",
         "tarjeta",
-        "mayorista", // <-- ¡Mayorista movido aquí!
-        "cripto"
+        "cripto",
+        "mayorista"
     ];
 
     const fetchDolarData = async () => {
@@ -57,7 +53,9 @@ function App() {
 
     useEffect(() => {
         fetchDolarData();
+
         const intervalId = setInterval(fetchDolarData, 5 * 60 * 1000);
+
         return () => clearInterval(intervalId);
     }, []);
 
@@ -82,7 +80,7 @@ function App() {
             case 'contadoconliqui': return 'border-info';
             case 'tarjeta': return 'border-danger';
             case 'cripto': return 'border-dark';
-            case 'mayorista': return 'border-secondary';
+            case 'mayorista': return 'border-secondary'; 
             default: return '';
         }
     };
@@ -112,14 +110,14 @@ function App() {
             {!loading && !error && dolarData.length > 0 && (
                 <div className="row d-flex justify-content-center">
                     {dolarData.map((dolar) => (
-                        <div key={dolar.casa} className="col-12 col-md-6 col-lg-4 d-flex"> {/* Eliminamos mb-4 para usar los gutters */}
+                        <div key={dolar.casa} className="col-12 col-md-6 col-lg-4 mb-4 d-flex">
                             <DolarCard
                                 type={`Dólar ${getDisplayName(dolar.casa)}`}
                                 buy={dolar.compra}
                                 sell={dolar.venta}
                                 source={dolar.nombre}
                                 colorClass={getDolarCardColorClass(dolar.casa)}
-                                bgClass={getDolarCardBgClass(dolar.casa)}
+                                bgClass={getDolarCardBgClass(dolar.casa)} 
                             />
                         </div>
                     ))}
@@ -132,7 +130,7 @@ function App() {
 
             <footer className="text-center text-muted mt-auto pt-4 pb-2" style={{ fontSize: '0.8rem' }}>
                 <p>Datos obtenidos de <a href="https://dolarapi.com/" target="_blank" rel="noopener noreferrer">DolarAPI.com</a></p>
-                <p>© {new Date().getFullYear()} Tu Nombre / Dólar Hoy Argentina</p>
+                <p>© {new Date().getFullYear()} Valentín Tarantino / Dólar Hoy Argentina</p>
             </footer>
         </div>
     );
