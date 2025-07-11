@@ -1,13 +1,8 @@
-// src/components/DolarCard.jsx
-import React from 'react';
-
-// Añade 'bgClass' a los props desestructurados
 const DolarCard = ({ type, buy, sell, source, colorClass, bgClass }) => {
     const formattedBuy = buy !== null && buy !== undefined ? parseFloat(buy).toFixed(2) : '-';
     const formattedSell = sell !== null && sell !== undefined ? parseFloat(sell).toFixed(2) : '-';
 
     return (
-        // Añade bgClass a la lista de clases del div principal
         <div className={`card h-100 ${colorClass || ''} ${bgClass || ''}`}>
             <div className="card-body d-flex flex-column">
                 <h5 className="card-title text-center text-uppercase fw-bold mb-3">{type}</h5>
