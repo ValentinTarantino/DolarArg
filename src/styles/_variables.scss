@@ -1,0 +1,58 @@
+// src/styles/_variables.scss
+
+// --- General Theme Colors for Modern "Deep Night" Design ---
+$body-bg-gradient-start: #1A1E2B;
+$body-bg-gradient-end: #2C2C40;
+
+$app-container-bg: #222238;
+$text-light: #E8E8EF;          // Blanco roto, excelente para textos claros
+$text-muted-dark-bg: #A0A0B0;  // Gris azulado atenuado (ya no usaremos este para fuente)
+
+// --- Card Shadows (Más pronunciadas para profundidad) ---
+$card-shadow-modern: 0 12px 30px rgba(0, 0, 0, 0.6);
+$card-shadow-hover: 0 20px 45px rgba(0, 0, 0, 0.8);
+
+// --- Highlight Colors for "Compra" and "Venta" ---
+// Ahora serán un blanco muy suave, como $text-light, o un gris más claro para un contraste sutil.
+// Los nombro para que sea claro en main.scss que estamos cambiando solo el color.
+$price-success-color: #E8E8EF; // O un verde muy sutil si prefieres: #AEE6A9;
+$price-danger-color: #E8E8EF;  // O un rojo muy sutil si prefieres: #F89898;
+
+// --- Bootstrap Overrides (Mantener si usas sus clases directamente) ---
+$primary: #6A7DD8;
+$success: #5AC5A3;
+$info: #5AC5A3;
+$warning: #F0B86B;
+$danger: #D16A6A;
+$dark: #4A4A5A;
+$secondary: #708090;
+
+// --- Card Specific Backgrounds and Borders ---
+$dolar-color-oficial: #3A4C62;
+$dolar-color-blue: #4A5A70;
+$dolar-color-bolsa: #6C5B7B;
+$dolar-color-contadoconliqui: #896F89;
+$dolar-color-tarjeta: #A27B5C;
+$dolar-color-cripto: #5A7E6E;
+$dolar-color-mayorista: #4F6D7A;
+
+// Mapeo de las clases de Bootstrap a los nuevos colores específicos
+$border-primary: $dolar-color-blue;
+$border-success: $dolar-color-oficial;
+$border-warning: $dolar-color-bolsa;
+$border-info: $dolar-color-contadoconliqui;
+$border-danger: $dolar-color-tarjeta;
+$border-dark: $dolar-color-cripto;
+$border-secondary: $dolar-color-mayorista;
+
+// Mapeo para los fondos de las tarjetas
+$dolar-card-bg-oficial: $dolar-color-oficial;
+$dolar-card-bg-blue: $dolar-color-blue;
+$dolar-card-bg-bolsa: $dolar-color-bolsa;
+$dolar-card-bg-contadoconliqui: $dolar-color-contadoconliqui;
+$dolar-card-bg-tarjeta: $dolar-color-tarjeta;
+$dolar-card-bg-cripto: $dolar-color-cripto;
+$dolar-card-bg-mayorista: $dolar-color-mayorista;
+
+$card-default-bg: #3a4783;
+$card-text-color: $text-light;

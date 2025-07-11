@@ -1,0 +1,160 @@
+// src/styles/main.scss
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+@import "variables";
+@import "mixins";
+
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/alert";
+
+
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, $body-bg-gradient-start, $body-bg-gradient-end);
+    color: $text-light;
+    padding-top: 20px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: $app-container-bg;
+    border-radius: 12px;
+    box-shadow: $card-shadow-modern;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 40px;
+    color: $text-light;
+    font-weight: 700;
+    font-size: 2.8rem;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.loading-message, .error-message {
+    text-align: center;
+    font-size: 1.3rem;
+    padding: 30px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-light;
+}
+
+.error-message {
+    color: $danger-price;
+    font-weight: bold;
+}
+
+.last-update-time {
+    text-align: center;
+    font-size: 0.95rem;
+    color: $text-muted-dark-bg; // El color de la hora de actualización puede seguir siendo atenuado
+    margin-top: 30px;
+    padding-bottom: 20px;
+}
+
+.card {
+    background-color: $card-default-bg;
+    color: $card-text-color;
+    border: none;
+    border-radius: 10px;
+    box-shadow: $card-shadow-modern;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-7px);
+        box-shadow: $card-shadow-hover;
+    }
+
+    .card-title {
+        color: $text-light;
+        font-size: 1.6rem;
+    }
+
+    .card-body {
+        h4 {
+            font-size: 2.1rem;
+            font-weight: bold;
+        }
+        p {
+            color: $text-light; // <-- ¡Texto de "Compra/Venta" a blanco!
+            font-weight: bold;
+        }
+    }
+
+    .card-text { // Para el texto de la fuente
+        color: $text-light !important; // <-- ¡Texto de la fuente a blanco!
+    }
+}
+
+// Colores de texto de compra/venta ahora usarán los nuevos colores de precio
+.text-success {
+    color: $price-success-color !important; // <-- ¡CORREGIDO! Ahora usa $price-success-color
+}
+
+.text-danger {
+    color: $price-danger-color !important; // <-- ¡CORREGIDO! Ahora usa $price-danger-color
+}
+
+// Clases para los fondos específicos de cada tarjeta de dólar
+.dolar-card-bg-oficial { background-color: $dolar-card-bg-oficial !important; }
+.dolar-card-bg-blue { background-color: $dolar-card-bg-blue !important; }
+.dolar-card-bg-bolsa { background-color: $dolar-card-bg-bolsa !important; }
+.dolar-card-bg-contadoconliqui { background-color: $dolar-card-bg-contadoconliqui !important; }
+.dolar-card-bg-tarjeta { background-color: $dolar-card-bg-tarjeta !important; }
+.dolar-card-bg-cripto { background-color: $dolar-card-bg-cripto !important; }
+.dolar-card-bg-mayorista { background-color: $dolar-card-bg-mayorista !important; }
+
+// Tus clases personalizadas para los bordes de las tarjetas
+.border-primary { border-color: $border-primary !important; border-width: 3px !important; }
+.border-success { border-color: $border-success !important; border-width: 3px !important; }
+.border-warning { border-color: $border-warning !important; border-width: 3px !important; }
+.border-info { border-color: $border-info !important; border-width: 3px !important; }
+.border-danger { border-color: $border-danger !important; border-width: 3px !important; }
+.border-dark { border-color: $border-dark !important; border-width: 3px !important; }
+.border-secondary { border-color: $border-secondary !important; border-width: 3px !important; }
+
+// --- Separación entre tarjetas ---
+// Aumenta el gap en la fila para más separación entre las columnas
+.row {
+    --bs-gutter-x: 2.5rem; // Espacio horizontal (ej. 2.5rem = 40px)
+    --bs-gutter-y: 2.5rem; // Espacio vertical
+    margin-left: calc(var(--bs-gutter-x) * -.5);
+    margin-right: calc(var(--bs-gutter-x) * -.5);
+}
+
+.col-12, .col-md-6, .col-lg-4 {
+    padding-left: calc(var(--bs-gutter-x) * .5);
+    padding-right: calc(var(--bs-gutter-x) * .5);
+    margin-bottom: var(--bs-gutter-y); // Usa el gutter vertical para el mb
+}
