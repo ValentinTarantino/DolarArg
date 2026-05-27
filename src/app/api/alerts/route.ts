@@ -86,7 +86,11 @@ export async function POST(request: NextRequest) {
         where: { id: userId }
       });
       if (user?.email) {
-        sendAlertEmail(user.email, casa, latestRate.venta, condition, numericValue);
+        try {
+          await sendAlertEmail(user.email, casa, latestRate.venta, condition, numericValue);
+        } catch (emailError) {
+          console.error(`Error enviando email para nueva alerta:`, emailError);
+        }
       }
     }
 

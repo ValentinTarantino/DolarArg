@@ -28,8 +28,12 @@ async function checkAndTriggerAlerts(rates: any[]) {
           });
           console.log(`[ALERTA DETECTADA] Alerta #${alert.id} para ${alert.user.email} se ha disparado. Dólar ${alert.casa} está a $${price} (${alert.condition} $${alert.value})`);
           
-          // Enviar correo de alerta (de forma asíncrona para no demorar la respuesta de la API)
-          sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value);
+          // Enviar correo de alerta
+          try {
+            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value);
+          } catch (emailError) {
+            console.error(`Error enviando email para alerta #${alert.id}:`, emailError);
+          }
         }
       }
     }
