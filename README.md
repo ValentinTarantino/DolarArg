@@ -1,4 +1,4 @@
-# Dólar Hoy Argentina - Fullstack Premium Dashboard
+# Dólar Hoy Argentina 
 
 ¡Bienvenido a "Dólar Hoy Argentina"! Esta es una plataforma Fullstack moderna de grado profesional para monitorear las cotizaciones del dólar en Argentina en tiempo real y con datos históricos. 
 
