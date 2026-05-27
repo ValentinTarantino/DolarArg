@@ -1,0 +1,14 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dolar-nextjs-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # DATABASE_URL viene del .env (apunta a Supabase)
+      NEXT_PUBLIC_API_URL: "http://localhost:3000"
+
