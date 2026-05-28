@@ -1,3 +1,11 @@
+#!/bin/bash
+# Script para preparar el schema para Vercel
+
+if [ "$VERCEL_ENV" = "production" ] || [ "$VERCEL_ENV" = "preview" ]; then
+  echo "🔄 Preparando schema para Vercel (PostgreSQL)..."
+  
+  # Reemplazar el schema para PostgreSQL
+  cat > prisma/schema.prisma << 'EOF'
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -9,8 +17,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "sqlite"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model DolarRate {
@@ -23,18 +32,6 @@ model DolarRate {
   createdAt DateTime @default(now())
 
   @@index([casa, fecha])
-}
-
-model ExchangeRateHistory {
-  id        Int      @id @default(autoincrement())
-  codigo    String   // EUR o BRL
-  tipo      String   // oficial, blue, tarjeta
-  compra    Float
-  venta     Float
-  fecha     DateTime
-  createdAt DateTime @default(now())
-
-  @@index([codigo, tipo, fecha])
 }
 
 model User {
@@ -55,4 +52,9 @@ model Alert {
   isTriggered Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
-
+EOF
+  
+  echo "✅ Schema actualizado a PostgreSQL"
+else
+  echo "📝 Schema en SQLite para desarrollo"
+fi

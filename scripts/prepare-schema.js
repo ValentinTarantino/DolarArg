@@ -1,4 +1,11 @@
-// This is your Prisma schema file,
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+const schemaPath = path.join(__dirname, 'prisma', 'schema.prisma');
+
+const postgresSchema = `// This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
@@ -9,8 +16,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "sqlite"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model DolarRate {
@@ -23,18 +31,6 @@ model DolarRate {
   createdAt DateTime @default(now())
 
   @@index([casa, fecha])
-}
-
-model ExchangeRateHistory {
-  id        Int      @id @default(autoincrement())
-  codigo    String   // EUR o BRL
-  tipo      String   // oficial, blue, tarjeta
-  compra    Float
-  venta     Float
-  fecha     DateTime
-  createdAt DateTime @default(now())
-
-  @@index([codigo, tipo, fecha])
 }
 
 model User {
@@ -55,4 +51,13 @@ model Alert {
   isTriggered Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
+`;
 
+// En Vercel, cambiar a PostgreSQL
+if (process.env.VERCEL) {
+  console.log('🔄 Vercel detectado - preparando schema para PostgreSQL...');
+  fs.writeFileSync(schemaPath, postgresSchema, 'utf-8');
+  console.log('✅ Schema actualizado a PostgreSQL');
+} else {
+  console.log('📝 Desarrollo local - usando SQLite');
+}

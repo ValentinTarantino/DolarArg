@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  CartesianGrid, 
-  Legend 
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend
 } from 'recharts';
-import { LineChart as ChartIcon, Calendar, TrendingUp, TrendingDown, BarChart2, Activity, CircleDot } from 'lucide-react';
+import { LineChart as ChartIcon, Calendar, TrendingUp, TrendingDown, BarChart2, Activity, CircleDot, ChevronDown } from 'lucide-react';
 
 interface ChartDataPoint {
   compra: number;
@@ -29,14 +29,16 @@ interface RankingItem {
 interface DolarChartProps {
   selectedCasa: string;
   selectedName: string;
+  onSelectCasa?: (casa: string) => void;
 }
 
-const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) => {
+const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onSelectCasa }) => {
   const [historyData, setHistoryData] = useState<ChartDataPoint[]>([]);
   const [days, setDays] = useState<number>(30);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [ranking, setRanking] = useState<RankingItem[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -59,7 +61,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
     fetchHistory();
   }, [selectedCasa, days]);
 
-  // Fetch ranking data
   useEffect(() => {
     const fetchRanking = async () => {
       try {
@@ -89,7 +90,16 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
 
   const color = getStrokeColor(selectedCasa);
 
-  // Calcular estadísticas del período
+  const dolarTypes = [
+    { casa: 'oficial', nombre: 'Oficial' },
+    { casa: 'blue', nombre: 'Blue' },
+    { casa: 'bolsa', nombre: 'MEP' },
+    { casa: 'contadoconliqui', nombre: 'Contado con Liqui' },
+    { casa: 'tarjeta', nombre: 'Tarjeta' },
+    { casa: 'cripto', nombre: 'Cripto' },
+    { casa: 'mayorista', nombre: 'Mayorista' }
+  ];
+
   const stats = React.useMemo(() => {
     if (historyData.length < 2) return null;
     const ventas = historyData.map(d => d.venta).filter(v => v > 0);
@@ -103,7 +113,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
     return { max, min, avg, variacion, first, last };
   }, [historyData]);
 
-  // Semáforo: posición del precio actual respecto al rango del período
   const semaphore = React.useMemo(() => {
     if (!stats) return null;
     const { max, min, last } = stats;
@@ -121,9 +130,78 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
 
   return (
     <div className="panel">
-      <div className="panel-title">
+      <div className="panel-title" style={{ position: 'relative' }}>
         <ChartIcon size={22} />
-        <span>Evolución Histórica: Dólar {selectedName}</span>
+        <span>Evolución del Dolar: </span>
+        {onSelectCasa ? (
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '6px',
+                padding: '4px 12px',
+                color: '#f1f5f9',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '0.9rem',
+                fontWeight: '600'
+              }}
+            >
+              {selectedName}
+              <ChevronDown size={16} style={{ transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+            {dropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: '0',
+                marginTop: '8px',
+                background: '#1e293b',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                zIndex: 1000,
+                minWidth: '200px'
+              }}>
+                {dolarTypes.map((tipo) => (
+                  <button
+                    key={tipo.casa}
+                    onClick={() => {
+                      onSelectCasa(tipo.casa);
+                      setDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: selectedCasa === tipo.casa ? '#3b82f6' : '#cbd5e1',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontSize: '0.9rem',
+                      fontWeight: selectedCasa === tipo.casa ? '600' : '400',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    {tipo.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span>{selectedName}</span>
+        )}
       </div>
 
       <div className="chart-controls">
@@ -161,7 +239,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
           No hay datos históricos disponibles para este período.
         </div>
       ) : (
-        <div className="chart-wrapper">
+        <div className="chart-wrapper" style={{ height: '400px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={historyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
@@ -224,7 +302,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
         </div>
       )}
 
-      {/* ── Estadísticas del período ── */}
       {stats && !loading && !error && (
         <div className="chart-stats-grid">
           <div className="chart-stat-card">
@@ -252,7 +329,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
         </div>
       )}
 
-      {/* ── Semáforo de Compra ── */}
       {semaphore && stats && !loading && !error && (
         <div className="semaphore-panel">
           <div className="semaphore-light" style={{ backgroundColor: semaphore.color, boxShadow: `0 0 20px ${semaphore.color}40` }}>
@@ -265,7 +341,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName }) =
         </div>
       )}
 
-      {/* ── Ranking de Rendimiento ── */}
       {ranking.length > 0 && !loading && !error && (
         <div className="ranking-panel">
           <h4 className="ranking-title">Ranking de Rendimiento ({days} días)</h4>

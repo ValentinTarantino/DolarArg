@@ -29,9 +29,21 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Formatear la fecha para que sea legible en el frontend
-    const formattedHistory = history.map((item: { compra: number; venta: number; fecha: Date }) => ({
-      ...item,
+    // Agrupar por día tomando el último registro de cada día
+    const byDay = new Map<string, { compra: number; venta: number; fecha: Date }>();
+    for (const item of history) {
+      const dayKey = new Date(item.fecha).toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      byDay.set(dayKey, item);
+    }
+
+    const formattedHistory = Array.from(byDay.values()).map((item) => ({
+      compra: item.compra,
+      venta: item.venta,
+      fecha: item.fecha,
       fechaFormateada: new Date(item.fecha).toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit'

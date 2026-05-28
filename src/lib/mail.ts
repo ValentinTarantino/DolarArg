@@ -1,8 +1,5 @@
 import nodemailer from 'nodemailer';
 
-/**
- * Envía un correo electrónico al usuario cuando se dispara una alerta de cotización.
- */
 export async function sendAlertEmail(
   to: string,
   casa: string,
@@ -16,7 +13,6 @@ export async function sendAlertEmail(
   const pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM || '"Alertas Dólar" <noreply@dolarhoy.com>';
 
-  // Si no están configuradas las variables, simulamos y mostramos log en consola
   if (!host || !user || !pass) {
     console.warn(
       `[MAIL SIMULADOR] Alerta detectada para ${to} (Dólar ${casa} a $${currentPrice}). Correo no enviado porque faltan configurar las variables SMTP en el archivo .env`
@@ -28,7 +24,7 @@ export async function sendAlertEmail(
     const transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465, // true para 465, false para otros puertos
+      secure: port === 465, 
       auth: {
         user,
         pass,
@@ -39,7 +35,6 @@ export async function sendAlertEmail(
     const conditionText = condition === 'ABOVE' ? 'mayor o igual a (≥)' : 'menor o igual a (≤)';
     const conditionSymbol = condition === 'ABOVE' ? '≥' : '≤';
 
-    // Obtener color temático para el diseño del email según el tipo de dólar
     const themeColor = {
       oficial: '#10b981', // emerald
       blue: '#6366f1', // indigo

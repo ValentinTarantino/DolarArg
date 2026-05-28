@@ -105,11 +105,19 @@ export async function GET() {
     }
 
     // Retornamos lo que hay en la base de datos
-    // Necesitamos asegurarnos de devolver el último grupo de cotizaciones ordenado por casa
-    const latestUniqueRates = await prisma.dolarRate.findMany({
-      orderBy: { id: 'desc' },
-      take: 7
-    });
+    // Necesitamos asegurarnos de devolver el último registro de cada tipo de dólar
+    const desiredTypes = ["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"];
+    const latestUniqueRates = [];
+
+    for (const casa of desiredTypes) {
+      const latestRate = await prisma.dolarRate.findFirst({
+        where: { casa },
+        orderBy: { id: 'desc' }
+      });
+      if (latestRate) {
+        latestUniqueRates.push(latestRate);
+      }
+    }
 
     // Ordenar para mantener un orden consistente en la interfaz
     const orderMap: Record<string, number> = {

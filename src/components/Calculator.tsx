@@ -18,10 +18,12 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   const [amount, setAmount] = useState<string>('');
   const [selectedCasa, setSelectedCasa] = useState<string>('blue');
   const [customTaxGanancias, setCustomTaxGanancias] = useState<string>(''); // Percepción Ganancias/Bienes Personales
+  const [conversionDirection, setConversionDirection] = useState<'usd-to-ars' | 'ars-to-usd'>('usd-to-ars');
+  const [rateType, setRateType] = useState<'compra' | 'venta'>('venta');
 
-  // Obtener la tasa seleccionada (usamos la de venta para calcular)
+  // Obtener la tasa seleccionada (compra o venta)
   const currentRate = rates.find(r => r.casa === selectedCasa);
-  const rateValue = currentRate ? currentRate.venta : 1;
+  const rateValue = currentRate ? (rateType === 'compra' ? currentRate.compra : currentRate.venta) : 1;
 
   const numericAmount = parseFloat(amount) || 0;
   const taxGananciasPercent = parseFloat(customTaxGanancias) || 0;
@@ -33,16 +35,31 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   // Si es oficial o tarjeta, desglosamos los impuestos
   const isOfficialOrCard = selectedCasa === 'oficial' || selectedCasa === 'tarjeta';
 
-  // Conversión de USD a ARS con percepciones
-  if (isOfficialOrCard) {
-    const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
-    const baseValue = numericAmount * oficialRate;
-    taxGanancias = baseValue * (taxGananciasPercent / 100);
-    convertedValue = baseValue;
-    totalWithTaxes = baseValue + taxGanancias;
+  // Conversión según la dirección seleccionada
+  if (conversionDirection === 'usd-to-ars') {
+    // USD a ARS
+    if (isOfficialOrCard) {
+      const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
+      const baseValue = numericAmount * oficialRate;
+      taxGanancias = baseValue * (taxGananciasPercent / 100);
+      convertedValue = baseValue;
+      totalWithTaxes = baseValue + taxGanancias;
+    } else {
+      convertedValue = numericAmount * rateValue;
+      totalWithTaxes = convertedValue;
+    }
   } else {
-    convertedValue = numericAmount * rateValue;
-    totalWithTaxes = convertedValue;
+    // ARS a USD
+    if (isOfficialOrCard) {
+      const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
+      const baseValue = numericAmount / oficialRate;
+      taxGanancias = baseValue * (taxGananciasPercent / 100);
+      convertedValue = baseValue;
+      totalWithTaxes = baseValue + taxGanancias;
+    } else {
+      convertedValue = numericAmount / rateValue;
+      totalWithTaxes = convertedValue;
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -58,14 +75,30 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
     <div className="panel">
       <div className="panel-title">
         <CalcIcon size={22} />
-        <span>Calculadora y Conversor de Impuestos</span>
+        <span>Calculadora de USD y Pesos</span>
       </div>
 
       <div className="calculator-form">
+        {/* Selector de dirección de conversión */}
         <div className="input-container">
-          <label>Monto a Convertir (USD)</label>
+          <label>Dirección de Conversión</label>
           <div className="input-wrapper">
-            <span className="currency-symbol" style={{ left: '14px', fontSize: '0.85rem' }}>USD</span>
+            <select
+              value={conversionDirection}
+              onChange={(e) => setConversionDirection(e.target.value as 'usd-to-ars' | 'ars-to-usd')}
+            >
+              <option value="usd-to-ars">USD → ARS (Dólares a Pesos)</option>
+              <option value="ars-to-usd">ARS → USD (Pesos a Dólares)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="input-container">
+          <label>Monto a Convertir ({conversionDirection === 'usd-to-ars' ? 'USD' : 'ARS'})</label>
+          <div className="input-wrapper">
+            <span className="currency-symbol" style={{ left: '14px', fontSize: '0.85rem' }}>
+              {conversionDirection === 'usd-to-ars' ? 'USD' : 'ARS'}
+            </span>
             <input
               id="calc-amount"
               type="text"
@@ -77,9 +110,22 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
                 setAmount(sanitized);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Ingresa el monto en dólares"
+              placeholder={`Ingresa el monto en ${conversionDirection === 'usd-to-ars' ? 'dólares' : 'pesos'}`}
               style={{ paddingLeft: '48px' }}
             />
+          </div>
+        </div>
+
+        <div className="input-container">
+          <label>Tasa de Referencia</label>
+          <div className="input-wrapper">
+            <select
+              value={rateType}
+              onChange={(e) => setRateType(e.target.value as 'compra' | 'venta')}
+            >
+              <option value="compra">Compra (Banco te compra)</option>
+              <option value="venta">Venta (Banco te vende)</option>
+            </select>
           </div>
         </div>
 
@@ -93,7 +139,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
             >
               {rates.map(r => (
                 <option key={r.casa} value={r.casa}>
-                  Dólar {r.nombre} (Venta: ${r.venta})
+                  Dólar {r.nombre} ({rateType === 'compra' ? `Compra: $${r.compra}` : `Venta: $${r.venta}`})
                 </option>
               ))}
             </select>
@@ -128,27 +174,27 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
           {isOfficialOrCard ? (
             <>
               <div className="result-row">
-                <span>Monto Base (USD {numericAmount.toFixed(2)})</span>
-                <span>ARS ${convertedValue.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>Monto Base ({conversionDirection === 'usd-to-ars' ? `USD ${numericAmount.toFixed(2)}` : `ARS ${numericAmount.toFixed(2)}`})</span>
+                <span>{conversionDirection === 'usd-to-ars' ? `ARS ${convertedValue.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${convertedValue.toFixed(2)}`}</span>
               </div>
               <div className="result-row">
                 <span>Percepción ({taxGananciasPercent}%)</span>
-                <span>ARS ${taxGanancias.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>{conversionDirection === 'usd-to-ars' ? `ARS ${taxGanancias.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${taxGanancias.toFixed(2)}`}</span>
               </div>
               <div className="result-row total">
                 <span>Total Estimado</span>
-                <span className="total-price">ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="total-price">{conversionDirection === 'usd-to-ars' ? `ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${totalWithTaxes.toFixed(2)}`}</span>
               </div>
             </>
           ) : (
             <>
               <div className="result-row">
-                <span>Monto en Dólares</span>
-                <span>USD {numericAmount.toFixed(2)}</span>
+                <span>Monto {conversionDirection === 'usd-to-ars' ? 'en Dólares' : 'en Pesos'}</span>
+                <span>{conversionDirection === 'usd-to-ars' ? `USD ${numericAmount.toFixed(2)}` : `ARS ${numericAmount.toFixed(2)}`}</span>
               </div>
               <div className="result-row total">
                 <span>Total Estimado</span>
-                <span className="total-price">ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="total-price">{conversionDirection === 'usd-to-ars' ? `ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${totalWithTaxes.toFixed(2)}`}</span>
               </div>
             </>
           )}

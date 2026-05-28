@@ -1,6 +1,24 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "@/styles/main.scss";
+import { startLocalCron } from "@/lib/cron-local";
+
+// Declarar variable global para rastrear si el cron ya fue iniciado
+declare global {
+  var cronInitialized: boolean;
+}
+
+// Inicializar cron local en desarrollo
+(async () => {
+  if (process.env.NODE_ENV === 'development' && !global.cronInitialized) {
+    global.cronInitialized = true;
+    try {
+      await startLocalCron();
+    } catch (error) {
+      console.error('[Layout] Error iniciando cron local:', error);
+    }
+  }
+})();
 
 const outfit = Outfit({
   subsets: ["latin"],

@@ -7,8 +7,15 @@ import Calculator from '@/components/Calculator';
 import AlertSettings from '@/components/AlertSettings';
 import NewsFeed from '@/components/NewsFeed';
 import TaxGuide from '@/components/TaxGuide';
+import ExchangeRatesGrid from '@/components/ExchangeRatesGrid';
+import Navbar from '@/components/Navbar';
+import ArbitragePanel from '@/components/ArbitragePanel';
+import ExchangeBands from '@/components/ExchangeBands';
+import UniversalConverter from '@/components/UniversalConverter';
+import CurrencyNavbar from '@/components/CurrencyNavbar';
+import ExchangeRateSection from '@/components/ExchangeRateSection';
+import BankRates from '@/components/BankRates';
 import { DollarSign } from 'lucide-react';
-
 import { DolarRate } from '@/types/dolar';
 export default function Home() {
   const [rates, setRates] = useState<DolarRate[]>([]);
@@ -17,6 +24,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>('dolar');
+  const [rankingData, setRankingData] = useState<any[]>([]);
+  const [highlightedCard, setHighlightedCard] = useState<{ currency: string; tipo: string } | null>(null);
 
   // Carga inicial
   useEffect(() => {
@@ -119,12 +129,43 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isLiveConnected]);
 
+  // Fetch ranking data for variation indicators
+  useEffect(() => {
+    const fetchRanking = async () => {
+      try {
+        const res = await fetch('/api/dolar/ranking?days=1');
+        if (res.ok) {
+          const data = await res.json();
+          setRankingData(data);
+        }
+      } catch (err) {
+        console.error('Error fetching ranking:', err);
+      }
+    };
+    fetchRanking();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchRanking, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
   const selectedRate = rates.find(r => r.casa === selectedCasa);
   const selectedName = selectedRate ? selectedRate.nombre : 'Blue';
 
+  // Limpiar el resaltado después de 500ms (duración de la transición)
+  useEffect(() => {
+    if (highlightedCard) {
+      const timeout = setTimeout(() => {
+        setHighlightedCard(null);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [highlightedCard]);
+
   return (
-    <div className="dashboard-container">
-      <header className="header">
+    <>
+      <Navbar rates={rates} isLiveConnected={isLiveConnected} lastUpdated={lastUpdated} activeTab={activeTab} onTabChange={setActiveTab} onHighlightCard={setHighlightedCard} />
+      <div className="dashboard-container">
+        <header className="header">
         <span className="header-badge">Mercado Cambiario</span>
         <div className="title-container">
           <div className="logo-glow"></div>
@@ -151,33 +192,71 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <main className="dolar-grid">
-            {rates.map((rate) => (
-              <DolarCard
-                key={rate.casa}
-                casa={rate.casa}
-                nombre={rate.nombre}
-                compra={rate.compra}
-                venta={rate.venta}
-                source="DolarAPI"
-                onSelect={(casa: string) => setSelectedCasa(casa)}
-                isSelected={selectedCasa === rate.casa}
-              />
-            ))}
-          </main>
+          <CurrencyNavbar activeTab={activeTab} onTabChange={setActiveTab} />
+
+          {activeTab === 'dolar' && (
+            <>
+              <main className="dolar-grid">
+                {rates.map((rate) => {
+                  const rankingItem = rankingData.find((r: any) => r.casa === rate.casa);
+                  const variacion = rankingItem ? rankingItem.variacion : undefined;
+                  const isHighlighted = highlightedCard?.currency === 'dolar' && highlightedCard?.tipo === rate.casa;
+                  return (
+                    <DolarCard
+                      key={rate.casa}
+                      casa={rate.casa}
+                      nombre={rate.nombre}
+                      compra={rate.compra}
+                      venta={rate.venta}
+                      source="DolarAPI"
+                      onSelect={(casa: string) => setSelectedCasa(casa)}
+                      isSelected={selectedCasa === rate.casa}
+                      variacion={variacion}
+                      isHighlighted={isHighlighted}
+                    />
+                  );
+                })}
+              </main>
+
+              {/* Banda Cambiaria BCRA */}
+              <section style={{ marginTop: '40px' }}>
+                <ExchangeBands rates={rates} />
+              </section>
+
+              {/* Cotizaciones Bancos y Casas de Cambio */}
+              <section style={{ marginTop: '40px' }}>
+                <BankRates />
+              </section>
+
+              <section className="section-grid-extended">
+                <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <Calculator rates={rates} />
+                  <TaxGuide />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <AlertSettings rates={rates} />
+                  <NewsFeed />
+                </div>
+              </section>
 
 
-          <section className="section-grid-extended">
-            <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <Calculator rates={rates} />
-              <TaxGuide />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <NewsFeed />
-              <AlertSettings rates={rates} />
-            </div>
-          </section>
+            </>
+          )}
+
+          {activeTab === 'euro' && (
+            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <ExchangeRateSection currency="EUR" highlightedCard={highlightedCard} activeTab={activeTab} />
+              <UniversalConverter currency="EUR" />
+            </section>
+          )}
+
+          {activeTab === 'real' && (
+            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <ExchangeRateSection currency="BRL" highlightedCard={highlightedCard} activeTab={activeTab} />
+              <UniversalConverter currency="BRL" />
+            </section>
+          )}
         </>
       )}
 
@@ -188,6 +267,7 @@ export default function Home() {
           </p>
         )}
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

@@ -24,7 +24,6 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   const [password, setPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Alertas
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [alertCasa, setAlertCasa] = useState<string>('blue');
   const [alertCondition, setAlertCondition] = useState<string>('ABOVE');
