@@ -221,30 +221,6 @@ prisma/
 
 ---
 
-## 🚀 Instalación y Uso
-
-```bash
-# 1. Clonar el repositorio
-git clone <repo-url>
-cd dolar
-
-# 2. Instalar dependencias
-npm install
-
-# 3. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con DATABASE_URL y credenciales de email
-
-# 4. Crear y migrar la base de datos
-npx prisma db push
-npx prisma generate
-
-# 5. (Opcional) Sembrar datos históricos
-node prisma/seed.js
-
-# 6. Iniciar en desarrollo
-npm run dev
-```
 
 ## 🌐 Deploy en Vercel
 
