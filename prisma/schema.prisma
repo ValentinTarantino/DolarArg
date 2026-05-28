@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model DolarRate {
@@ -54,5 +55,13 @@ model Alert {
   value       Float
   isTriggered Boolean  @default(false)
   createdAt   DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 

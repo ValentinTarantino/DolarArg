@@ -131,7 +131,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
   return (
     <div className="panel">
       <div className="panel-title" style={{ position: 'relative' }}>
-        <ChartIcon size={22} />
         <span>Evolución del Dolar: </span>
         {onSelectCasa ? (
           <div style={{ position: 'relative', display: 'inline-block' }}>

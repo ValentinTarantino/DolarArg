@@ -107,17 +107,19 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
     <div className="panel" id="bands-panel" style={{ marginTop: '24px' }}>
 
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
           <div className="title-icon-wrapper" style={{ backgroundColor: 'rgba(99,102,241,0.1)', color: '#6366f1', flexShrink: 0 }}>
             <Compass size={20} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>Banda Cambiaria BCRA</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>Banda Cambiaria BCRA</h3>
+              <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>Actualizado: {bandas.date}</span>
+            </div>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5 }}>
-              Las bandas aplican oficialmente al <strong style={{ color: '#a5b4fc' }}>Dólar Mayorista</strong> (COM 3500). 
+              Las bandas aplican oficialmente al <strong style={{ color: '#a5b4fc' }}>Dólar Mayorista</strong> (COM 3500).
             </p>
           </div>
-          <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>Actualizado: {bandas.date}</span>
         </div>
       </div>
 

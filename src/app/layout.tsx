@@ -27,9 +27,25 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Dólar Hoy Argentina | Cotizaciones en Tiempo Real e Histórico",
+  title: "DólarARG | Cotizaciones en Tiempo Real",
   description: "Monitorea la cotización del dólar en Argentina (Oficial, Blue, MEP, CCL, Tarjeta, Cripto) en tiempo real con gráficos interactivos, alertas de precios y calculadora de impuestos.",
   keywords: ["dolar hoy", "dolar argentina", "dolar blue", "dolar oficial", "dolar mep", "cotizacion dolar", "dolar cripto"],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "DólarARG",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-192.png", sizes: "192x192" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -39,7 +55,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={outfit.variable}>
-      <body>{children}</body>
+      <head>
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
+      <body>
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
+                    .catch(function(err) { console.log('[PWA] SW error:', err); });
+                });
+              }
+            `,
+          }}
+        />
+      </body>
     </html>
   );
 }

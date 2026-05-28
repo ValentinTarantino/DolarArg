@@ -46,7 +46,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Condición inválida' }, { status: 400 });
     }
 
-    const numericValue = parseFloat(value);
+    const normalizedValue = typeof value === 'string'
+      ? value.includes(',')
+        ? value.replace(/\./g, '').replace(',', '.')  // formato argentino: 1.500,50 → 1500.50
+        : value.replace(/,/g, '')                      // formato inglés: 1482.90 → 1482.90 (sin cambios)
+      : value;
+    const numericValue = parseFloat(normalizedValue);
     if (isNaN(numericValue) || numericValue <= 0) {
       return NextResponse.json({ error: 'El valor debe ser un número positivo' }, { status: 400 });
     }

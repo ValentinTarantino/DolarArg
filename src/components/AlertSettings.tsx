@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Bell, ShieldAlert, LogOut, User, Lock, Mail, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { Bell, LogOut, User, Lock, Mail, Trash2, CheckCircle, Clock, ArrowLeft, KeyRound } from 'lucide-react';
 
 interface Alert {
   id: number;
@@ -24,6 +24,18 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   const [password, setPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string | null>(null);
 
+  const [view, setView] = useState<'auth' | 'forgot' | 'reset'>('auth');
+  const [forgotEmail, setForgotEmail] = useState<string>('');
+  const [forgotMsg, setForgotMsg] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotLoading, setForgotLoading] = useState<boolean>(false);
+
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState<boolean>(false);
+
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [alertCasa, setAlertCasa] = useState<string>('blue');
   const [alertCondition, setAlertCondition] = useState<string>('ABOVE');
@@ -33,6 +45,14 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
 
   useEffect(() => {
     checkSession();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('reset_token');
+      if (token) {
+        setResetToken(token);
+        setView('reset');
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -102,6 +122,54 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotMsg(null);
+    setForgotLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setForgotMsg(data.message);
+    } catch (err: any) {
+      setForgotError(err.message);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError(null);
+    setResetMsg(null);
+    setResetLoading(true);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, password: newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setResetMsg(data.message);
+      setTimeout(() => {
+        window.history.replaceState({}, '', window.location.pathname);
+        setView('auth');
+        setResetToken(null);
+        setNewPassword('');
+      }, 2500);
+    } catch (err: any) {
+      setResetError(err.message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -129,7 +197,9 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
         body: JSON.stringify({
           casa: alertCasa,
           condition: alertCondition,
-          value: alertValue
+          value: alertValue.includes(',')
+            ? alertValue.replace(/\./g, '').replace(',', '.')
+            : alertValue
         })
       });
 
@@ -175,72 +245,97 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   return (
     <div className="panel">
       <div className="panel-title">
-        <Bell size={22} />
         <span>Configuración de Alertas</span>
       </div>
 
       {!user ? (
         <div className="auth-panel">
-          <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '10px' }}>
-            Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.
-          </p>
-
-          <form onSubmit={handleAuth} className="calculator-form" id="auth-form">
-            <div className="input-container">
-              <label>Correo Electrónico</label>
-              <div className="input-wrapper">
-                <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                <input
-                  id="auth-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ejemplo@correo.com"
-                  style={{ paddingLeft: '38px' }}
-                  required
-                />
+          {view === 'forgot' ? (
+            <>
+              <button onClick={() => { setView('auth'); setForgotMsg(null); setForgotError(null); }} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', cursor: 'pointer', marginBottom: '16px', padding: 0 }}>
+                <ArrowLeft size={14} /> Volver
+              </button>
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <KeyRound size={32} style={{ color: '#6366f1', marginBottom: '8px' }} />
+                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>¿Olvidaste tu contraseña?</p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>Ingresá tu email y te enviamos un enlace para restablecerla.</p>
               </div>
-            </div>
-
-            <div className="input-container">
-              <label>Contraseña</label>
-              <div className="input-wrapper">
-                <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                <input
-                  id="auth-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ paddingLeft: '38px' }}
-                  required
-                />
+              {!forgotMsg ? (
+                <form onSubmit={handleForgotPassword} className="calculator-form">
+                  <div className="input-container">
+                    <label>Correo Electrónico</label>
+                    <div className="input-wrapper">
+                      <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
+                      <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="ejemplo@correo.com" style={{ paddingLeft: '38px' }} required />
+                    </div>
+                  </div>
+                  {forgotError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{forgotError}</div>}
+                  <button type="submit" className="btn-primary" disabled={forgotLoading}>{forgotLoading ? 'Enviando...' : 'Enviar enlace'}</button>
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{forgotMsg}</div>
+              )}
+            </>
+          ) : view === 'reset' ? (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <KeyRound size={32} style={{ color: '#6366f1', marginBottom: '8px' }} />
+                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>Nueva contraseña</p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>Ingresá tu nueva contraseña.</p>
               </div>
-            </div>
-
-            {authError && (
-              <div style={{ color: authError.includes('exitoso') ? '#10b981' : '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>
-                {authError}
-              </div>
-            )}
-
-            <button type="submit" className="btn-primary" id="auth-submit-btn">
-              {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                setIsRegistering(!isRegistering);
-                setAuthError(null);
-              }}
-              style={{ border: 'none', background: 'transparent', padding: '0', fontSize: '0.85rem', color: '#6366f1' }}
-              id="auth-toggle-btn"
-            >
-              {isRegistering ? '¿Ya tienes cuenta? Inicia Sesión' : '¿No tienes cuenta? Regístrate'}
-            </button>
-          </form>
+              {!resetMsg ? (
+                <form onSubmit={handleResetPassword} className="calculator-form">
+                  <div className="input-container">
+                    <label>Nueva contraseña</label>
+                    <div className="input-wrapper">
+                      <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
+                      <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required minLength={6} />
+                    </div>
+                  </div>
+                  {resetError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{resetError}</div>}
+                  <button type="submit" className="btn-primary" disabled={resetLoading}>{resetLoading ? 'Guardando...' : 'Guardar contraseña'}</button>
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{resetMsg}</div>
+              )}
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '10px' }}>
+                Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.
+              </p>
+              <form onSubmit={handleAuth} className="calculator-form" id="auth-form">
+                <div className="input-container">
+                  <label>Correo Electrónico</label>
+                  <div className="input-wrapper">
+                    <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
+                    <input id="auth-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ejemplo@correo.com" style={{ paddingLeft: '38px' }} required />
+                  </div>
+                </div>
+                <div className="input-container">
+                  <label>Contraseña</label>
+                  <div className="input-wrapper">
+                    <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
+                    <input id="auth-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required />
+                  </div>
+                </div>
+                {authError && (
+                  <div style={{ color: authError.includes('exitoso') ? '#10b981' : '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{authError}</div>
+                )}
+                <button type="submit" className="btn-primary" id="auth-submit-btn">{isRegistering ? 'Registrarse' : 'Iniciar Sesión'}</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button type="button" onClick={() => { setIsRegistering(!isRegistering); setAuthError(null); }} style={{ border: 'none', background: 'transparent', padding: '0', fontSize: '0.82rem', color: '#6366f1', cursor: 'pointer' }} id="auth-toggle-btn">
+                    {isRegistering ? '¿Ya tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate'}
+                  </button>
+                  {!isRegistering && (
+                    <button type="button" onClick={() => { setView('forgot'); setForgotMsg(null); setForgotError(null); }} style={{ border: 'none', background: 'transparent', padding: '0', fontSize: '0.82rem', color: '#64748b', cursor: 'pointer' }}>
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
+                </div>
+              </form>
+            </>
+          )}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -297,14 +392,13 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
             <div className="input-container">
               <label>Precio Objetivo (Venta)</label>
               <div className="input-wrapper">
-                <span className="currency-symbol">$</span>
                 <input
                   id="alert-value-input"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={alertValue}
-                  onChange={(e) => setAlertValue(e.target.value)}
-                  placeholder="Precio a alertar"
-                  min="0"
+                  onChange={(e) => setAlertValue(e.target.value.replace(/[^0-9.,]/g, ''))}
+                  placeholder="Ej: 1500 o 1.500,50"
                 />
               </div>
             </div>

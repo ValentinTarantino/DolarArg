@@ -33,7 +33,6 @@ export default function NewsFeed() {
     return (
       <div className="news-feed card">
         <div className="news-header">
-          <Newspaper size={20} className="news-icon" />
           <h3>Noticias Económicas</h3>
         </div>
         <p className="loading-news">Cargando titulares...</p>
@@ -46,7 +45,6 @@ export default function NewsFeed() {
   return (
     <div className="news-feed card">
       <div className="news-header">
-        <Newspaper size={20} className="news-icon" />
         <h3>Noticias Económicas</h3>
       </div>
       <div className="news-list">

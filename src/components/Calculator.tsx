@@ -74,7 +74,6 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   return (
     <div className="panel">
       <div className="panel-title">
-        <CalcIcon size={22} />
         <span>Calculadora de USD y Pesos</span>
       </div>
 

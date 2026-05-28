@@ -145,7 +145,7 @@ const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, hig
       )}
 
       {/* Cards */}
-      <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: isRegionalCurrency ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '14px' }}>
+      <div style={{ padding: '20px 24px' }} className={isRegionalCurrency ? 'exchange-cards-grid exchange-cards-grid--2' : 'exchange-cards-grid exchange-cards-grid--3'}>
         {rates.map((rate) => {
           const spread = (((rate.venta - rate.compra) / rate.compra) * 100).toFixed(1);
           const isHighlighted = activeTab === currency.toLowerCase() && highlightedCard?.currency === currency && highlightedCard?.tipo === rate.tipo;

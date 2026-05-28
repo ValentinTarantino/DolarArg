@@ -14,6 +14,7 @@ import ExchangeRateSection from '@/components/ExchangeRateSection';
 import BankRates from '@/components/BankRates';
 import MacroIndicators from '@/components/MacroIndicators';
 import CryptoTable from '@/components/CryptoTable';
+import Footer from '@/components/Footer';
 import { DollarSign } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
 export default function Home() {
@@ -268,11 +269,13 @@ export default function Home() {
               </section>
 
               {/* Gráfico + Calculadora + Alertas + Noticias */}
-              <section style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: '1.5fr 2fr', gap: '24px' }}>
-                <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <section style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: '1.5fr 2fr', gap: '24px' }} className="chart-main-grid">
+                <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                  <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
                   <Calculator rates={rates} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="alerts-news-grid">
                     <AlertSettings rates={rates} />
                     <NewsFeed />
                   </div>
@@ -329,14 +332,8 @@ export default function Home() {
         </>
       )}
 
-      <footer className="footer">
-        {lastUpdated && (
-          <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Última actualización general: {lastUpdated}
-          </p>
-        )}
-      </footer>
       </div>
+      <Footer onTabChange={setActiveTab} lastUpdated={lastUpdated} />
     </>
   );
 }

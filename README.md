@@ -1,10 +1,10 @@
-# 💵 Dólar Hoy Argentina
+# DólarARG
 
-Plataforma fullstack para monitorear cotizaciones del dólar, euro y real en Argentina en tiempo real, con historial, gráficos, calculadora, alertas y bandas cambiarias del BCRA.
+Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso chileno, peso uruguayo y criptomonedas en Argentina en tiempo real, con historial, gráficos, calculadora, alertas, bandas cambiarias del BCRA y soporte PWA (instalable como app).
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 | Capa | Tecnología |
 |---|---|
@@ -20,10 +20,11 @@ Plataforma fullstack para monitorear cotizaciones del dólar, euro y real en Arg
 | Cron (dev) | node-cron |
 | Cron (prod) | Vercel Cron Jobs |
 | Deploy | Vercel |
+| PWA | Web App Manifest + Service Worker |
 
 ---
 
-## 🗄️ Base de Datos
+## Base de Datos
 
 Se usa **SQLite** en desarrollo (archivo `prisma/dev.db`) y puede configurarse con **PostgreSQL** o cualquier base compatible con Prisma en producción, simplemente cambiando el `provider` en `schema.prisma` y la variable `DATABASE_URL`.
 
@@ -88,7 +89,7 @@ model Alert {
 
 ---
 
-## ⚙️ Backend — API Routes
+## Backend — API Routes
 
 Todas las rutas viven en `src/app/api/` y corren como funciones serverless en Vercel.
 
@@ -197,12 +198,15 @@ src/
 │   ├── DolarCard.tsx        # tarjeta por tipo de dólar
 │   ├── DolarChart.tsx       # gráfico histórico (Recharts)
 │   ├── ExchangeBands.tsx    # gauge banda cambiaria BCRA
-│   ├── BankRates.tsx        # cotizaciones + comparador de bancos
+│   ├── BankRates.tsx        # cotizaciones + comparador de bancos (responsive)
 │   ├── Calculator.tsx       # calculadora ARS ↔ USD
 │   ├── AlertSettings.tsx    # configurar alertas de precio
 │   ├── UniversalConverter.tsx # conversor de monedas
-│   ├── ExchangeRateSection.tsx # sección EUR / BRL
-│   └── NewsFeed.tsx         # noticias del mercado
+│   ├── ExchangeRateSection.tsx # sección EUR / BRL / CLP / UYU (responsive)
+│   ├── CryptoTable.tsx      # tabla de criptomonedas con vista mobile compacta
+│   ├── MacroIndicators.tsx  # indicadores macroeconómicos
+│   ├── NewsFeed.tsx         # noticias del mercado
+│   └── Footer.tsx           # footer con columnas: info, secciones, fuentes, legal
 ├── lib/
 │   ├── db.ts                # instancia Prisma (singleton)
 │   ├── cron-local.ts        # cron para desarrollo
@@ -217,27 +221,48 @@ prisma/
 ├── schema.prisma            # modelos de la base de datos
 ├── seed.js                  # datos iniciales
 └── dev.db                   # base de datos SQLite (desarrollo)
+
+public/
+├── manifest.json            # Web App Manifest (PWA)
+├── sw.js                    # Service Worker (caché offline)
+└── icons/
+    ├── icon.svg             # ícono SVG escalable
+    ├── icon-192.png         # ícono 192×192 (Android)
+    └── icon-512.png         # ícono 512×512 (Play Store / splash)
 ```
 
 ---
 
 
-## 🌐 Deploy en Vercel
+## PWA — Progressive Web App
 
-El `vercel.json` configura el build y el cron automáticamente:
+El sitio es instalable como app en Android e iOS sin necesidad de tiendas.
 
-```json
-{
-  "buildCommand": "prisma db push && prisma generate && next build",
-  "crons": [{ "path": "/api/dolar/cron", "schedule": "*/10 * * * *" }]
-}
-```
+### Cómo instalar (usuario final)
 
-En producción se requiere una base de datos compatible con Prisma accesible desde Vercel (ej. Turso, PlanetScale, Supabase, Neon).
+**Android (Chrome):**
+1. Entrar al sitio desde Chrome
+2. Tocar el banner "Agregar a pantalla de inicio" o ir al menú ⋮ → Instalar app
+3. El ícono aparece en el escritorio y la app se abre sin barra del navegador
+
+**iPhone (Safari):**
+1. Entrar al sitio desde Safari
+2. Tocar el botón compartir → "Añadir a pantalla de inicio"
+
+### Archivos clave
+
+| Archivo | Función |
+|---|---|
+| `public/manifest.json` | Nombre, ícono, colores, modo standalone |
+| `public/sw.js` | Service Worker: caché de assets y APIs para modo offline |
+| `public/icons/` | Íconos en SVG, 192px y 512px |
 
 ---
 
-## 🔑 Variables de Entorno
+
+---
+
+## Variables de Entorno
 
 ```env
 DATABASE_URL="file:./dev.db"         # SQLite en desarrollo
@@ -247,3 +272,20 @@ EMAIL_PORT=587
 EMAIL_USER="tu@email.com"
 EMAIL_PASS="tu_contraseña_app"
 ```
+
+---
+
+## Fuentes de Datos
+
+| Fuente | Datos |
+|---|---|
+| [dolarapi.com](https://dolarapi.com) | Dólar oficial, blue, MEP, CCL, tarjeta, cripto |
+| [Bluelytics](https://bluelytics.com.ar) | Dólar blue / paralelo |
+| [BCRA](https://www.bcra.gob.ar) | Tipo de cambio oficial y bandas cambiarias |
+| [ExchangeRate-API](https://www.exchangerate-api.com) | EUR, BRL, CLP, UYU |
+| [CoinGecko](https://www.coingecko.com) | Top 50 criptomonedas por market cap |
+| [INDEC](https://www.indec.gob.ar) | Indicadores macroeconómicos |
+| [ArgentinaDatos](https://argentinadatos.com) | Datos económicos abiertos |
+| Web scraping (Cheerio) | Cotizaciones de bancos y casas de cambio |
+
+---

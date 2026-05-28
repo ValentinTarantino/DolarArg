@@ -179,7 +179,6 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
     <div className="panel">
       {!currency && (
         <div className="panel-title">
-          <ArrowRightLeft size={20} />
           <span>Conversor de Monedas</span>
         </div>
       )}

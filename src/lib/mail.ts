@@ -1,5 +1,82 @@
 import nodemailer from 'nodemailer';
 
+export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<boolean> {
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || '"Dólar Hoy Argentina" <noreply@dolarhoy.com>';
+
+  if (!host || !user || !pass) {
+    console.warn(`[MAIL SIMULADOR] Reset de contraseña para ${to}. Link: ${resetUrl}`);
+    return false;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Restablecer contraseña</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0a0b10; color: #f1f5f9; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 20px auto; background-color: #12131c; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; }
+          .header { background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; }
+          .body { padding: 30px 24px; text-align: center; }
+          .badge { display: inline-block; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); color: #818cf8; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.08em; }
+          .headline { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 12px; }
+          .description { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 30px; }
+          .btn { display: inline-block; background-color: #6366f1; color: #ffffff !important; text-decoration: none !important; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; }
+          .note { margin-top: 24px; font-size: 13px; color: #475569; }
+          .footer { background-color: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.03); padding: 20px; text-align: center; font-size: 12px; color: #64748b; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>Dólar Hoy Argentina</h1></div>
+          <div class="body">
+            <div class="badge">Seguridad</div>
+            <div class="headline">Restablecer tu contraseña</div>
+            <div class="description">
+              Recibimos una solicitud para restablecer la contraseña de tu cuenta.<br>
+              Hacé click en el botón de abajo para elegir una nueva contraseña.<br><br>
+              <strong>Este enlace expira en 1 hora.</strong>
+            </div>
+            <a href="${resetUrl}" class="btn">Restablecer contraseña</a>
+            <div class="note">
+              Si no solicitaste este cambio, podés ignorar este correo. Tu contraseña no será modificada.
+            </div>
+          </div>
+          <div class="footer">
+            Este es un correo automático de Dólar Hoy Argentina.<br>
+            © ${new Date().getFullYear()} Valentín Tarantino
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject: '🔐 Restablecer contraseña — Dólar Hoy Argentina',
+      text: `Restablecé tu contraseña ingresando a: ${resetUrl} (válido por 1 hora)`,
+      html: htmlContent,
+    });
+
+    console.log(`[MAIL EXITOSO] Email de reset enviado a ${to}. MessageId: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error(`[MAIL ERROR] Error al enviar reset a ${to}:`, error);
+    return false;
+  }
+}
+
 export async function sendAlertEmail(
   to: string,
   casa: string,
@@ -31,7 +108,16 @@ export async function sendAlertEmail(
       },
     });
 
-    const casaUpper = casa.charAt(0).toUpperCase() + casa.slice(1);
+    const casaNombres: Record<string, string> = {
+      oficial: 'Oficial',
+      blue: 'Blue',
+      bolsa: 'Bolsa (MEP)',
+      contadoconliqui: 'Contado con Liqui (CCL)',
+      tarjeta: 'Tarjeta',
+      cripto: 'Cripto',
+      mayorista: 'Mayorista',
+    };
+    const casaUpper = casaNombres[casa] ?? (casa.charAt(0).toUpperCase() + casa.slice(1));
     const conditionText = condition === 'ABOVE' ? 'mayor o igual a (≥)' : 'menor o igual a (≤)';
     const conditionSymbol = condition === 'ABOVE' ? '≥' : '≤';
 

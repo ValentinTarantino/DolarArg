@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Building2, TrendingUp, Trophy, ArrowDownUp } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 
 interface BankRate {
   banco: string;
@@ -57,7 +57,6 @@ const BankRates: React.FC = () => {
       {/* Header con toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
-          <Building2 size={22} />
           <span>Cotizaciones Bancos y Casas de Cambio</span>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -70,14 +69,14 @@ const BankRates: React.FC = () => {
               color: view === v ? '#3b82f6' : '#94a3b8',
               fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
             }}>
-              {v === 'cards' ? 'Tarjetas' : '🏆 Comparador'}
+              {v === 'cards' ? 'Cotizaciones' : 'Comparador'}
             </button>
           ))}
         </div>
       </div>
 
       {view === 'cards' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+        <div className="bank-cards-grid">
           {rates.map((rate, index) => (
             <div key={index} style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', transition: 'all 0.25s ease' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)'; }}

@@ -153,52 +153,85 @@ const CryptoTable: React.FC = () => {
       )}
 
       {!loading && !error && (
-        <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <SortHeader label="#" k="rank" />
-                <th style={{ padding: '12px 14px', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Nombre</th>
-                <SortHeader label="Precio" k="price" />
-                <SortHeader label="1h %" k="change1h" />
-                <SortHeader label="24h %" k="change24h" />
-                <SortHeader label="7d %" k="change7d" />
-                <SortHeader label="30d %" k="change30d" />
-                <SortHeader label="Market cap" k="marketCap" />
-                <SortHeader label="Volumen (24h)" k="volume24h" />
-                <th style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Circulante</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((coin, i) => (
-                <tr
-                  key={coin.id}
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', transition: 'background 0.15s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.06)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)')}
-                >
-                  <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>{coin.rank}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <img src={coin.image} alt={coin.name} width={28} height={28} style={{ borderRadius: '50%' }} />
-                      <div>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#f1f5f9' }}>{coin.name}</p>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>{coin.symbol}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#f1f5f9', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{formatPrice(coin.price)}</td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change1h} /></td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change24h} /></td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change7d} /></td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change30d} /></td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{formatLarge(coin.marketCap)}</td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{formatLarge(coin.volume24h)}</td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{formatSupply(coin.circulatingSupply, coin.symbol)}</td>
+        <div style={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          {/* Tabla completa — desktop */}
+          <div className="crypto-table-desktop" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <SortHeader label="#" k="rank" />
+                  <th style={{ padding: '12px 14px', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Nombre</th>
+                  <SortHeader label="Precio" k="price" />
+                  <SortHeader label="1h %" k="change1h" />
+                  <SortHeader label="24h %" k="change24h" />
+                  <SortHeader label="7d %" k="change7d" />
+                  <SortHeader label="30d %" k="change30d" />
+                  <SortHeader label="Market cap" k="marketCap" />
+                  <SortHeader label="Volumen (24h)" k="volume24h" />
+                  <th style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Circulante</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginated.map((coin, i) => (
+                  <tr
+                    key={coin.id}
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', transition: 'background 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.06)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)')}
+                  >
+                    <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>{coin.rank}</td>
+                    <td style={{ padding: '12px 14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src={coin.image} alt={coin.name} width={28} height={28} style={{ borderRadius: '50%' }} />
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#f1f5f9' }}>{coin.name}</p>
+                          <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>{coin.symbol}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#f1f5f9', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{formatPrice(coin.price)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change1h} /></td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change24h} /></td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change7d} /></td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right' }}><PctCell value={coin.change30d} /></td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{formatLarge(coin.marketCap)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{formatLarge(coin.volume24h)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{formatSupply(coin.circulatingSupply, coin.symbol)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Tabla compacta — mobile */}
+          <div className="crypto-table-mobile">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)' }}>#</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)' }}>NOMBRE</th>
+                  <th onClick={() => handleSort('price')} style={{ padding: '10px 12px', textAlign: 'right', color: sortKey === 'price' ? '#3b82f6' : '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)', cursor: 'pointer' }}>PRECIO {sortKey === 'price' ? (sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((coin, i) => (
+                  <tr key={coin.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                    <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '0.8rem', fontWeight: 600 }}>{coin.rank}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <img src={coin.image} alt={coin.name} width={22} height={22} style={{ borderRadius: '50%', flexShrink: 0 }} />
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.82rem', color: '#f1f5f9' }}>{coin.name}</p>
+                          <p style={{ margin: 0, fontSize: '0.68rem', color: '#64748b' }}>{coin.symbol}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#f1f5f9', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{formatPrice(coin.price)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {filtered.length === 0 && (
             <p style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No se encontraron criptomonedas para "{search}"</p>
           )}
