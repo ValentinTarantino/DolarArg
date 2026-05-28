@@ -30,22 +30,24 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
+  const [clpUyuRates, setClpUyuRates] = useState<ExchangeRate[]>([]);
+
   // Fetch EUR and BRL rates for the ticker
   useEffect(() => {
     const fetchIntlRates = async () => {
       try {
-        const response = await fetch('/api/exchange-rates/variants');
-        if (response.ok) {
-          const data = await response.json();
-          setIntlRates(data);
-        }
+        const [varRes, clpRes] = await Promise.all([
+          fetch('/api/exchange-rates/variants'),
+          fetch('/api/exchange-rates/clp-uyu'),
+        ]);
+        if (varRes.ok) setIntlRates(await varRes.json());
+        if (clpRes.ok) setClpUyuRates(await clpRes.json());
       } catch (error) {
         console.error('Error fetching international rates in Navbar:', error);
       }
     };
 
     fetchIntlRates();
-    // Refresh every 2 minutes
     const interval = setInterval(fetchIntlRates, 120000);
     return () => clearInterval(interval);
   }, []);
@@ -83,6 +85,10 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
   const brlOficial = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'oficial');
   const brlBlue = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'blue');
   const brlTarjeta = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'tarjeta');
+  const clpOficial  = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'oficial');
+  const clpTarjeta  = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'tarjeta');
+  const uyuOficial  = clpUyuRates.find(r => r.codigo === 'UYU' && r.tipo === 'oficial');
+  const uyuTarjeta  = clpUyuRates.find(r => r.codigo === 'UYU' && r.tipo === 'tarjeta');
 
   return (
     <nav className={`navbar-premium ${scrolled ? 'scrolled' : ''}`}>
@@ -96,194 +102,23 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
 
         <div className="navbar-ticker-container">
           <div className="ticker-wrapper">
-            <div className="ticker-content">
-              {oficialRate && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇺🇸</span>
-                  <span className="ticker-label">Dólar Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${oficialRate.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${oficialRate.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
+            {(() => {
+              const fl = (src: string, alt: string) => <img src={src} alt={alt} width={18} height={12} style={{borderRadius:'2px',objectFit:'cover'}} />;
+              const chg = (r: DolarRate | undefined) => {
+                if (!r) return null;
+                return null;
+              };
+              const items = [
+                oficialRate && <div key="usd-o" className="ticker-item"><span className="ticker-label">{fl('https://flagcdn.com/w40/us.png','US')} Dólar Oficial</span><span className="ticker-values"><span className="val-v">${oficialRate.venta.toFixed(2)}</span>{chg(oficialRate)}</span></div>,
+                blueRate    && <div key="usd-b" className="ticker-item highlighted"><span className="ticker-label">{fl('https://flagcdn.com/w40/us.png','US')} Dólar Blue</span><span className="ticker-values"><span className="val-v">${blueRate.venta.toFixed(2)}</span>{chg(blueRate)}</span></div>,
+                eurOficial  && <div key="eur"   className="ticker-item"><span className="ticker-label">{fl('https://flagcdn.com/w40/eu.png','EU')} Euro</span><span className="ticker-values"><span className="val-v">${eurOficial.venta.toFixed(2)}</span></span></div>,
+                brlOficial  && <div key="brl"   className="ticker-item"><span className="ticker-label">{fl('https://flagcdn.com/w40/br.png','BR')} Real</span><span className="ticker-values"><span className="val-v">${brlOficial.venta.toFixed(2)}</span></span></div>,
+                clpOficial  && <div key="clp"   className="ticker-item"><span className="ticker-label">{fl('https://flagcdn.com/w40/cl.png','CL')} Peso Chileno</span><span className="ticker-values"><span className="val-v">${clpOficial.venta.toFixed(2)}</span></span></div>,
+                uyuOficial  && <div key="uyu"   className="ticker-item"><span className="ticker-label">{fl('https://flagcdn.com/w40/uy.png','UY')} Peso Uruguayo</span><span className="ticker-values"><span className="val-v">${uyuOficial.venta.toFixed(2)}</span></span></div>,
 
-              {blueRate && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇺🇸</span>
-                  <span className="ticker-label">Dólar Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${blueRate.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${blueRate.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {eurOficial && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurOficial.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurOficial.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {eurBlue && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurBlue.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurBlue.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {eurTarjeta && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Tarjeta:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurTarjeta.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurTarjeta.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {brlOficial && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlOficial.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlOficial.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {brlBlue && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlBlue.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlBlue.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-
-              {brlTarjeta && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Tarjeta:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlTarjeta.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlTarjeta.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="ticker-content duplicate" aria-hidden="true">
-              {oficialRate && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇺🇸</span>
-                  <span className="ticker-label">Dólar Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${oficialRate.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${oficialRate.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {blueRate && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇺🇸</span>
-                  <span className="ticker-label">Dólar Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${blueRate.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${blueRate.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {eurOficial && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurOficial.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurOficial.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {eurBlue && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurBlue.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurBlue.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {eurTarjeta && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇪🇺</span>
-                  <span className="ticker-label">Euro Tarjeta:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${eurTarjeta.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${eurTarjeta.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {brlOficial && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Oficial:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlOficial.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlOficial.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {brlBlue && (
-                <div className="ticker-item highlighted">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Blue:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlBlue.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlBlue.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-              {brlTarjeta && (
-                <div className="ticker-item">
-                  <span className="ticker-flag">🇧🇷</span>
-                  <span className="ticker-label">Real Tarjeta:</span>
-                  <span className="ticker-values">
-                    <span className="val-c">C: ${brlTarjeta.compra.toFixed(2)}</span>
-                    <span className="ticker-divider">/</span>
-                    <span className="val-v">V: ${brlTarjeta.venta.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
-            </div>
+              ].filter(Boolean);
+              return (<><div className="ticker-content">{items}</div><div className="ticker-content duplicate" aria-hidden="true">{items}</div></>);
+            })()}
           </div>
         </div>
 
@@ -341,7 +176,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                   <input
                     type="text"
-                    placeholder="Buscar dólar..."
+                    placeholder="Buscar moneda..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -372,167 +207,81 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                     <X size={16} />
                   </button>
                 </div>
-                {searchQuery && (
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    {rates.filter(r => {
-                      const searchTerm = searchQuery.toLowerCase();
-                      const fullName = `dólar ${r.nombre}`.toLowerCase();
-                      const casa = r.casa.toLowerCase();
-                      const nombre = r.nombre.toLowerCase();
-                      
-                      return fullName.includes(searchTerm) || 
-                             casa.includes(searchTerm) || 
-                             nombre.includes(searchTerm) ||
-                             searchTerm === 'd' || 
-                             searchTerm === 'dolar'; 
-                    }).map((rate) => (
-                      <button
-                        key={`dolar-${rate.casa}`}
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSearchOpen(false);
-                          if (onHighlightCard) {
-                            onHighlightCard({ currency: 'dolar', tipo: rate.casa });
-                          }
-                          if (activeTab !== 'dolar' && onTabChange) {
-                            onTabChange('dolar');
-                            setTimeout(() => {
-                              const card = document.querySelector(`[data-casa="${rate.casa}"]`);
-                              if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 100);
-                          } else {
-                            const card = document.querySelector(`[data-casa="${rate.casa}"]`);
-                            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#cbd5e1',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          borderRadius: '6px',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        🇺🇸 Dólar {rate.nombre}
-                      </button>
-                    ))}
-                    
-                    {intlRates.filter(r => 
-                      r.codigo === 'EUR' && (
-                        r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        'euro'.includes(searchQuery.toLowerCase())
-                      )
-                    ).map((rate) => (
-                      <button
-                        key={`eur-${rate.tipo}`}
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSearchOpen(false);
-                          if (onHighlightCard) {
-                            onHighlightCard({ currency: 'EUR', tipo: rate.tipo });
-                          }
-                          if (activeTab !== 'euro' && onTabChange) {
-                            onTabChange('euro');
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#cbd5e1',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          borderRadius: '6px',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        🇪🇺 Euro {rate.tipo === 'oficial' ? 'Oficial' : rate.tipo === 'blue' ? 'Blue' : 'Tarjeta'}
-                      </button>
-                    ))}
-                    
-                    {intlRates.filter(r => 
-                      r.codigo === 'BRL' && (
-                        r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        'real'.includes(searchQuery.toLowerCase())
-                      )
-                    ).map((rate) => (
-                      <button
-                        key={`brl-${rate.tipo}`}
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSearchOpen(false);
-                          if (onHighlightCard) {
-                            onHighlightCard({ currency: 'BRL', tipo: rate.tipo });
-                          }
-                          if (activeTab !== 'real' && onTabChange) {
-                            onTabChange('real');
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#cbd5e1',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          borderRadius: '6px',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        🇧🇷 Real {rate.tipo === 'oficial' ? 'Oficial' : rate.tipo === 'blue' ? 'Blue' : 'Tarjeta'}
-                      </button>
-                    ))}
-                    
-                    {rates.filter(r => 
-                      r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      r.casa.toLowerCase().includes(searchQuery.toLowerCase())
-                    ).length === 0 &&
-                    intlRates.filter(r => 
-                      (r.codigo === 'EUR' || r.codigo === 'BRL') && (
-                        r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        r.codigo.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                    ).length === 0 && (
-                      <div style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center' }}>
-                        No se encontraron resultados
-                      </div>
-                    )}
-                  </div>
-                )}
+                {searchQuery && (() => {
+                  const t = searchQuery.toLowerCase();
+                  const btnStyle = { width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left' as const, borderRadius: '6px', transition: 'background 0.2s', display: 'flex', alignItems: 'center', gap: '10px' };
+                  const hover = (e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => { e.currentTarget.style.background = enter ? 'rgba(255,255,255,0.05)' : 'transparent'; };
+                  const flag = (src: string) => <img src={src} alt="" width={20} height={14} style={{borderRadius:'2px',flexShrink:0}} />;
+                  const sub = (text: string) => <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '1px' }}>{text}</span>;
+
+                  const dolarItems = rates.filter(r => `dólar ${r.nombre}`.toLowerCase().includes(t) || r.casa.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || t === 'd' || t === 'dolar');
+                  const showEur = 'euro'.includes(t) || t === 'e' || 'eur'.includes(t);
+                  const showBrl = 'real'.includes(t) || t === 'r' || 'brl'.includes(t);
+                  const showClp = 'peso chileno'.includes(t) || 'chileno'.includes(t) || 'clp'.includes(t);
+                  const showUyu = 'peso uruguayo'.includes(t) || 'uruguayo'.includes(t) || 'uyu'.includes(t);
+                  const eurOfi = intlRates.find(r => r.codigo === 'EUR' && r.tipo === 'oficial');
+                  const brlOfi = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'oficial');
+                  const clpOfi = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'oficial');
+                  const uyuOfi = clpUyuRates.find(r => r.codigo === 'UYU' && r.tipo === 'oficial');
+                  const noResults = dolarItems.length === 0 && !showEur && !showBrl && !showClp && !showUyu;
+
+                  return (
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      {dolarItems.map(rate => (
+                        <button key={`dolar-${rate.casa}`} style={btnStyle}
+                          onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => {
+                            setSearchQuery(''); setSearchOpen(false);
+                            if (onHighlightCard) onHighlightCard({ currency: 'dolar', tipo: rate.casa });
+                            if (activeTab !== 'dolar' && onTabChange) { onTabChange('dolar'); setTimeout(() => { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
+                            else { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                          }}>
+                          {flag('https://flagcdn.com/w40/us.png')}
+                          <span style={{ fontSize: '0.85rem' }}>Dólar {rate.nombre}</span>
+                        </button>
+                      ))}
+                      {showEur && eurOfi && (
+                        <button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => { setSearchQuery(''); setSearchOpen(false); if (onTabChange) onTabChange('euro'); }}>
+                          {flag('https://flagcdn.com/w40/eu.png')}
+                          <span><span style={{ fontSize: '0.85rem' }}>Euro</span>{sub('Oficial / Blue / Tarjeta')}</span>
+                        </button>
+                      )}
+                      {showBrl && brlOfi && (
+                        <button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => { setSearchQuery(''); setSearchOpen(false); if (onTabChange) onTabChange('real'); }}>
+                          {flag('https://flagcdn.com/w40/br.png')}
+                          <span><span style={{ fontSize: '0.85rem' }}>Real Brasileño</span>{sub('Oficial / Blue / Tarjeta')}</span>
+                        </button>
+                      )}
+                      {showClp && clpOfi && (
+                        <button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => { setSearchQuery(''); setSearchOpen(false); if (onTabChange) onTabChange('clp'); }}>
+                          {flag('https://flagcdn.com/w40/cl.png')}
+                          <span><span style={{ fontSize: '0.85rem' }}>Peso Chileno</span>{sub('Oficial / Tarjeta')}</span>
+                        </button>
+                      )}
+                      {showUyu && uyuOfi && (
+                        <button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => { setSearchQuery(''); setSearchOpen(false); if (onTabChange) onTabChange('uyu'); }}>
+                          {flag('https://flagcdn.com/w40/uy.png')}
+                          <span><span style={{ fontSize: '0.85rem' }}>Peso Uruguayo</span>{sub('Oficial / Tarjeta')}</span>
+                        </button>
+                      )}
+                      {noResults && (
+                        <div style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center' }}>No se encontraron resultados</div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
 
+          <div style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'8px', background: isLiveConnected ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${isLiveConnected ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, fontSize:'0.72rem', color: isLiveConnected ? '#10b981' : '#ef4444' }}>
+            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background: isLiveConnected ? '#10b981' : '#ef4444', display:'inline-block', animation: isLiveConnected ? 'statusPulse 2s infinite' : 'none' }} />
+            <span style={{fontWeight:600}}>{isLiveConnected ? 'EN VIVO' : 'OFFLINE'}</span>
+          </div>
           {lastUpdated && (
             <div style={{
               display: 'flex',
@@ -546,7 +295,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
               color: '#94a3b8'
             }}>
               <Activity size={12} />
-              <span>Actualizado: {lastUpdated}</span>
+              <span>{lastUpdated ? (() => { const m = lastUpdated.match(/(\d{1,2}):(\d{2}):\d{2}/); return m ? `Hoy ${m[1].padStart(2,'0')}:${m[2]}hs` : lastUpdated; })() : ''}</span>
             </div>
           )}
         </div>
@@ -629,61 +378,46 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                   </button>
                 )}
               </div>
-              {searchQuery && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  {rates.filter(r => {
-                    const t = searchQuery.toLowerCase();
-                    return `dólar ${r.nombre}`.toLowerCase().includes(t) || r.casa.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || t === 'd' || t === 'dolar';
-                  }).map(rate => (
-                    <button key={`m-dolar-${rate.casa}`}
-                      onClick={() => {
-                        setSearchQuery(''); setMenuOpen(false);
-                        if (onHighlightCard) onHighlightCard({ currency: 'dolar', tipo: rate.casa });
-                        if (activeTab !== 'dolar' && onTabChange) { onTabChange('dolar'); setTimeout(() => { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }
-                        else { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                      }}
-                      style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderRadius: '6px', transition: 'background 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >🇺🇸 Dólar {rate.nombre}</button>
-                  ))}
-                  {intlRates.filter(r => r.codigo === 'EUR' && (r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) || 'euro'.includes(searchQuery.toLowerCase()))).map(rate => (
-                    <button key={`m-eur-${rate.tipo}`}
-                      onClick={() => {
-                        setSearchQuery(''); setMenuOpen(false);
-                        if (onHighlightCard) onHighlightCard({ currency: 'EUR', tipo: rate.tipo });
-                        if (activeTab !== 'euro' && onTabChange) onTabChange('euro');
-                      }}
-                      style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderRadius: '6px', transition: 'background 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >🇪🇺 Euro {rate.tipo === 'oficial' ? 'Oficial' : rate.tipo === 'blue' ? 'Blue' : 'Tarjeta'}</button>
-                  ))}
-                  {intlRates.filter(r => r.codigo === 'BRL' && (r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) || 'real'.includes(searchQuery.toLowerCase()))).map(rate => (
-                    <button key={`m-brl-${rate.tipo}`}
-                      onClick={() => {
-                        setSearchQuery(''); setMenuOpen(false);
-                        if (onHighlightCard) onHighlightCard({ currency: 'BRL', tipo: rate.tipo });
-                        if (activeTab !== 'real' && onTabChange) onTabChange('real');
-                      }}
-                      style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderRadius: '6px', transition: 'background 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >🇧🇷 Real {rate.tipo === 'oficial' ? 'Oficial' : rate.tipo === 'blue' ? 'Blue' : 'Tarjeta'}</button>
-                  ))}
-                  {rates.filter(r => r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || r.casa.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 &&
-                   intlRates.filter(r => (r.codigo === 'EUR' || r.codigo === 'BRL') && (r.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || r.tipo.toLowerCase().includes(searchQuery.toLowerCase()) || r.codigo.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
-                    <div style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center' }}>No se encontraron resultados</div>
-                  )}
-                </div>
-              )}
+              {searchQuery && (() => {
+                  const t = searchQuery.toLowerCase();
+                  const btnStyle = { width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left' as const, borderRadius: '6px', transition: 'background 0.2s', display: 'flex', alignItems: 'center', gap: '10px' };
+                  const hover = (e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => { e.currentTarget.style.background = enter ? 'rgba(255,255,255,0.05)' : 'transparent'; };
+                  const flag = (src: string) => <img src={src} alt="" width={20} height={14} style={{borderRadius:'2px',flexShrink:0}} />;
+                  const sub = (text: string) => <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '1px' }}>{text}</span>;
+                  const dolarItems = rates.filter(r => `dólar ${r.nombre}`.toLowerCase().includes(t) || r.casa.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || t === 'd' || t === 'dolar');
+                  const showEur = 'euro'.includes(t) || t === 'e' || 'eur'.includes(t);
+                  const showBrl = 'real'.includes(t) || t === 'r' || 'brl'.includes(t);
+                  const showClp = 'peso chileno'.includes(t) || 'chileno'.includes(t) || 'clp'.includes(t);
+                  const showUyu = 'peso uruguayo'.includes(t) || 'uruguayo'.includes(t) || 'uyu'.includes(t);
+                  const eurOfi = intlRates.find(r => r.codigo === 'EUR' && r.tipo === 'oficial');
+                  const brlOfi = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'oficial');
+                  const clpOfi = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'oficial');
+                  const uyuOfi = clpUyuRates.find(r => r.codigo === 'UYU' && r.tipo === 'oficial');
+                  const noResults = dolarItems.length === 0 && !showEur && !showBrl && !showClp && !showUyu;
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      {dolarItems.map(rate => (
+                        <button key={`m-dolar-${rate.casa}`} style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)}
+                          onClick={() => { setSearchQuery(''); setMenuOpen(false); if (onHighlightCard) onHighlightCard({ currency: 'dolar', tipo: rate.casa }); if (activeTab !== 'dolar' && onTabChange) { onTabChange('dolar'); setTimeout(() => { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); } else { const c = document.querySelector(`[data-casa="${rate.casa}"]`); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }}>
+                          {flag('https://flagcdn.com/w40/us.png')}
+                          <span style={{ fontSize: '0.85rem' }}>Dólar {rate.nombre}</span>
+                        </button>
+                      ))}
+                      {showEur && eurOfi && (<button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)} onClick={() => { setSearchQuery(''); setMenuOpen(false); if (onTabChange) onTabChange('euro'); }}>{flag('https://flagcdn.com/w40/eu.png')}<span><span style={{fontSize:'0.85rem'}}>Euro</span>{sub('Oficial / Blue / Tarjeta')}</span></button>)}
+                      {showBrl && brlOfi && (<button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)} onClick={() => { setSearchQuery(''); setMenuOpen(false); if (onTabChange) onTabChange('real'); }}>{flag('https://flagcdn.com/w40/br.png')}<span><span style={{fontSize:'0.85rem'}}>Real Brasileño</span>{sub('Oficial / Blue / Tarjeta')}</span></button>)}
+                      {showClp && clpOfi && (<button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)} onClick={() => { setSearchQuery(''); setMenuOpen(false); if (onTabChange) onTabChange('clp'); }}>{flag('https://flagcdn.com/w40/cl.png')}<span><span style={{fontSize:'0.85rem'}}>Peso Chileno</span>{sub('Oficial / Tarjeta')}</span></button>)}
+                      {showUyu && uyuOfi && (<button style={btnStyle} onMouseEnter={e => hover(e, true)} onMouseLeave={e => hover(e, false)} onClick={() => { setSearchQuery(''); setMenuOpen(false); if (onTabChange) onTabChange('uyu'); }}>{flag('https://flagcdn.com/w40/uy.png')}<span><span style={{fontSize:'0.85rem'}}>Peso Uruguayo</span>{sub('Oficial / Tarjeta')}</span></button>)}
+                      {noResults && <div style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center' }}>No se encontraron resultados</div>}
+                    </div>
+                  );
+                })()}
             </div>
           </div>
 
           {lastUpdated && (
             <div className="mobile-menu-footer">
               <Activity size={12} />
-              <span>Actualizado: {lastUpdated}</span>
+              <span>{lastUpdated ? (() => { const m = lastUpdated.match(/(\d{1,2}):(\d{2}):\d{2}/); return m ? `Hoy ${m[1].padStart(2,'0')}:${m[2]}hs` : lastUpdated; })() : ''}</span>
             </div>
           )}
         </div>

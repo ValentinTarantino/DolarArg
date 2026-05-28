@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Info } from 'lucide-react';
 
 interface ExchangeRateSectionProps {
-  currency: 'EUR' | 'BRL';
+  currency: 'EUR' | 'BRL' | 'CLP' | 'UYU';
   highlightedCard?: { currency: string; tipo: string } | null;
   activeTab?: string;
+  apiEndpoint?: string;
 }
 
 interface RateData {
@@ -20,7 +21,7 @@ interface RateData {
   variacion?: number; // Porcentaje de cambio
 }
 
-const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, highlightedCard, activeTab }) => {
+const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, highlightedCard, activeTab, apiEndpoint }) => {
   const [rates, setRates] = useState<RateData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +39,20 @@ const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, hig
       color: '#10b981',
       lightColor: 'rgba(16, 185, 129, 0.15)',
       gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%)'
+    },
+    CLP: {
+      name: 'Peso Chileno',
+      emoji: '🇨🇱',
+      color: '#f59e0b',
+      lightColor: 'rgba(245, 158, 11, 0.15)',
+      gradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.05) 100%)'
+    },
+    UYU: {
+      name: 'Peso Uruguayo',
+      emoji: '🇺🇾',
+      color: '#a855f7',
+      lightColor: 'rgba(168, 85, 247, 0.15)',
+      gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.05) 100%)'
     }
   };
 
@@ -46,7 +61,7 @@ const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, hig
   useEffect(() => {
     const fetchRates = async () => {
       try {
-        const response = await fetch('/api/exchange-rates/variants');
+        const response = await fetch(apiEndpoint || '/api/exchange-rates/variants');
         if (response.ok) {
           const data = await response.json();
           const currencyRates = data.filter((r: RateData) => r.codigo === currency);
@@ -78,109 +93,121 @@ const ExchangeRateSection: React.FC<ExchangeRateSectionProps> = ({ currency, hig
     );
   }
 
+  const typeConfig: Record<string, { label: string; color: string; bg: string }> = {
+    oficial:  { label: 'Oficial',  color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+    blue:     { label: 'Blue',     color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
+    tarjeta:  { label: 'Tarjeta',  color: '#f43f5e', bg: 'rgba(244,63,94,0.12)'  },
+  };
+
+  const isRegionalCurrency = currency === 'CLP' || currency === 'UYU';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="panel" style={{ padding: '0', overflow: 'hidden' }}>
+
+      {/* Header */}
       <div style={{
-        padding: '20px',
+        padding: '20px 24px',
         background: info.gradient,
-        border: `1px solid ${info.color}30`,
-        borderRadius: '16px',
-        boxShadow: `0 4px 16px ${info.color}20`,
+        borderBottom: `1px solid ${info.color}25`,
         display: 'flex',
         alignItems: 'center',
-        gap: '16px'
+        gap: '14px',
       }}>
         <div style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
-          background: `linear-gradient(135deg, ${info.color}40 0%, ${info.color}20 100%)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '2rem',
-          boxShadow: `0 4px 12px ${info.color}30`
+          width: '44px', height: '44px', borderRadius: '12px',
+          background: `linear-gradient(135deg, ${info.color}50, ${info.color}20)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.6rem', flexShrink: 0,
+          boxShadow: `0 4px 12px ${info.color}30`,
         }}>
           {info.emoji}
         </div>
         <div>
-          <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#f1f5f9' }}>
-            {info.name}
-          </p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-            {currency}
-          </p>
+          <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#f1f5f9' }}>{info.name}</p>
+          <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: `${info.color}cc`, fontWeight: 600, letterSpacing: '0.06em' }}>{currency}</p>
         </div>
+        {rates[0]?.fecha && (
+          <div style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#475569', textAlign: 'right' }}>
+            <span>Actualizado</span><br />
+            <span style={{ fontWeight: 600, color: '#64748b' }}>{(() => { try { const d = new Date(rates[0].fecha); return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}hs`; } catch { return ''; } })()}</span>
+          </div>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      {/* Nota aclaratoria para CLP/UYU */}
+      {isRegionalCurrency && (
+        <div style={{ margin: '12px 24px 0', padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+          <Info size={14} style={{ color: '#f59e0b', flexShrink: 0, marginTop: '1px' }} />
+          <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>
+            No existe mercado paralelo (Blue) para esta moneda. Los consumos con tarjeta se liquidan al <strong style={{ color: '#f59e0b' }}>tipo de cambio turista</strong> (oficial + 30% de recargos impositivos vigentes en Argentina).
+          </p>
+        </div>
+      )}
+
+      {/* Cards */}
+      <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: isRegionalCurrency ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '14px' }}>
         {rates.map((rate) => {
           const spread = (((rate.venta - rate.compra) / rate.compra) * 100).toFixed(1);
           const isHighlighted = activeTab === currency.toLowerCase() && highlightedCard?.currency === currency && highlightedCard?.tipo === rate.tipo;
-          
+          const tc = typeConfig[rate.tipo] ?? { label: rate.tipo, color: '#94a3b8', icon: '💱' };
+
           return (
             <div
               key={`${rate.codigo}-${rate.tipo}`}
               style={{
-                padding: '20px',
+                padding: '16px',
                 background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: isHighlighted ? `2px solid #3b82f6` : `1px solid ${tc.color}30`,
+                borderTop: `3px solid ${tc.color}`,
                 borderRadius: '12px',
                 transition: 'all 0.3s ease-out',
                 ...(isHighlighted && {
-                  transform: 'scale(1.05)',
-                  boxShadow: '0 0 40px rgba(59, 130, 246, 0.8), 0 0 80px rgba(59, 130, 246, 0.5)',
-                  border: '2px solid #3b82f6'
+                  transform: 'scale(1.03)',
+                  boxShadow: '0 0 30px rgba(59,130,246,0.5)',
                 })
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <span style={{ fontSize: '1rem', fontWeight: '700', color: '#f1f5f9' }}>
-                  {rate.tipo === 'oficial' ? 'Oficial' : rate.tipo === 'blue' ? 'Blue' : 'Tarjeta'}
-                </span>
+              {/* Tipo */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: tc.color, background: tc.bg, padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{tc.label}</span>
+                </div>
                 {rate.variacion !== undefined && (
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '0.8rem',
-                    fontWeight: '600',
-                    color: rate.variacion >= 0 ? '#10b981' : '#ef4444'
+                    display: 'flex', alignItems: 'center', gap: '3px',
+                    fontSize: '0.75rem', fontWeight: 700,
+                    color: rate.variacion >= 0 ? '#10b981' : '#ef4444',
+                    backgroundColor: rate.variacion >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                    padding: '2px 7px', borderRadius: '20px',
                   }}>
-                    {rate.variacion >= 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
-                    <span>{rate.variacion >= 0 ? `+${rate.variacion.toFixed(2)}%` : `${rate.variacion.toFixed(2)}%`}</span>
+                    {rate.variacion >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                    {Math.abs(rate.variacion).toFixed(2)}%
                   </div>
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              {/* Compra / Venta */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                 <div>
-                  <p style={{ margin: '0 0 4px 0', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '600' }}>
-                    COMPRA
-                  </p>
-                  <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: '#10b981' }}>
-                    ${rate.compra.toFixed(2)}
-                  </p>
+                  <p style={{ margin: '0 0 3px', fontSize: '0.68rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>COMPRA</p>
+                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#10b981' }}>${rate.compra.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 4px 0', fontSize: '0.75rem', color: '#94a3b8', fontWeight: '600' }}>
-                    VENTA
-                  </p>
-                  <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: '700', color: '#ef4444' }}>
-                    ${rate.venta.toFixed(2)}
-                  </p>
+                  <p style={{ margin: '0 0 3px', fontSize: '0.68rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>VENTA</p>
+                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ef4444' }}>${rate.venta.toFixed(2)}</p>
                 </div>
               </div>
 
+              {/* Spread */}
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                color: '#94a3b8'
+                padding: '5px 10px',
+                backgroundColor: 'rgba(59,130,246,0.07)',
+                border: '1px solid rgba(59,130,246,0.15)',
+                borderRadius: '6px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
-                <span>Brecha: <span style={{ color: '#3b82f6' }}>{spread}%</span></span>
+                <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>Spread</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3b82f6' }}>{spread}%</span>
               </div>
             </div>
           );

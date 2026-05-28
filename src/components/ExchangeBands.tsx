@@ -114,7 +114,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>Banda Cambiaria BCRA</h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5 }}>
-              Las bandas aplican oficialmente al <strong style={{ color: '#a5b4fc' }}>Dólar Mayorista</strong> (COM 3500). Los demás tipos se muestran como referencia.
+              Las bandas aplican oficialmente al <strong style={{ color: '#a5b4fc' }}>Dólar Mayorista</strong> (COM 3500). 
             </p>
           </div>
           <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>Actualizado: {bandas.date}</span>
@@ -183,14 +183,39 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
             border: `1px solid ${stateBorder}`,
             borderRadius: '8px',
             textAlign: 'center',
+            width: '88%',
           }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: stateColor }}>
               {percentage >= 0 && percentage <= 100
-                ? `El dólar está al ${percentage.toFixed(2)}% de la banda (${stateLabel})`
+                ? `Al ${percentage.toFixed(2)}% de la banda · ${stateLabel}`
                 : percentage < 0
-                  ? `El dólar está por debajo de la banda inferior`
-                  : `El dólar ha superado la banda superior`}
+                  ? `Por debajo de la banda inferior`
+                  : `Superó la banda superior`}
             </span>
+          </div>
+
+          {/* Mini glosario */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', width: '100%' }}>
+            {[
+              { color: '#6366f1', title: '¿Qué es la banda cambiaria?', desc: 'Rango de precios dentro del cual el BCRA permite que fluctúe el dólar mayorista sin intervenir.' },
+              { color: '#10b981', title: 'Banda inferior', desc: 'Piso del rango. Si el dólar cae a este nivel, el BCRA compra divisas para sostener el precio.' },
+              { color: '#f43f5e', title: 'Banda superior', desc: 'Techo del rango. Si el dólar sube a este nivel, el BCRA vende reservas para contener la suba.' },
+              { color: '#f59e0b', title: 'COM 3500', desc: 'Comunicación del BCRA que establece las reglas del sistema de bandas cambiarias vigente.' },
+            ].map((item, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: '8px',
+                padding: '8px 10px',
+                backgroundColor: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: '8px',
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: item.color, flexShrink: 0, marginTop: 5 }} />
+                <div>
+                  <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{item.title}: </span>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.desc}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

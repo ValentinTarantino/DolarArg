@@ -50,7 +50,7 @@ export default function NewsFeed() {
         <h3>Noticias Económicas</h3>
       </div>
       <div className="news-list">
-        {news.map((item, i) => (
+        {news.slice(0, 4).map((item, i) => (
           <a key={i} href={item.link} target="_blank" rel="noopener noreferrer" className="news-item">
             <h4 className="news-title">{item.title}</h4>
             <span className="news-date">

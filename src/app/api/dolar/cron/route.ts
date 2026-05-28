@@ -55,7 +55,14 @@ async function checkAndTriggerAlerts(rates: any[]) {
  * Endpoint Vercel Cron que se ejecuta cada 10 minutos
  * Obtiene cotizaciones actuales y verifica alertas
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     console.log('[CRON] Iniciando verificación de cotizaciones y alertas...');
 

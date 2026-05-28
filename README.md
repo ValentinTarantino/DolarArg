@@ -139,35 +139,35 @@ Registro, login y logout con **JWT** (jsonwebtoken) y contraseñas hasheadas con
 ┌─────────────────────────────────────────────────────┐
 │                  CADA 10 MINUTOS                    │
 │                                                     │
-│  Vercel Cron ──► /api/dolar/cron                   │
-│  (prod)               │                            │
+│  Vercel Cron ──► /api/dolar/cron                    │
+│  (prod)               │                             │
 │                        ▼                            │
-│  node-cron ──► runCronCycle()                      │
-│  (dev)                │                            │
+│  node-cron ──► runCronCycle()                       │
+│  (dev)                │                             │
 │                        ▼                            │
-│          fetch dolarapi.com/v1/dolares             │
+│          fetch dolarapi.com/v1/dolares              │
 │                        │                            │
 │                        ▼                            │
-│          prisma.dolarRate.createMany()             │
-│          (guarda snapshot en SQLite/PostgreSQL)    │
+│          prisma.dolarRate.createMany()              │
+│          (guarda snapshot en SQLite/PostgreSQL)     │
 │                        │                            │
 │                        ▼                            │
-│          checkAndTriggerAlerts()                   │
-│          (envía emails si hay alertas activas)     │
+│          checkAndTriggerAlerts()                    │
+│          (envía emails si hay alertas activas)      │
 └─────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────┐
 │                  EN EL FRONTEND                     │
 │                                                     │
-│  EventSource('/api/dolar/live')                    │
+│  EventSource('/api/dolar/live')                     │
 │       │                                             │
-│       └──► polling BD cada 5s                      │
+│       └──► polling BD cada 5s                       │
 │              │                                      │
 │              └──► si hay nuevos registros           │
 │                      │                              │
 │                      ▼                              │
-│              event: rates_update ──► React state   │
-│                                       actualiza UI │
+│              event: rates_update ──► React state    │
+│                                       actualiza UI  │
 └─────────────────────────────────────────────────────┘
 ```
 

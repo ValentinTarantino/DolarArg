@@ -7,7 +7,6 @@ import {
   CreditCard,
   Coins,
   Building2,
-  ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Share2,
@@ -127,10 +126,7 @@ const DolarCard: React.FC<DolarCardProps> = ({
             <span>{variacionFormateada}</span>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <ArrowUpDown size={14} />
-          <span>Ver gráfico</span>
-        </div>
+
         <button
           onClick={handleShare}
           title={copied ? '¡Copiado!' : 'Compartir'}

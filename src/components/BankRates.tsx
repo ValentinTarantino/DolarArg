@@ -77,7 +77,7 @@ const BankRates: React.FC = () => {
       </div>
 
       {view === 'cards' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
           {rates.map((rate, index) => (
             <div key={index} style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', transition: 'all 0.25s ease' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)'; }}
@@ -85,10 +85,17 @@ const BankRates: React.FC = () => {
             >
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px', height: '60px', alignItems: 'center' }}>
                 {rate.logoUrl
-                  ? <img src={rate.logoUrl} alt={rate.banco} style={{ maxWidth: '110px', maxHeight: '56px', objectFit: 'contain' }} />
+                  ? <img
+                      src={rate.logoUrl}
+                      alt={rate.banco}
+                      style={{
+                        maxHeight: (rate.banco === 'Banco Nación' || rate.banco === 'Banco Provincia' || rate.banco === 'Banco Hipotecario') ? '72px' : '56px',
+                        maxWidth: (rate.banco === 'Banco Nación' || rate.banco === 'Banco Provincia' || rate.banco === 'Banco Hipotecario') ? '140px' : '110px',
+                        objectFit: 'contain'
+                      }}
+                    />
                   : <span style={{ fontSize: '2.5rem' }}>{rate.logo}</span>}
               </div>
-              <p style={{ margin: '0 0 10px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8' }}>{rate.banco}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>COMPRA</p>

@@ -9,17 +9,20 @@ interface CurrencyNavbarProps {
 
 const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { id: 'dolar', label: 'Dólar', icon: '🇺🇸' },
-    { id: 'euro', label: 'Euro', icon: '🇪🇺' },
-    { id: 'real', label: 'Real', icon: '🇧🇷' }
+    { id: 'dolar',  label: 'Dólar',        icon: 'https://flagcdn.com/w40/us.png' },
+    { id: 'real',   label: 'Real',          icon: 'https://flagcdn.com/w40/br.png' },
+    { id: 'clp',    label: 'Peso Chileno',  icon: 'https://flagcdn.com/w40/cl.png' },
+    { id: 'uyu',    label: 'Peso Uruguayo', icon: 'https://flagcdn.com/w40/uy.png' },
+    { id: 'euro',   label: 'Euro',          icon: 'https://flagcdn.com/w40/eu.png' },
+    { id: 'cripto', label: 'Cripto',        icon: 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400' },
   ];
 
   return (
     <div style={{
       display: 'flex',
       justifyContent: 'center',
-      marginBottom: '40px',
-      marginTop: '20px',
+      marginBottom: '24px',
+      marginTop: '0px',
       position: 'relative',
       zIndex: 100,
       backdropFilter: 'blur(10px)',
@@ -70,7 +73,7 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
               }
             }}
           >
-            <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span>
+            <img src={tab.icon} alt={tab.label} width={tab.id === 'cripto' ? 20 : 30} height={20} style={{ borderRadius: tab.id === 'cripto' ? '50%' : '3px', objectFit: 'cover' }} />
             <span>{tab.label}</span>
           </button>
         ))}
