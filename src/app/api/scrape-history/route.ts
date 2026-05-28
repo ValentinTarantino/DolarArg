@@ -104,7 +104,6 @@ async function scrapeHistoricalRates() {
     // Guardar en BD (ignorar duplicados por fecha/tipo)
     const result = await prisma.exchangeRateHistory.createMany({
       data: historicalData,
-      skipDuplicates: true
     });
 
     console.log(`✅ Se insertaron ${result.count} registros históricos EUR/BRL`);

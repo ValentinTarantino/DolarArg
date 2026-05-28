@@ -124,6 +124,4 @@ export async function GET() {
   }
 }
 
-export const config = {
-  runtime: 'nodejs',
-};
+export const dynamic = 'force-dynamic';
