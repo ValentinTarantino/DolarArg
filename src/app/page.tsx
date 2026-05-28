@@ -27,6 +27,14 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('dolar');
   const [rankingData, setRankingData] = useState<any[]>([]);
   const [highlightedCard, setHighlightedCard] = useState<{ currency: string; tipo: string } | null>(null);
+  const [splashVisible, setSplashVisible] = useState<boolean>(true);
+  const [splashFading, setSplashFading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => setSplashFading(true), 4600);
+    const hideTimer = setTimeout(() => setSplashVisible(false), 5200);
+    return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+  }, []);
 
   // Carga inicial
   useEffect(() => {
@@ -163,6 +171,22 @@ export default function Home() {
 
   return (
     <>
+      {splashVisible && (
+        <div className={`splash-screen${splashFading ? ' splash-screen--fading' : ''}`}>
+          <div className="splash-screen__content">
+            <div className="splash-screen__logo">
+              <span className="splash-screen__dollar">$</span>
+            </div>
+            <div className="splash-screen__name">
+              <span style={{ color: '#ffffff' }}>DÓLAR</span><span style={{ color: '#6366f1' }}>ARG</span>
+            </div>
+            <div className="splash-screen__bar">
+              <div className="splash-screen__bar-fill" />
+            </div>
+            <p className="splash-screen__sub">Cargando cotizaciones...</p>
+          </div>
+        </div>
+      )}
       <Navbar rates={rates} isLiveConnected={isLiveConnected} lastUpdated={lastUpdated} activeTab={activeTab} onTabChange={setActiveTab} onHighlightCard={setHighlightedCard} />
       <div className="dashboard-container">
         <header className="header">
@@ -173,7 +197,7 @@ export default function Home() {
             <h1>Cotizaciones</h1>
           </div>
           <p className="subtitle">Argentina en tiempo real</p>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', flexWrap:'wrap', marginTop:'8px' }}>
+          <div className="header-stats">
             {[
               { label: 'Tipos de cambio', value: `${rates.length}`, color: '#94a3b8' },
               ...(() => {
@@ -193,10 +217,10 @@ export default function Home() {
                 return items;
               })()
             ].map((item, i, arr) => (
-              <span key={item.label} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'0.78rem' }}>
-                <span style={{ color:'#475569' }}>{item.label}:</span>
-                <span style={{ color: item.color, fontWeight:600 }}>{item.value}</span>
-                {i < arr.length - 1 && <span style={{ color:'#1e293b', margin:'0 2px' }}>·</span>}
+              <span key={item.label} className="header-stats__item">
+                <span className="header-stats__label">{item.label}:</span>
+                <span className="header-stats__value" style={{ color: item.color }}>{item.value}</span>
+                {i < arr.length - 1 && <span className="header-stats__sep">|</span>}
               </span>
             ))}
           </div>

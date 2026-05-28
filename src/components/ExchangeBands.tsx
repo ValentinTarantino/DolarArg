@@ -131,7 +131,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
           <svg width="100%" height="auto" viewBox="0 0 300 185" style={{ overflow: 'visible', maxWidth: '300px', display: 'block' }}>
             <defs>
               <filter id="gauge-shadow">
-                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.5" />
+                <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.5" />
               </filter>
             </defs>
 

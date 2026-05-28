@@ -26,15 +26,69 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://dolararg.vercel.app";
+const SITE_TITLE = "DolarARG | Dólar Blue, Tarjeta, Oficial, Bolsa y más · Argentina";
+const SITE_DESCRIPTION =
+  "Cotización del dólar en Argentina actualizada en tiempo real. Consultá el dólar blue, oficial, tarjeta, bolsa (MEP), CCL, cripto y mayorista. Gráficos históricos, calculadora, alertas de precios y cotizaciones de Euro, Real, Peso Chileno y Uruguayo.";
+
 export const metadata: Metadata = {
-  title: "DólarARG | Cotizaciones en Tiempo Real",
-  description: "Monitorea la cotización del dólar en Argentina (Oficial, Blue, MEP, CCL, Tarjeta, Cripto) en tiempo real con gráficos interactivos, alertas de precios y calculadora de impuestos.",
-  keywords: ["dolar hoy", "dolar argentina", "dolar blue", "dolar oficial", "dolar mep", "cotizacion dolar", "dolar cripto"],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s · DolarARG",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "dolar blue hoy", "dolar oficial hoy", "cotizacion dolar argentina",
+    "dolar tarjeta", "dolar bolsa", "dolar mep", "dolar ccl",
+    "dolar cripto", "dolar mayorista", "dolar hoy argentina",
+    "precio dolar", "tipo de cambio argentina", "euro argentina",
+    "real brasil argentina", "peso chileno", "peso uruguayo",
+    "cotizaciones en tiempo real", "dolar blue precio",
+    "calculadora dolar", "alerta dolar", "bcra banda cambiaria",
+  ],
+  authors: [{ name: "DolarARG" }],
+  creator: "DolarARG",
+  publisher: "DolarARG",
+  category: "finance",
   manifest: "/manifest.json",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: SITE_URL,
+    siteName: "DolarARG",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/icons/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "DolarARG - Cotizaciones del dólar en Argentina",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/icons/icon-512.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "DólarARG",
+    title: "DolarARG",
   },
   icons: {
     icon: [
@@ -45,6 +99,9 @@ export const metadata: Metadata = {
     apple: [
       { url: "/icons/icon-192.png", sizes: "192x192" },
     ],
+  },
+  alternates: {
+    canonical: SITE_URL,
   },
 };
 
