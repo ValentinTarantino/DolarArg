@@ -2,6 +2,7 @@
   "name": "DólarARG",
   "short_name": "DólarARG",
   "description": "Cotizaciones del dólar en Argentina en tiempo real. Blue, Oficial, MEP, CCL, Cripto y más.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

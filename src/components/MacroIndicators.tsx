@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Landmark, AlertTriangle, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 
 interface RiesgoPais {
@@ -86,7 +86,6 @@ const MacroIndicators: React.FC = () => {
     <div className="panel">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
-          <Landmark size={22} />
           <span>Indicadores Macroeconómicos</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

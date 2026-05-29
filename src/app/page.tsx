@@ -263,7 +263,7 @@ export default function Home() {
                 {/* Glosario en el espacio vacío de la grilla */}
                 <div className="dolar-card" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '0', maxHeight: '200px' }}>
                   <div className="card-header" style={{ marginBottom: '10px' }}>
-                    <span className="card-title" style={{ fontSize: '0.95rem' }}>📖 Glosario</span>
+                    <span className="card-title" style={{ fontSize: '0.95rem' }}>Glosario</span>
                   </div>
                   <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
                     {[

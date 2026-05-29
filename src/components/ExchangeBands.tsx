@@ -108,9 +108,6 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
 
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-          <div className="title-icon-wrapper" style={{ backgroundColor: 'rgba(99,102,241,0.1)', color: '#6366f1', flexShrink: 0 }}>
-            <Compass size={20} />
-          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>Banda Cambiaria BCRA</h3>
