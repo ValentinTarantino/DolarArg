@@ -279,7 +279,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
           </div>
 
           <a
-            href="https://github.com/ValentinTarantino/DolarArg/releases/download/v1.0.0/DolarARG.apk"
+            href="https://github.com/ValentinTarantino/DolarArg/releases/tag/1.0.0"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -370,6 +370,32 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                 </span>
               </div>
             )}
+          </div>
+
+          <div className="mobile-menu-section">
+            <p className="mobile-menu-label">Descargar App</p>
+            <a
+              href="https://github.com/ValentinTarantino/DolarArg/releases/tag/1.0.0"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '12px',
+                background: 'rgba(16,185,129,0.1)',
+                border: '1px solid rgba(16,185,129,0.3)',
+                borderRadius: '10px',
+                color: '#10b981',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                fontWeight: 600
+              }}
+              onClick={() => setMenuOpen(false)}
+            >
+              <Download size={20} />
+              <span>Descargar APK para Android</span>
+            </a>
           </div>
 
           <div className="mobile-menu-section">
