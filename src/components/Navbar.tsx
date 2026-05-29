@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Activity, Search, X, Menu } from 'lucide-react';
+import { Activity, Search, X, Menu, Download } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
 
 interface ExchangeRate {
@@ -278,10 +278,34 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
             )}
           </div>
 
-          <div style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'8px', background: isLiveConnected ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${isLiveConnected ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, fontSize:'0.72rem', color: isLiveConnected ? '#10b981' : '#ef4444' }}>
-            <span style={{ width:'7px', height:'7px', borderRadius:'50%', background: isLiveConnected ? '#10b981' : '#ef4444', display:'inline-block', animation: isLiveConnected ? 'statusPulse 2s infinite' : 'none' }} />
-            <span style={{fontWeight:600}}>{isLiveConnected ? 'EN VIVO' : 'OFFLINE'}</span>
-          </div>
+          <a
+            href="https://github.com/ValentinTarantino/DolarArg/releases/download/v1.0/DolarARG.apk"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 10px',
+              borderRadius: '8px',
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.2)',
+              fontSize: '0.72rem',
+              color: '#10b981',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(16,185,129,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(16,185,129,0.08)';
+            }}
+          >
+            <Download size={14} />
+            <span style={{fontWeight:600}}>Descargar App</span>
+          </a>
           {lastUpdated && (
             <div style={{
               display: 'flex',
