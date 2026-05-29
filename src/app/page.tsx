@@ -59,59 +59,87 @@ export default function Home() {
     fetchInitialRates();
   }, []);
   useEffect(() => {
-    const eventSource = new EventSource('/api/dolar/live');
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_DELAY = 30000; // 30 segundos máximo
+    const INITIAL_RECONNECT_DELAY = 2000; // 2 segundos inicial
 
-    eventSource.addEventListener('connected', () => {
-      console.log('Conexión en tiempo real SSE establecida.');
-      setIsLiveConnected(true);
-    });
+    const connect = () => {
+      if (eventSource) {
+        eventSource.close();
+      }
 
-    eventSource.addEventListener('rates_update', (event: MessageEvent) => {
-      try {
-        const newRates = JSON.parse(event.data) as DolarRate[];
-        console.log('Actualización en tiempo real recibida:', newRates);
+      console.log(`[SSE] Intentando conectar... (intento ${reconnectAttempts + 1})`);
+      eventSource = new EventSource('/api/dolar/live');
 
-        setRates(prevRates => {
-          const updatedRates = [...prevRates];
-          newRates.forEach(newRate => {
-            const index = updatedRates.findIndex(r => r.casa === newRate.casa);
-            if (index !== -1) {
-              updatedRates[index] = newRate;
-            } else {
-              updatedRates.push(newRate);
-            }
+      eventSource.addEventListener('open', () => {
+        console.log('[SSE] Conexión establecida.');
+        reconnectAttempts = 0; // Resetear contador al conectar exitosamente
+      });
+
+      eventSource.addEventListener('connected', () => {
+        console.log('[SSE] Conexión en tiempo real confirmada.');
+        setIsLiveConnected(true);
+      });
+
+      eventSource.addEventListener('rates_update', (event: MessageEvent) => {
+        try {
+          const newRates = JSON.parse(event.data) as DolarRate[];
+          console.log('[SSE] Actualización recibida:', newRates.length, 'cotizaciones');
+
+          setRates(prevRates => {
+            const updatedRates = [...prevRates];
+            newRates.forEach(newRate => {
+              const index = updatedRates.findIndex(r => r.casa === newRate.casa);
+              if (index !== -1) {
+                updatedRates[index] = newRate;
+              } else {
+                updatedRates.push(newRate);
+              }
+            });
+
+            const orderMap: Record<string, number> = {
+              oficial: 0, blue: 1, bolsa: 2, contadoconliqui: 3,
+              tarjeta: 4, cripto: 5, mayorista: 6
+            };
+            updatedRates.sort((a, b) => (orderMap[a.casa] ?? 99) - (orderMap[b.casa] ?? 99));
+            return updatedRates;
           });
 
-          // Re-ordenar
-          const orderMap: Record<string, number> = {
-            oficial: 0,
-            blue: 1,
-            bolsa: 2,
-            contadoconliqui: 3,
-            tarjeta: 4,
-            cripto: 5,
-            mayorista: 6
-          };
-          updatedRates.sort((a, b) => (orderMap[a.casa] ?? 99) - (orderMap[b.casa] ?? 99));
-          return updatedRates;
-        });
-
-        if (newRates.length > 0) {
-          setLastUpdated(new Date(newRates[0].fecha).toLocaleString('es-AR', { hour12: false }));
+          if (newRates.length > 0) {
+            setLastUpdated(new Date(newRates[0].fecha).toLocaleString('es-AR', { hour12: false }));
+          }
+        } catch (error) {
+          console.error('[SSE] Error parseando datos:', error);
         }
-      } catch (error) {
-        console.error('Error parseando datos SSE:', error);
-      }
-    });
+      });
 
-    eventSource.addEventListener('error', (event) => {
-      console.error('Error de conexión SSE:', event);
-      setIsLiveConnected(false);
-    });
+      eventSource.addEventListener('error', () => {
+        console.error('[SSE] Error de conexión. Cerrando y programando reconexión...');
+        setIsLiveConnected(false);
+
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+
+        // Calcular delay con backoff exponencial
+        const delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts), MAX_RECONNECT_DELAY);
+        reconnectAttempts++;
+
+        console.log(`[SSE] Reconectando en ${delay}ms...`);
+        reconnectTimer = setTimeout(connect, delay);
+      });
+    };
+
+    // Iniciar conexión
+    connect();
 
     return () => {
-      eventSource.close();
-      console.log('Conexión SSE cerrada.');
+      console.log('[SSE] Limpiando conexión...');
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (eventSource) eventSource.close();
     };
   }, []);
 
