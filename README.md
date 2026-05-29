@@ -117,7 +117,7 @@ GET /api/dolar/history?type=blue&days=30
 ```
 
 ### `/api/dolar/cron` — Cron endpoint (producción)
-Endpoint HTTP que invoca Vercel Cron cada 10 minutos. Llama a dolarapi.com, guarda las cotizaciones en la base de datos y verifica las alertas activas de los usuarios.
+Endpoint HTTP que invoca Vercel Cron cada 5 minutos. Llama a dolarapi.com, guarda las cotizaciones en la base de datos y verifica las alertas activas de los usuarios.
 
 ### `/api/exchange-rates` — Euro y Real
 Obtiene cotizaciones de EUR y BRL cruzando los tipos de dólar (oficial, blue, tarjeta) con la tasa de cambio USD→EUR/BRL desde [exchangerate-api.com](https://exchangerate-api.com).
@@ -136,7 +136,7 @@ Registro, login y logout con **JWT** (jsonwebtoken) y contraseñas hasheadas con
 
 ---
 
-## 🔄 Sistema de Actualización de Datos
+## Sistema de Actualización de Datos
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -174,64 +174,6 @@ Registro, login y logout con **JWT** (jsonwebtoken) y contraseñas hasheadas con
 └─────────────────────────────────────────────────────┘
 ```
 
----
-
-## 📁 Estructura del Proyecto
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── alerts/          # CRUD alertas de precio
-│   │   ├── auth/            # login, registro, logout, perfil
-│   │   ├── bandas/          # cálculo bandas BCRA
-│   │   ├── bank-rates/      # scraping cotizaciones bancarias
-│   │   ├── dolar/
-│   │   │   ├── route.ts     # cotizaciones actuales
-│   │   │   ├── live/        # SSE tiempo real
-│   │   │   ├── history/     # historial para gráficos
-│   │   │   ├── cron/        # endpoint Vercel Cron
-│   │   │   └── ranking/     # variación % por tipo
-│   │   ├── exchange-rates/  # EUR y BRL con variantes
-│   │   └── news/            # feed RSS de noticias
-│   └── page.tsx             # página principal
-├── components/
-│   ├── Navbar.tsx           # navbar + SSE + búsqueda + hamburguesa
-│   ├── DolarCard.tsx        # tarjeta por tipo de dólar
-│   ├── DolarChart.tsx       # gráfico histórico (Recharts)
-│   ├── ExchangeBands.tsx    # gauge banda cambiaria BCRA
-│   ├── BankRates.tsx        # cotizaciones + comparador de bancos (responsive)
-│   ├── Calculator.tsx       # calculadora ARS ↔ USD
-│   ├── AlertSettings.tsx    # configurar alertas de precio
-│   ├── UniversalConverter.tsx # conversor de monedas
-│   ├── ExchangeRateSection.tsx # sección EUR / BRL / CLP / UYU (responsive)
-│   ├── CryptoTable.tsx      # tabla de criptomonedas con vista mobile compacta
-│   ├── MacroIndicators.tsx  # indicadores macroeconómicos
-│   ├── NewsFeed.tsx         # noticias del mercado
-│   └── Footer.tsx           # footer con columnas: info, secciones, fuentes, legal
-├── lib/
-│   ├── db.ts                # instancia Prisma (singleton)
-│   ├── cron-local.ts        # cron para desarrollo
-│   ├── exchange-rates.ts    # helpers para EUR/BRL
-│   └── mail.ts              # envío de emails (Nodemailer)
-├── styles/
-│   └── main.scss            # estilos globales
-└── types/
-    └── dolar.ts             # tipos TypeScript compartidos
-
-prisma/
-├── schema.prisma            # modelos de la base de datos
-├── seed.js                  # datos iniciales
-└── dev.db                   # base de datos SQLite (desarrollo)
-
-public/
-├── manifest.json            # Web App Manifest (PWA)
-├── sw.js                    # Service Worker (caché offline)
-└── icons/
-    ├── icon.svg             # ícono SVG escalable
-    ├── icon-192.png         # ícono 192×192 (Android)
-    └── icon-512.png         # ícono 512×512 (Play Store / splash)
-```
 
 ---
 
@@ -273,7 +215,7 @@ También disponible como APK firmado para instalación directa en Android:
 
 ---
 
-## 🔍 SEO y Metadatos
+## SEO y Metadatos
 
 SEO completo implementado con Next.js Metadata API:
 
@@ -313,5 +255,263 @@ EMAIL_PASS="tu_contraseña_app"
 | [INDEC](https://www.indec.gob.ar) | Indicadores macroeconómicos |
 | [ArgentinaDatos](https://argentinadatos.com) | Datos económicos abiertos |
 | Web scraping (Cheerio) | Cotizaciones de bancos y casas de cambio |
+
+---
+
+# DólarARG (EN)
+
+Fullstack platform for monitoring real-time exchange rates for US Dollar, Euro, Brazilian Real, Chilean Peso, Uruguayan Peso, and cryptocurrencies in Argentina, featuring historical data, charts, calculator, price alerts, BCRA exchange rate bands, and PWA support (installable as an app).
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16.2.6 (App Router) |
+| Language | TypeScript 5 |
+| Styling | SASS (SCSS) |
+| ORM | Prisma 5 |
+| Database | SQLite (development) / PostgreSQL compatible (production) |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Email | Nodemailer |
+| Web Scraping | Cheerio + Axios |
+| Cron (dev) | node-cron |
+| Cron (prod) | Vercel Cron Jobs |
+| Deploy | Vercel |
+| PWA | Web App Manifest + Service Worker |
+| SEO | OpenGraph, Twitter Cards, Sitemap, Robots.txt |
+| APK | Signed with Android Studio (apksigner) |
+
+---
+
+## Database
+
+**SQLite** is used in development (file `prisma/dev.db`) and can be configured with **PostgreSQL** or any Prisma-compatible database in production by simply changing the `provider` in `schema.prisma` and the `DATABASE_URL` environment variable.
+
+### Models (schema.prisma)
+
+#### `DolarRate`
+Stores each dollar exchange rate snapshot saved by the cron job.
+
+```prisma
+model DolarRate {
+  id        Int      @id @default(autoincrement())
+  casa      String   // "oficial", "blue", "bolsa", "tarjeta", etc.
+  nombre    String
+  compra    Float
+  venta     Float
+  fecha     DateTime
+  createdAt DateTime @default(now())
+
+  @@index([casa, fecha])
+}
+```
+
+#### `ExchangeRateHistory`
+Historical data for Euro (EUR) and Real (BRL) by exchange type.
+
+```prisma
+model ExchangeRateHistory {
+  id        Int      @id @default(autoincrement())
+  codigo    String   // "EUR" or "BRL"
+  tipo      String   // "oficial", "blue", "tarjeta"
+  compra    Float
+  venta     Float
+  fecha     DateTime
+  createdAt DateTime @default(now())
+
+  @@index([codigo, tipo, fecha])
+}
+```
+
+#### `User` and `Alert`
+User authentication system with JWT and personalized price alerts.
+
+```prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   // bcrypt hash
+  createdAt DateTime @default(now())
+  alerts    Alert[]
+}
+
+model Alert {
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  casa        String   // dollar type to monitor
+  condition   String   // "ABOVE" or "BELOW"
+  value       Float    // price threshold
+  isTriggered Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+```
+
+---
+
+## Backend — API Routes
+
+All routes live in `src/app/api/` and run as serverless functions on Vercel.
+
+### `/api/dolar` — Current Exchange Rates
+Queries the public API [dolarapi.com](https://dolarapi.com) and returns dollar exchange rates (official, blue, MEP, CCL, credit card, crypto, wholesale). Also persists data to the database.
+
+### `/api/dolar/live` — Real-time (SSE)
+Implements **Server-Sent Events** (SSE) with **automatic reconnection**. Maintains a persistent HTTP connection with the client and polls the database every 5 seconds. If new records are detected in `DolarRate`, they are sent to the frontend. Includes reconnection logic with exponential backoff (2s, 4s, 8s... up to 30s) to automatically recover from disconnections.
+
+```
+GET /api/dolar/live
+Content-Type: text/event-stream
+
+event: connected
+event: rates_update  ← triggered when cron saves new exchange rates
+```
+
+### `/api/dolar/history` — Historical Data for Charts
+Returns `DolarRate` records for a specific dollar type and date range. Groups by day (last record of each day) to avoid duplicates in the chart.
+
+```
+GET /api/dolar/history?type=blue&days=30
+```
+
+### `/api/dolar/cron` — Cron Endpoint (Production)
+HTTP endpoint invoked by Vercel Cron every 5 minutes. Calls dolarapi.com, saves exchange rates to the database, and checks active user alerts.
+
+### `/api/exchange-rates` — Euro and Real
+Gets EUR and BRL exchange rates by crossing dollar types (official, blue, credit card) with the USD→EUR/BRL exchange rate from [exchangerate-api.com](https://exchangerate-api.com).
+
+### `/api/bandas` — BCRA Exchange Rate Bands
+Mathematically calculates BCRA bands from their start date (April 11, 2025), applying monthly crawling peg: 1% fixed until December 2025 and ~2.8% from January 2026 (estimated using CPI with T-2 lag). No database required, calculation is purely arithmetic.
+
+### `/api/bank-rates` — Bank Exchange Rates
+Performs **web scraping** with Cheerio on public sources to get buy/sell prices from major Argentine banks and exchange houses.
+
+### `/api/alerts` — Alert System
+CRUD for price alerts. When the cron detects that a dollar price crosses above or below the user's defined threshold, it marks the alert as triggered and sends an email via Nodemailer.
+
+### `/api/auth` — Authentication
+Registration, login, and logout with **JWT** (jsonwebtoken) and passwords hashed with **bcrypt**.
+
+---
+
+## Data Update System
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  EVERY 10 MINUTES                   │
+│                                                     │
+│  Vercel Cron ──► /api/dolar/cron                    │
+│  (prod)               │                             │
+│                        ▼                            │
+│  node-cron ──► runCronCycle()                       │
+│  (dev)                │                             │
+│                        ▼                            │
+│          fetch dolarapi.com/v1/dolares              │
+│                        │                            │
+│                        ▼                            │
+│          prisma.dolarRate.createMany()              │
+│          (saves snapshot to SQLite/PostgreSQL)      │
+│                        │                            │
+│                        ▼                            │
+│          checkAndTriggerAlerts()                    │
+│          (sends emails if active alerts)            │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│                  IN THE FRONTEND                    │
+│                                                     │
+│  EventSource('/api/dolar/live')                     │
+│       │                                             │
+│       └──► polls DB every 5s                        │
+│              │                                      │
+│              └──► if new records found              │
+│                      │                              │
+│                      ▼                              │
+│              event: rates_update ──► React state    │
+│                                       updates UI    │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## PWA — Progressive Web App
+
+The site is installable as an app on Android and iOS without app stores.
+
+### How to Install (End User)
+
+**Android (Chrome):**
+1. Visit the site from Chrome
+2. Tap the "Add to Home Screen" banner or go to menu ⋮ → Install app
+3. The icon appears on the home screen and the app opens without the browser toolbar
+
+**iPhone (Safari):**
+1. Visit the site from Safari
+2. Tap the share button → "Add to Home Screen"
+
+### APK Download (Android)
+
+Also available as a signed APK for direct installation on Android:
+
+1. Click **"Download App"** in the navbar (desktop) or hamburger menu (mobile)
+2. Download `DolarARG-signed.apk` from GitHub Releases
+3. Allow installation from unknown sources on Android
+4. Install and open — works as a native app without browser toolbar
+
+### Key Files
+
+| File | Function |
+|---|---|
+| `public/manifest.json` | Name, icon, colors, standalone mode |
+| `public/sw.js` | Service Worker: asset and API caching for offline mode |
+| `public/icons/` | Icons in SVG, 192px and 512px |
+| `public/screenshots/` | PWA screenshots (mobile/desktop) |
+| `public/sitemap.xml` | Dynamic SEO sitemap |
+| `public/robots.txt` | SEO robots directives |
+
+---
+
+## SEO and Metadata
+
+Complete SEO implemented with Next.js Metadata API:
+
+- **OpenGraph** and **Twitter Cards** for social sharing
+- **Canonical URLs** to avoid duplicate content
+- **Sitemap.xml** automatically generated with all routes
+- **Robots.txt** with crawling directives
+- **Structured metadata** (title, description, keywords) per page
+- **Favicon** optimized for browsers (separate from PWA icons)
+- **Manifest.json** with `id`, `start_url`, `scope` for PWA
+
+---
+
+## Environment Variables
+
+```env
+DATABASE_URL="file:./dev.db"         # SQLite in development
+JWT_SECRET="your_jwt_secret"
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_USER="your@email.com"
+EMAIL_PASS="your_app_password"
+```
+
+---
+
+## Data Sources
+
+| Source | Data |
+|---|---|
+| [dolarapi.com](https://dolarapi.com) | Official, blue, MEP, CCL, credit card, crypto |
+| [Bluelytics](https://bluelytics.com.ar) | Blue/parallel dollar |
+| [BCRA](https://www.bcra.gob.ar) | Official exchange rate and exchange rate bands |
+| [ExchangeRate-API](https://www.exchangerate-api.com) | EUR, BRL, CLP, UYU |
+| [CoinGecko](https://www.coingecko.com) | Top 50 cryptocurrencies by market cap |
+| [INDEC](https://www.indec.gob.ar) | Macroeconomic indicators |
+| [ArgentinaDatos](https://argentinadatos.com) | Open economic data |
+| Web scraping (Cheerio) | Bank and exchange house rates |
 
 ---

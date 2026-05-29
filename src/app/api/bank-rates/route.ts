@@ -65,14 +65,12 @@ export async function GET() {
         }
       });
 
-      // Deduplicar por nombre
       const unique = Array.from(new Map(rates.map(r => [r.banco, r])).values());
       if (unique.length > 0) {
         return NextResponse.json(unique);
       }
     }
 
-    // Fallback: datos desde dolarapi oficial
     const oficialResponse = await fetch('https://dolarapi.com/v1/dolares/oficial', { cache: 'no-store' });
     let baseRate = 1430;
 

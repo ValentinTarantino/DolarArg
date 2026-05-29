@@ -15,7 +15,6 @@ export async function GET() {
 
     const data = await response.json();
     
-    // Verificar qué monedas hay disponibles
     return NextResponse.json({
       availableCurrencies: data.map((r: any) => ({
         casa: r.casa,

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { sendAlertEmail } from '@/lib/mail';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
-const REVALIDATION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutos
+const REVALIDATION_TIMEOUT_MS = 10 * 60 * 1000; 
 
 async function checkAndTriggerAlerts(rates: any[]) {
   try {
@@ -15,7 +15,6 @@ async function checkAndTriggerAlerts(rates: any[]) {
     for (const alert of activeAlerts) {
       const rate = rates.find(r => r.casa === alert.casa);
       if (rate) {
-        // Usamos venta para verificar la condición
         const price = rate.venta;
         const conditionMet =
           (alert.condition === 'ABOVE' && price >= alert.value) ||
@@ -28,7 +27,6 @@ async function checkAndTriggerAlerts(rates: any[]) {
           });
           console.log(`[ALERTA DETECTADA] Alerta #${alert.id} para ${alert.user.email} se ha disparado. Dólar ${alert.casa} está a $${price} (${alert.condition} $${alert.value})`);
           
-          // Enviar correo de alerta
           try {
             await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value);
           } catch (emailError) {
@@ -44,10 +42,10 @@ async function checkAndTriggerAlerts(rates: any[]) {
 
 export async function GET() {
   try {
-    // 1. Obtener la cotización más reciente en la DB
+
     const latestRatesInDb = await prisma.dolarRate.findMany({
       orderBy: { fecha: 'desc' },
-      take: 7, // Tenemos 7 tipos de dólar principales
+      take: 7, 
     });
 
     const now = new Date();
@@ -56,7 +54,6 @@ export async function GET() {
     if (latestRatesInDb.length < 7) {
       shouldFetch = true;
     } else {
-      // Verificar la fecha del registro más reciente
       const latestDate = new Date(latestRatesInDb[0].fecha);
       if (now.getTime() - latestDate.getTime() > REVALIDATION_TIMEOUT_MS) {
         shouldFetch = true;
@@ -76,7 +73,6 @@ export async function GET() {
 
         for (const rate of externalData) {
           if (desiredTypes.includes(rate.casa)) {
-            // Guardamos en la base de datos
             ratesToInsert.push({
               casa: rate.casa,
               nombre: rate.nombre,
@@ -94,7 +90,6 @@ export async function GET() {
           });
           console.log(`Se guardaron ${ratesToInsert.length} nuevas cotizaciones en la base de datos.`);
           
-          // Verificar alertas con la cotización recién obtenida
           await checkAndTriggerAlerts(ratesToInsert);
 
           return NextResponse.json(ratesToInsert);
@@ -104,8 +99,8 @@ export async function GET() {
       }
     }
 
-    // Retornamos lo que hay en la base de datos
-    // Necesitamos asegurarnos de devolver el último registro de cada tipo de dólar
+    
+    
     const desiredTypes = ["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"];
     const latestUniqueRates = [];
 
@@ -119,7 +114,7 @@ export async function GET() {
       }
     }
 
-    // Ordenar para mantener un orden consistente en la interfaz
+    
     const orderMap: Record<string, number> = {
       oficial: 0,
       blue: 1,
