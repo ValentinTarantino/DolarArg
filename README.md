@@ -140,7 +140,7 @@ Registro, login y logout con **JWT** (jsonwebtoken) y contraseñas hasheadas con
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  CADA 10 MINUTOS                    │
+│                  CADA 5 MINUTOS                     │
 │                                                     │
 │  Vercel Cron ──► /api/dolar/cron                    │
 │  (prod)               │                             │
@@ -401,7 +401,7 @@ Registration, login, and logout with **JWT** (jsonwebtoken) and passwords hashed
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  EVERY 10 MINUTES                   │
+│                  EVERY 5 MINUTES                    │
 │                                                     │
 │  Vercel Cron ──► /api/dolar/cron                    │
 │  (prod)               │                             │
