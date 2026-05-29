@@ -279,7 +279,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
           </div>
 
           <a
-            href="https://github.com/ValentinTarantino/DolarArg/releases/download/v1.0/DolarARG.apk"
+            href="https://github.com/ValentinTarantino/DolarArg/releases/download/v1.0.0/DolarARG.apk"
             target="_blank"
             rel="noopener noreferrer"
             style={{
