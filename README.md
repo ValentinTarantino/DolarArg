@@ -21,6 +21,8 @@ Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso c
 | Cron (prod) | Vercel Cron Jobs |
 | Deploy | Vercel |
 | PWA | Web App Manifest + Service Worker |
+| SEO | OpenGraph, Twitter Cards, Sitemap, Robots.txt |
+| APK | Firma con Android Studio (apksigner) |
 
 ---
 
@@ -97,7 +99,7 @@ Todas las rutas viven en `src/app/api/` y corren como funciones serverless en Ve
 Consulta la API pública [dolarapi.com](https://dolarapi.com) y devuelve las cotizaciones del dólar (oficial, blue, MEP, CCL, tarjeta, cripto, mayorista). También persiste los datos en la base de datos.
 
 ### `/api/dolar/live` — Tiempo real (SSE)
-Implementa **Server-Sent Events** (SSE). Mantiene una conexión HTTP persistente con el cliente y hace polling a la base de datos cada 5 segundos. Si detecta nuevos registros en `DolarRate` (insertados por el cron), los envía al frontend sin necesidad de que el usuario recargue la página.
+Implementa **Server-Sent Events** (SSE) con **reconexión automática**. Mantiene una conexión HTTP persistente con el cliente y hace polling a la base de datos cada 5 segundos. Si detecta nuevos registros en `DolarRate`, los envía al frontend. Incluye lógica de reconexión con backoff exponencial (2s, 4s, 8s... hasta 30s) para recuperarse automáticamente ante desconexiones.
 
 ```
 GET /api/dolar/live
@@ -249,6 +251,15 @@ El sitio es instalable como app en Android e iOS sin necesidad de tiendas.
 1. Entrar al sitio desde Safari
 2. Tocar el botón compartir → "Añadir a pantalla de inicio"
 
+### Descarga APK (Android)
+
+También disponible como APK firmado para instalación directa en Android:
+
+1. Click en **"Descargar App"** en el navbar (desktop) o menú hamburguesa (mobile)
+2. Descargar `DolarARG-signed.apk` desde GitHub Releases
+3. Permitir instalación de fuentes desconocidas en Android
+4. Instalar y abrir — funciona como app nativa sin barra del navegador
+
 ### Archivos clave
 
 | Archivo | Función |
@@ -256,8 +267,23 @@ El sitio es instalable como app en Android e iOS sin necesidad de tiendas.
 | `public/manifest.json` | Nombre, ícono, colores, modo standalone |
 | `public/sw.js` | Service Worker: caché de assets y APIs para modo offline |
 | `public/icons/` | Íconos en SVG, 192px y 512px |
+| `public/screenshots/` | Capturas para PWA (mobile/desktop) |
+| `public/sitemap.xml` | Sitemap SEO dinámico |
+| `public/robots.txt` | Directivas robots SEO |
 
 ---
+
+## 🔍 SEO y Metadatos
+
+SEO completo implementado con Next.js Metadata API:
+
+- **OpenGraph** y **Twitter Cards** para compartir en redes sociales
+- **Canonical URLs** para evitar contenido duplicado
+- **Sitemap.xml** generado automáticamente con todas las rutas
+- **Robots.txt** con directivas de rastreo
+- **Metadatos estructurados** (título, descripción, keywords) por página
+- **Favicon** optimizado para navegadores (separado de íconos PWA)
+- **Manifest.json** con `id`, `start_url`, `scope` para PWA
 
 
 ---
