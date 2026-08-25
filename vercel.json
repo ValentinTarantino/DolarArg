@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "node scripts/prepare-schema.js && prisma generate && prisma db push --skip-generate && next build",
+  "buildCommand": "node scripts/prepare-schema.js && prisma generate && next build",
   "outputDirectory": ".next",
   "crons": [
     {
