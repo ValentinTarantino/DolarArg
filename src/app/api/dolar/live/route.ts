@@ -4,7 +4,8 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  let intervalId: NodeJS.Timeout;
+  let intervalId: NodeJS.Timeout | null = null;
+  let heartbeatId: NodeJS.Timeout | null = null;
 
   const responseStream = new ReadableStream({
     async start(controller) {
@@ -37,27 +38,35 @@ export async function GET(request: NextRequest) {
           console.error('Error en SSE loop:', error);
           sendEvent('error', { message: 'Error interno leyendo cotizaciones' });
         }
-      }, 5000); 
+      }, 5000);
+
+      heartbeatId = setInterval(() => {
+        controller.enqueue(new TextEncoder().encode(': keepalive\n\n'));
+      }, 25000);
 
       request.signal.addEventListener('abort', () => {
         console.log('Cliente desconectado de SSE.');
-        clearInterval(intervalId);
+        if (intervalId) clearInterval(intervalId);
+        if (heartbeatId) clearInterval(heartbeatId);
         try {
           controller.close();
         } catch (e) {
         }
-      });
+      }, { once: true });
     },
     cancel() {
       if (intervalId) clearInterval(intervalId);
+      if (heartbeatId) clearInterval(heartbeatId);
     }
   });
 
   return new Response(responseStream, {
     headers: {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
+      'Cache-Control': 'no-cache, no-transform, no-store, must-revalidate',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': '*',
     },
   });
 }

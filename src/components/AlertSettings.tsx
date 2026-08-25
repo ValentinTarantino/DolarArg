@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, LogOut, User, Lock, Mail, Trash2, CheckCircle, Clock, ArrowLeft, KeyRound } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface Alert {
   id: number;
@@ -17,6 +18,7 @@ interface AlertSettingsProps {
 }
 
 const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
+  const { t } = useLanguage();
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
@@ -110,7 +112,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
 
       if (isRegistering) {
         setIsRegistering(false);
-        setAuthError('Registro exitoso. Por favor inicia sesión.');
+        setAuthError(t('Registro exitoso. Por favor inicia sesión.'));
         setPassword('');
       } else {
         setUser(data.user);
@@ -209,7 +211,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
         throw new Error(data.error || 'Error al crear alerta');
       }
 
-      setAlertSuccess('¡Alerta creada con éxito!');
+      setAlertSuccess(t('¡Alerta creada con éxito!'));
       setAlertValue('');
       fetchAlerts();
     } catch (err: any) {
@@ -236,7 +238,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
     return (
       <div className="panel">
         <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
-          Cargando configuración de alertas...
+          {t('Cargando configuración de alertas...')}
         </div>
       </div>
     );
@@ -245,7 +247,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   return (
     <div className="panel">
       <div className="panel-title">
-        <span>Configuración de Alertas</span>
+        <span>{t('Configuración de Alertas')}</span>
       </div>
 
       {!user ? (
@@ -257,8 +259,8 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
               </button>
               <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                 <KeyRound size={32} style={{ color: '#6366f1', marginBottom: '8px' }} />
-                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>¿Olvidaste tu contraseña?</p>
-                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>Ingresá tu email y te enviamos un enlace para restablecerla.</p>
+                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>{t('¿Olvidaste tu contraseña?')}</p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>{t('Ingresá tu email y te enviamos un enlace para restablecerla.')}</p>
               </div>
               {!forgotMsg ? (
                 <form onSubmit={handleForgotPassword} className="calculator-form">
@@ -266,7 +268,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                     <label>Correo Electrónico</label>
                     <div className="input-wrapper">
                       <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                      <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="ejemplo@correo.com" style={{ paddingLeft: '38px' }} required />
+                      <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder={t('ejemplo@correo.com')} style={{ paddingLeft: '38px' }} required />
                     </div>
                   </div>
                   {forgotError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{forgotError}</div>}
@@ -280,20 +282,20 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
             <>
               <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                 <KeyRound size={32} style={{ color: '#6366f1', marginBottom: '8px' }} />
-                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>Nueva contraseña</p>
-                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>Ingresá tu nueva contraseña.</p>
+                <p style={{ margin: 0, fontWeight: 700, color: '#f1f5f9' }}>{t('Nueva contraseña')}</p>
+                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#94a3b8' }}>{t('Ingresá tu nueva contraseña.')}</p>
               </div>
               {!resetMsg ? (
                 <form onSubmit={handleResetPassword} className="calculator-form">
                   <div className="input-container">
-                    <label>Nueva contraseña</label>
+                    <label>{t('Nueva contraseña')}</label>
                     <div className="input-wrapper">
                       <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
                       <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required minLength={6} />
                     </div>
                   </div>
                   {resetError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{resetError}</div>}
-                  <button type="submit" className="btn-primary" disabled={resetLoading}>{resetLoading ? 'Guardando...' : 'Guardar contraseña'}</button>
+                  <button type="submit" className="btn-primary" disabled={resetLoading}>{resetLoading ? t('Guardando...') : t('Guardar contraseña')}</button>
                 </form>
               ) : (
                 <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{resetMsg}</div>
@@ -302,18 +304,18 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
           ) : (
             <>
               <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '10px' }}>
-                Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.
+                {t('Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.')}
               </p>
               <form onSubmit={handleAuth} className="calculator-form" id="auth-form">
                 <div className="input-container">
-                  <label>Correo Electrónico</label>
+                  <label>{t('Correo Electrónico')}</label>
                   <div className="input-wrapper">
                     <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                    <input id="auth-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ejemplo@correo.com" style={{ paddingLeft: '38px' }} required />
+                    <input id="auth-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('ejemplo@correo.com')} style={{ paddingLeft: '38px' }} required />
                   </div>
                 </div>
                 <div className="input-container">
-                  <label>Contraseña</label>
+                  <label>{t('Contraseña')}</label>
                   <div className="input-wrapper">
                     <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
                     <input id="auth-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required />
@@ -322,14 +324,14 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                 {authError && (
                   <div style={{ color: authError.includes('exitoso') ? '#10b981' : '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{authError}</div>
                 )}
-                <button type="submit" className="btn-primary" id="auth-submit-btn">{isRegistering ? 'Registrarse' : 'Iniciar Sesión'}</button>
+                <button type="submit" className="btn-primary" id="auth-submit-btn">{isRegistering ? t('Registrarse') : t('Iniciar Sesión')}</button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <button type="button" onClick={() => { setIsRegistering(!isRegistering); setAuthError(null); }} style={{ border: 'none', background: 'transparent', padding: '0', fontSize: '0.82rem', color: '#6366f1', cursor: 'pointer' }} id="auth-toggle-btn">
-                    {isRegistering ? '¿Ya tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate'}
+                    {isRegistering ? t('¿Ya tenés cuenta? Iniciá sesión') : t('¿No tenés cuenta? Registrate')}
                   </button>
                   {!isRegistering && (
                     <button type="button" onClick={() => { setView('forgot'); setForgotMsg(null); setForgotError(null); }} style={{ border: 'none', background: 'transparent', padding: '0', fontSize: '0.82rem', color: '#64748b', cursor: 'pointer' }}>
-                      ¿Olvidaste tu contraseña?
+                      {t('¿Olvidaste tu contraseña?')}
                     </button>
                   )}
                 </div>
@@ -358,7 +360,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
           <form onSubmit={handleCreateAlert} className="calculator-form" id="create-alert-form">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div className="input-container">
-                <label>Dólar</label>
+                <label>{t('Dólar')}</label>
                 <div className="input-wrapper">
                   <select
                     id="alert-casa-select"
@@ -367,7 +369,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   >
                     {rates.map(r => (
                       <option key={r.casa} value={r.casa}>
-                        Dólar {r.nombre}
+                        {`${t('Dólar')} ${t(r.nombre)}`}
                       </option>
                     ))}
                   </select>
@@ -375,22 +377,22 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
               </div>
 
               <div className="input-container">
-                <label>Condición</label>
+                <label>{t('Condición')}</label>
                 <div className="input-wrapper">
                   <select
                     id="alert-condition-select"
                     value={alertCondition}
                     onChange={(e) => setAlertCondition(e.target.value)}
                   >
-                    <option value="ABOVE">Cuando supere o sea igual a (≥)</option>
-                    <option value="BELOW">Cuando caiga o sea igual a (≤)</option>
+                    <option value="ABOVE">{t('Cuando supere o sea igual a (≥)')}</option>
+                    <option value="BELOW">{t('Cuando caiga o sea igual a (≤)')}</option>
                   </select>
                 </div>
               </div>
             </div>
 
             <div className="input-container">
-              <label>Precio Objetivo (Venta)</label>
+              <label>{t('Precio Objetivo (Venta)')}</label>
               <div className="input-wrapper">
                 <input
                   id="alert-value-input"
@@ -406,14 +408,14 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
             {alertError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{alertError}</div>}
             {alertSuccess && <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{alertSuccess}</div>}
 
-            <button type="submit" className="btn-primary" id="create-alert-btn">Crear Alerta</button>
+            <button type="submit" className="btn-primary" id="create-alert-btn">{t('Crear Alerta')}</button>
           </form>
 
           <div style={{ marginTop: '10px' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#ffffff' }}>Tus Alertas</h4>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#ffffff' }}>{t('Tus Alertas')}</h4>
             {alerts.length === 0 ? (
               <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center', padding: '15px' }}>
-                Aún no tienes alertas configuradas.
+                {t('Aún no tienes alertas configuradas.')}
               </p>
             ) : (
               <div className="alerts-list">

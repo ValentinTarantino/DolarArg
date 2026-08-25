@@ -17,7 +17,9 @@ import CryptoTable from '@/components/CryptoTable';
 import Footer from '@/components/Footer';
 import { DollarSign } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
+import { useLanguage } from '@/components/LanguageProvider';
 export default function Home() {
+  const { t } = useLanguage();
   const [rates, setRates] = useState<DolarRate[]>([]);
   const [selectedCasa, setSelectedCasa] = useState<string>('blue');
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,25 +40,63 @@ export default function Home() {
 
   // Carga inicial
   useEffect(() => {
+    let isMounted = true;
+
     const fetchInitialRates = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const forceStopLoading = setTimeout(() => {
+        if (!isMounted) return;
+        setLoading(false);
+        setError((current) => current || 'No se pudieron cargar las cotizaciones en este momento.');
+      }, 15000);
+
       try {
-        const response = await fetch('/api/dolar');
+        const response = await Promise.race([
+          fetch('/api/dolar', { signal: controller.signal }),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+        ]);
+
         if (!response.ok) {
           throw new Error('Error al cargar cotizaciones');
         }
+
         const data = await response.json();
-        setRates(data);
-        if (data.length > 0) {
-          setLastUpdated(new Date(data[0].fecha).toLocaleString('es-AR', { hour12: false }));
+        const safeData = Array.isArray(data) ? data : [];
+
+        if (!isMounted) return;
+
+        setRates(safeData);
+
+        if (safeData.length > 0) {
+          setLastUpdated(new Date(safeData[0].fecha).toLocaleString('es-AR', { hour12: false }));
+          setError(null);
+        } else {
+          setError('No se encontraron cotizaciones disponibles');
         }
       } catch (err: any) {
-        setError(err.message || 'Error cargando cotizaciones');
+        if (!isMounted) return;
+
+        if (err?.name === 'AbortError' || err?.message === 'timeout') {
+          console.warn('[PAGE] Timeout al cargar cotizaciones; continuando con fallback.');
+          setError('La carga tardó demasiado. Intentando de nuevo en segundo plano.');
+        } else {
+          setError(err?.message || 'Error cargando cotizaciones');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
+        clearTimeout(timeoutId);
+        clearTimeout(forceStopLoading);
       }
     };
 
     fetchInitialRates();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -116,7 +156,10 @@ export default function Home() {
       });
 
       eventSource.addEventListener('error', () => {
-        console.error('[SSE] Error de conexión. Cerrando y programando reconexión...');
+        if (eventSource && eventSource.readyState === EventSource.CLOSED) {
+          console.warn('[SSE] Conexión cerrada; reintentando...');
+        }
+
         setIsLiveConnected(false);
 
         if (eventSource) {
@@ -124,11 +167,9 @@ export default function Home() {
           eventSource = null;
         }
 
-        // Calcular delay con backoff exponencial
         const delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts), MAX_RECONNECT_DELAY);
         reconnectAttempts++;
 
-        console.log(`[SSE] Reconectando en ${delay}ms...`);
         reconnectTimer = setTimeout(connect, delay);
       });
     };
@@ -218,29 +259,29 @@ export default function Home() {
       <Navbar rates={rates} isLiveConnected={isLiveConnected} lastUpdated={lastUpdated} activeTab={activeTab} onTabChange={setActiveTab} onHighlightCard={setHighlightedCard} />
       <div className="dashboard-container">
         <header className="header">
-          <span className="header-badge">Mercado Cambiario</span>
+          <span className="header-badge">{t('Mercado Cambiario')}</span>
           <div className="title-container">
             <div className="logo-glow"></div>
             <DollarSign size={38} className="header-logo" />
-            <h1>Cotizaciones</h1>
+            <h1>{t('Cotizaciones')}</h1>
           </div>
-          <p className="subtitle">Argentina en tiempo real</p>
+          <p className="subtitle">{t('Argentina en tiempo real')}</p>
           <div className="header-stats">
             {[
-              { label: 'Tipos de cambio', value: `${rates.length}`, color: '#94a3b8' },
+              { label: t('Tipos de cambio'), value: `${rates.length}`, color: '#94a3b8' },
               ...(() => {
                 const oficial = rates.find(r => r.casa === 'oficial');
                 const blue = rates.find(r => r.casa === 'blue');
                 const items = [];
-                if (blue) items.push({ label: 'Spread blue', value: `$${(blue.venta - blue.compra).toFixed(0)}`, color: '#94a3b8' });
+                if (blue) items.push({ label: t('Spread blue'), value: `$${(blue.venta - blue.compra).toFixed(0)}`, color: '#94a3b8' });
                 const topMover = rankingData.length > 0 ? rankingData.reduce((a: any, b: any) => Math.abs(b.variacion ?? 0) > Math.abs(a.variacion ?? 0) ? b : a, rankingData[0]) : null;
                 if (topMover?.variacion != null) {
                   const up = topMover.variacion >= 0;
-                  items.push({ label: `Mayor mov. (${topMover.nombre ?? topMover.casa})`, value: `${up ? '+' : ''}${topMover.variacion.toFixed(2)}%`, color: up ? '#10b981' : '#ef4444' });
+                  items.push({ label: `${t('Mayor mov.')} (${t(topMover.nombre ?? topMover.casa)})`, value: `${up ? '+' : ''}${topMover.variacion.toFixed(2)}%`, color: up ? '#10b981' : '#ef4444' });
                 }
                 if (oficial && blue) {
                   const brecha = ((blue.venta - oficial.venta) / oficial.venta * 100);
-                  items.push({ label: 'Brecha', value: `${brecha.toFixed(1)}%`, color: brecha > 50 ? '#ef4444' : brecha > 20 ? '#f59e0b' : '#10b981' });
+                  items.push({ label: t('Brecha'), value: `${brecha.toFixed(1)}%`, color: brecha > 50 ? '#ef4444' : brecha > 20 ? '#f59e0b' : '#10b981' });
                 }
                 return items;
               })()

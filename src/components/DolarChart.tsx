@@ -12,6 +12,7 @@ import {
   Legend
 } from 'recharts';
 import { LineChart as ChartIcon, Calendar, TrendingUp, TrendingDown, BarChart2, Activity, CircleDot, ChevronDown } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface ChartDataPoint {
   compra: number;
@@ -33,6 +34,7 @@ interface DolarChartProps {
 }
 
 const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onSelectCasa }) => {
+  const { t, language } = useLanguage();
   const [historyData, setHistoryData] = useState<ChartDataPoint[]>([]);
   const [days, setDays] = useState<number>(30);
   const [loading, setLoading] = useState<boolean>(true);
@@ -150,7 +152,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 fontWeight: '600'
               }}
             >
-              {selectedName}
+              {t(selectedName)}
               <ChevronDown size={16} style={{ transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
             </button>
             {dropdownOpen && (
@@ -192,7 +194,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                       e.currentTarget.style.background = 'transparent';
                     }}
                   >
-                    {tipo.nombre}
+                    {t(tipo.nombre)}
                   </button>
                 ))}
               </div>
@@ -265,6 +267,38 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 style={{ fontSize: '0.75rem' }} 
               />
               <Tooltip 
+                content={({ active, payload, label }: any) => {
+                  if (!active || !payload || payload.length === 0) return null;
+
+                  const compra = payload.find((item: any) => item.dataKey === 'compra');
+                  const venta = payload.find((item: any) => item.dataKey === 'venta');
+                  const formatValue = (value: number) => value.toLocaleString(language === 'en' ? 'en-US' : 'es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+
+                  return (
+                    <div style={{
+                      backgroundColor: '#12131c',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      color: '#f8fafc'
+                    }}>
+                      <p style={{ margin: '0 0 10px', fontWeight: 600 }}>{label}</p>
+                      {venta && (
+                        <p style={{ margin: '0 0 8px', color: color }}>
+                          {`${t('Venta')}: ${formatValue(Number(venta.value))}`}
+                        </p>
+                      )}
+                      {compra && (
+                        <p style={{ margin: 0, color: '#10b981' }}>
+                          {`${t('Compra')}: ${formatValue(Number(compra.value))}`}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
                 contentStyle={{ 
                   backgroundColor: '#12131c', 
                   border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -279,7 +313,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 style={{ fontSize: '0.85rem' }}
               />
               <Line 
-                name="Compra"
+                name={t('Compra')}
                 type="monotone" 
                 dataKey="compra" 
                 stroke="#10b981" 
@@ -288,7 +322,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 activeDot={{ r: 6 }} 
               />
               <Line 
-                name="Venta"
+                name={t('Venta')}
                 type="monotone" 
                 dataKey="venta" 
                 stroke={color} 
@@ -342,7 +376,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
 
       {ranking.length > 0 && !loading && !error && (
         <div className="ranking-panel">
-          <h4 className="ranking-title">Ranking de Rendimiento ({days} días)</h4>
+          <h4 className="ranking-title">{`Ranking de Rendimiento (${days} días)`}</h4>
           <div className="ranking-list">
             {ranking.map((item, i) => (
               <div key={item.casa} className={`ranking-row ${item.casa === selectedCasa ? 'active' : ''}`}>

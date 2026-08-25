@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Compass } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
+import { useLanguage } from './LanguageProvider';
 
 interface ExchangeBandsProps {
   rates: DolarRate[];
@@ -15,6 +16,7 @@ interface BandasData {
 }
 
 export default function ExchangeBands({ rates }: ExchangeBandsProps) {
+  const { t, language } = useLanguage();
   const [bandas, setBandas] = useState<BandasData | null>(null);
   const [loadingBandas, setLoadingBandas] = useState(true);
 
@@ -40,7 +42,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
   if (rates.length === 0 || !activeRate || loadingBandas || !bandas) {
     return (
       <div className="panel" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
-        <p style={{ color: '#94a3b8' }}>Cargando bandas cambiarias...</p>
+        <p style={{ color: '#94a3b8' }}>{t('Cargando bandas cambiarias...')}</p>
       </div>
     );
   }
@@ -101,7 +103,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
   const pctToLower   = (diffToLower / currentPrice) * 100;
   const midpoint     = lowerBand + range / 2;
 
-  const fmt = (n: number) => n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt = (n: number) => n.toLocaleString(language === 'en' ? 'en-US' : 'es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <div className="panel" id="bands-panel" style={{ marginTop: '24px' }}>
@@ -110,11 +112,11 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>Banda Cambiaria BCRA</h3>
-              <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>Actualizado: {bandas.date}</span>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800 }}>{t('Banda Cambiaria BCRA')}</h3>
+              <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{t('Actualizado')}: {bandas.date}</span>
             </div>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5 }}>
-              Las bandas aplican oficialmente al <strong style={{ color: '#a5b4fc' }}>Dólar Mayorista</strong> (COM 3500).
+              {t('Las bandas aplican oficialmente al Dólar Mayorista (COM 3500).')}
             </p>
           </div>
         </div>
@@ -172,7 +174,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
             width: '88%',
           }}>
             <span style={{ fontSize: '1rem', fontWeight: 800, color: stateColor, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-              Dólar {activeRate.nombre}: ${fmt(currentPrice)}
+              {`${t('Dólar')} ${t(activeRate.nombre)}: $${fmt(currentPrice)}`}
             </span>
           </div>
 
@@ -186,10 +188,10 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
           }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: stateColor }}>
               {percentage >= 0 && percentage <= 100
-                ? `Al ${percentage.toFixed(2)}% de la banda · ${stateLabel}`
+                ? `${t('Al')} ${percentage.toFixed(2)}% ${t('de la banda')} · ${t(stateLabel)}`
                 : percentage < 0
-                  ? `Por debajo de la banda inferior`
-                  : `Superó la banda superior`}
+                  ? t('Por debajo de la banda inferior')
+                  : t('Superó la banda superior')}
             </span>
           </div>
 
@@ -210,8 +212,8 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
               }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: item.color, flexShrink: 0, marginTop: 5 }} />
                 <div>
-                  <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{item.title}: </span>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.desc}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{t(item.title)}: </span>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{t(item.desc)}</span>
                 </div>
               </div>
             ))}
@@ -222,13 +224,13 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
 
           <div>
             <p style={{ margin: '0 0 10px', fontSize: '0.78rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Valores actuales de las bandas cambiarias
+              {t('Valores actuales de las bandas cambiarias')}
             </p>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                  <th style={{ padding: '7px 10px', color: '#64748b', fontWeight: 700, textAlign: 'left' }}>BANDA CAMBIARIA</th>
-                  <th style={{ padding: '7px 10px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>VALOR</th>
+                  <th style={{ padding: '7px 10px', color: '#64748b', fontWeight: 700, textAlign: 'left' }}>{t('BANDA CAMBIARIA')}</th>
+                  <th style={{ padding: '7px 10px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>{t('VALOR')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -239,7 +241,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
                   <tr key={row.label} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <td style={{ padding: '10px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: row.color, display: 'inline-block', flexShrink: 0 }} />
-                      {row.label}
+                      {t(row.label)}
                     </td>
                     <td style={{ padding: '10px', color: '#fff', fontWeight: 700, textAlign: 'right' }}>
                       ${fmt(row.value)}
@@ -251,7 +253,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
           </div>
           <div>
             <p style={{ margin: '0 0 10px', fontSize: '0.78rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Rango de valores
+              {t('Rango de valores')}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {ranges.map((rng, i) => (
@@ -266,7 +268,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
                   flexWrap: 'wrap',
                 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: rng.color, display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ color: rng.color, fontWeight: 700, fontSize: '0.82rem', minWidth: '80px' }}>{rng.name}</span>
+                  <span style={{ color: rng.color, fontWeight: 700, fontSize: '0.82rem', minWidth: '80px' }}>{t(rng.name)}</span>
                   <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{rng.pct}</span>
                   <span style={{ marginLeft: 'auto', color: '#cbd5e1', fontSize: '0.78rem', fontFamily: 'monospace' }}>
                     ${fmt(rng.min)} – ${fmt(rng.max)}
@@ -286,21 +288,21 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
             gap: '10px',
           }}>
             <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Diferencias con las bandas
+              {t('Diferencias con las bandas')}
             </p>
             <div style={{ fontSize: '0.84rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#cbd5e1' }}>
                 <span style={{ color: '#f43f5e', fontWeight: 900, marginTop: 1 }}>▲</span>
                 {diffToUpper > 0
-                  ? <span>El dólar debería subir <strong style={{ color: '#f43f5e' }}>${fmt(diffToUpper)}</strong> ({pctToUpper.toFixed(2)}%) para llegar a la banda superior.</span>
-                  : <span style={{ color: '#f43f5e', fontWeight: 700 }}>El dólar ha superado la banda superior.</span>
+                  ? <span>{t('El dólar debería subir')} <strong style={{ color: '#f43f5e' }}>${fmt(diffToUpper)}</strong> ({pctToUpper.toFixed(2)}%) {t('para llegar a la banda superior.')}</span>
+                  : <span style={{ color: '#f43f5e', fontWeight: 700 }}>{t('El dólar ha superado la banda superior.')}</span>
                 }
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: '#cbd5e1' }}>
                 <span style={{ color: '#10b981', fontWeight: 900, marginTop: 1 }}>▼</span>
                 {diffToLower > 0
-                  ? <span>El dólar debería bajar <strong style={{ color: '#10b981' }}>${fmt(diffToLower)}</strong> ({pctToLower.toFixed(2)}%) para llegar a la banda inferior.</span>
-                  : <span style={{ color: '#10b981', fontWeight: 700 }}>El dólar está por debajo de la banda inferior.</span>
+                  ? <span>{t('El dólar debería bajar')} <strong style={{ color: '#10b981' }}>${fmt(diffToLower)}</strong> ({pctToLower.toFixed(2)}%) {t('para llegar a la banda inferior.')}</span>
+                  : <span style={{ color: '#10b981', fontWeight: 700 }}>{t('El dólar está por debajo de la banda inferior.')}</span>
                 }
               </div>
             </div>

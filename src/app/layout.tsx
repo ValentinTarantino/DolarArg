@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "@/styles/main.scss";
 import { startLocalCron } from "@/lib/cron-local";
+import { LanguageProvider, LanguageSwitcher } from "@/components/LanguageProvider";
 
 // Declarar variable global para rastrear si el cron ya fue iniciado
 declare global {
@@ -114,15 +115,27 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body>
-        {children}
+        <LanguageProvider>
+          {children}
+          <LanguageSwitcher />
+        </LanguageProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
-                    .catch(function(err) { console.log('[PWA] SW error:', err); });
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  return Promise.all(registrations.map(function(registration) {
+                    console.log('[PWA] Removing legacy service worker:', registration.scope);
+                    return registration.unregister();
+                  }));
+                }).then(function() {
+                  if ('caches' in window) {
+                    return caches.keys().then(function(keys) {
+                      return Promise.all(keys.map(function(key) { return caches.delete(key); }));
+                    });
+                  }
+                }).catch(function(error) {
+                  console.warn('[PWA] Cache cleanup failed:', error);
                 });
               }
             `,

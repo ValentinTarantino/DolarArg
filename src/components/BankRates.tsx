@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Trophy } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface BankRate {
   banco: string;
@@ -13,6 +14,7 @@ interface BankRate {
 }
 
 const BankRates: React.FC = () => {
+  const { t } = useLanguage();
   const [rates, setRates] = useState<BankRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'cards' | 'comparador'>('cards');
@@ -42,7 +44,7 @@ const BankRates: React.FC = () => {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-        Cargando cotizaciones de bancos...
+        {t('Cargando cotizaciones de bancos...')}
       </div>
     );
   }
@@ -57,7 +59,7 @@ const BankRates: React.FC = () => {
       {/* Header con toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
-          <span>Cotizaciones Bancos y Casas de Cambio</span>
+          <span>{t('Cotizaciones Bancos y Casas de Cambio')}</span>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           {(['cards', 'comparador'] as const).map(v => (
@@ -69,7 +71,7 @@ const BankRates: React.FC = () => {
               color: view === v ? '#3b82f6' : '#94a3b8',
               fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
             }}>
-              {v === 'cards' ? 'Cotizaciones' : 'Comparador'}
+              {v === 'cards' ? t('Cotizaciones') : t('Comparador')}
             </button>
           ))}
         </div>
@@ -97,11 +99,11 @@ const BankRates: React.FC = () => {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>COMPRA</p>
+                  <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{t('COMPRA')}</p>
                   <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#10b981' }}>${rate.compra.toFixed(2)}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>VENTA</p>
+                  <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{t('VENTA')}</p>
                   <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#ef4444' }}>${rate.venta.toFixed(2)}</p>
                 </div>
               </div>
@@ -112,7 +114,7 @@ const BankRates: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Selector compra/venta */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Ordenar por:</span>
+            <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>{t('Ordenar por:')}</span>
             {(['venta', 'compra'] as const).map(s => (
               <button key={s} onClick={() => setSortBy(s)} style={{
                 padding: '5px 14px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
@@ -120,7 +122,7 @@ const BankRates: React.FC = () => {
                 backgroundColor: sortBy === s ? 'rgba(59,130,246,0.15)' : 'transparent',
                 color: sortBy === s ? '#3b82f6' : '#94a3b8',
               }}>
-                {s === 'venta' ? 'Menor venta (para comprar)' : 'Mayor compra (para vender)'}
+                {s === 'venta' ? t('Menor venta (para comprar)') : t('Mayor compra (para vender)')}
               </button>
             ))}
           </div>
@@ -130,9 +132,9 @@ const BankRates: React.FC = () => {
             <div style={{ padding: '14px 18px', background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <Trophy size={20} color="#10b981" />
               <div>
-                <p style={{ margin: 0, fontSize: '0.75rem', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mejor opción para {sortBy === 'venta' ? 'comprar' : 'vender'}</p>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{sortBy === 'venta' ? t('Mejor opción para comprar') : t('Mejor opción para vender')}</p>
                 <p style={{ margin: '2px 0 0', fontSize: '1rem', fontWeight: 800, color: '#f1f5f9' }}>
-                  {best.banco} — {sortBy === 'venta' ? `Venta $${best.venta.toFixed(2)}` : `Compra $${best.compra.toFixed(2)}`}
+                  {best.banco} — {sortBy === 'venta' ? `${t('Venta')} $${best.venta.toFixed(2)}` : `${t('Compra')} $${best.compra.toFixed(2)}`}
                 </p>
               </div>
             </div>
@@ -144,10 +146,10 @@ const BankRates: React.FC = () => {
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'left' }}>#</th>
-                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'left' }}>BANCO</th>
-                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>COMPRA</th>
-                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>VENTA</th>
-                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>SPREAD</th>
+                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'left' }}>{t('BANCO')}</th>
+                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>{t('COMPRA')}</th>
+                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>{t('VENTA')}</th>
+                  <th style={{ padding: '10px 12px', color: '#64748b', fontWeight: 700, textAlign: 'right' }}>{t('SPREAD')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,7 +176,7 @@ const BankRates: React.FC = () => {
 
       <div style={{ marginTop: '20px', padding: '12px 16px', backgroundColor: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
         <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>
-          💡 Cotizaciones referenciales. Verificar con el banco antes de operar.
+          {t('💡 Cotizaciones referenciales. Verificar con el banco antes de operar.')}
         </p>
       </div>
     </div>

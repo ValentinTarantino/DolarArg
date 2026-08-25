@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useLanguage } from './LanguageProvider';
 import { Calculator as CalcIcon } from 'lucide-react';
 
 interface DolarRate {
@@ -15,6 +16,7 @@ interface CalculatorProps {
 }
 
 const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState<string>('');
   const [selectedCasa, setSelectedCasa] = useState<string>('blue');
   const [customTaxGanancias, setCustomTaxGanancias] = useState<string>(''); // Percepción Ganancias/Bienes Personales
@@ -80,14 +82,14 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
       <div className="calculator-form">
         {/* Selector de dirección de conversión */}
         <div className="input-container">
-          <label>Dirección de Conversión</label>
+          <label>{t('Dirección de Conversión')}</label>
           <div className="input-wrapper">
             <select
               value={conversionDirection}
               onChange={(e) => setConversionDirection(e.target.value as 'usd-to-ars' | 'ars-to-usd')}
             >
-              <option value="usd-to-ars">USD → ARS (Dólares a Pesos)</option>
-              <option value="ars-to-usd">ARS → USD (Pesos a Dólares)</option>
+              <option value="usd-to-ars">{t('USD → ARS (Dólares a Pesos)')}</option>
+              <option value="ars-to-usd">{t('ARS → USD (Pesos a Dólares)')}</option>
             </select>
           </div>
         </div>
@@ -109,27 +111,27 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
                 setAmount(sanitized);
               }}
               onKeyDown={handleKeyDown}
-              placeholder={`Ingresa el monto en ${conversionDirection === 'usd-to-ars' ? 'dólares' : 'pesos'}`}
+              placeholder={`${t('Ingresa el monto en')} ${conversionDirection === 'usd-to-ars' ? t('dólares') : t('pesos')}`}
               style={{ paddingLeft: '48px' }}
             />
           </div>
         </div>
 
         <div className="input-container">
-          <label>Tasa de Referencia</label>
+          <label>{t('Tasa de Referencia')}</label>
           <div className="input-wrapper">
             <select
               value={rateType}
               onChange={(e) => setRateType(e.target.value as 'compra' | 'venta')}
             >
-              <option value="compra">Compra (Banco te compra)</option>
-              <option value="venta">Venta (Banco te vende)</option>
+              <option value="compra">{t('Compra (Banco te compra)')}</option>
+              <option value="venta">{t('Venta (Banco te vende)')}</option>
             </select>
           </div>
         </div>
 
         <div className="input-container">
-          <label>Cotización de Referencia</label>
+          <label>{t('Cotización de Referencia')}</label>
           <div className="input-wrapper">
             <select
               id="calc-rate-select"
@@ -138,7 +140,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
             >
               {rates.map(r => (
                 <option key={r.casa} value={r.casa}>
-                  Dólar {r.nombre} ({rateType === 'compra' ? `Compra: $${r.compra}` : `Venta: $${r.venta}`})
+                  {rateType === 'compra' ? `Dólar ${r.nombre} (Compra: $${r.compra})` : `Dólar ${r.nombre} (Venta: $${r.venta})`}
                 </option>
               ))}
             </select>
@@ -148,7 +150,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
         {isOfficialOrCard && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div className="input-container">
-              <label>Percepción (%)</label>
+              <label>{t('Percepción (%)')}</label>
               <div className="input-wrapper">
                 <input
                   id="calc-tax-percepcion"
@@ -173,26 +175,26 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
           {isOfficialOrCard ? (
             <>
               <div className="result-row">
-                <span>Monto Base ({conversionDirection === 'usd-to-ars' ? `USD ${numericAmount.toFixed(2)}` : `ARS ${numericAmount.toFixed(2)}`})</span>
+                <span>{conversionDirection === 'usd-to-ars' ? `Monto Base (USD ${numericAmount.toFixed(2)})` : `Monto Base (ARS ${numericAmount.toFixed(2)})`}</span>
                 <span>{conversionDirection === 'usd-to-ars' ? `ARS ${convertedValue.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${convertedValue.toFixed(2)}`}</span>
               </div>
               <div className="result-row">
-                <span>Percepción ({taxGananciasPercent}%)</span>
+                <span>{`${t('Percepción')} (${taxGananciasPercent}%)`}</span>
                 <span>{conversionDirection === 'usd-to-ars' ? `ARS ${taxGanancias.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${taxGanancias.toFixed(2)}`}</span>
               </div>
               <div className="result-row total">
-                <span>Total Estimado</span>
+                <span>{t('Total Estimado')}</span>
                 <span className="total-price">{conversionDirection === 'usd-to-ars' ? `ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${totalWithTaxes.toFixed(2)}`}</span>
               </div>
             </>
           ) : (
             <>
               <div className="result-row">
-                <span>Monto {conversionDirection === 'usd-to-ars' ? 'en Dólares' : 'en Pesos'}</span>
+                <span>{conversionDirection === 'usd-to-ars' ? t('Monto en Dólares') : t('Monto en Pesos')}</span>
                 <span>{conversionDirection === 'usd-to-ars' ? `USD ${numericAmount.toFixed(2)}` : `ARS ${numericAmount.toFixed(2)}`}</span>
               </div>
               <div className="result-row total">
-                <span>Total Estimado</span>
+                <span>{t('Total Estimado')}</span>
                 <span className="total-price">{conversionDirection === 'usd-to-ars' ? `ARS ${totalWithTaxes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${totalWithTaxes.toFixed(2)}`}</span>
               </div>
             </>

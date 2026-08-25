@@ -94,7 +94,7 @@ const DolarCard: React.FC<DolarCardProps> = ({
       }}
     >
       <div className="card-header">
-        <span className="card-title">Dólar {nombre}</span>
+        <span className="card-title">{`Dólar ${nombre}`}</span>
         <span className="card-badge-icon">{getIcon()}</span>
       </div>
 

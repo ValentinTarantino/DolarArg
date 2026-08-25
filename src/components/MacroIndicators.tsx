@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
+import { useLanguage } from './LanguageProvider';
 
 interface RiesgoPais {
   valor: number;
@@ -52,6 +53,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const MacroIndicators: React.FC = () => {
+  const { t, language } = useLanguage();
   const [data, setData] = useState<MacroData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,10 +88,10 @@ const MacroIndicators: React.FC = () => {
     <div className="panel">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
-          <span>Indicadores Macroeconómicos</span>
+          <span>{t('Indicadores Macroeconómicos')}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {lastUpdated && <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Act. {lastUpdated}</span>}
+          {lastUpdated && <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('Act.')} {lastUpdated}</span>}
           <button onClick={fetchData} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <RefreshCw size={14} />
           </button>
@@ -97,7 +99,7 @@ const MacroIndicators: React.FC = () => {
       </div>
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>Cargando indicadores...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>{t('Cargando indicadores...')}</div>
       )}
 
       {error && (
@@ -115,11 +117,11 @@ const MacroIndicators: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: rpStatus?.color || '#94a3b8', boxShadow: `0 0 8px ${rpStatus?.color || '#94a3b8'}` }} />
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Riesgo País</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Riesgo País')}</span>
               </div>
               {rpStatus && (
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', background: rpStatus.color + '22', color: rpStatus.color, border: `1px solid ${rpStatus.color}44` }}>
-                  {rpStatus.label}
+                  {t(rpStatus.label)}
                 </span>
               )}
             </div>
@@ -130,26 +132,26 @@ const MacroIndicators: React.FC = () => {
                   <p style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: rpStatus?.color || '#f1f5f9', lineHeight: 1 }}>
                     {rp.valor.toLocaleString('es-AR')}
                   </p>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>puntos básicos (EMBI+)</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>{t('puntos básicos (EMBI+)')}</p>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {rp.variacion !== null && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: rp.variacion >= 0 ? '#ef4444' : '#10b981' }}>
                       {rp.variacion >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                      <span>{rp.variacion >= 0 ? '+' : ''}{rp.variacion.toFixed(2)}% vs día anterior</span>
+                      <span>{rp.variacion >= 0 ? '+' : ''}{rp.variacion.toFixed(2)}% {t('vs día anterior')}</span>
                     </div>
                   )}
                 </div>
 
                 <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '0.78rem', color: '#64748b' }}>
-                  <p style={{ margin: 0 }}>El <strong style={{ color: '#94a3b8' }}>Riesgo País</strong> (EMBI+) mide la sobretasa que paga Argentina sobre bonos del Tesoro de EE.UU. Menor valor = menor riesgo percibido por los mercados.</p>
+                  <p style={{ margin: 0 }}>{t('El Riesgo País (EMBI+) mide la sobretasa que paga Argentina sobre bonos del Tesoro de EE.UU. Menor valor = menor riesgo percibido por los mercados.')}</p>
                 </div>
 
-                <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>Último dato: {new Date(rp.fecha).toLocaleDateString('es-AR')} · Fuente: ArgentinaDatos</p>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>{t('Último dato')}: {new Date(rp.fecha).toLocaleDateString(language === 'en' ? 'en-US' : 'es-AR')} · {t('Fuente')}: ArgentinaDatos</p>
               </>
             ) : (
-              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin datos disponibles</p>
+              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{t('Sin datos disponibles')}</p>
             )}
           </div>
 
@@ -157,7 +159,7 @@ const MacroIndicators: React.FC = () => {
           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 8px #3b82f6' }} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Reservas BCRA</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Reservas BCRA')}</span>
             </div>
 
             {res ? (
@@ -169,13 +171,13 @@ const MacroIndicators: React.FC = () => {
                       {res.valor >= 1000 ? `${(res.valor / 1000).toFixed(1)}B` : `${res.valor.toFixed(0)}M`}
                     </span>
                   </p>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>reservas internacionales brutas</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>{t('reservas internacionales brutas')}</p>
                 </div>
 
                 {res.variacion !== null && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: res.variacion >= 0 ? '#10b981' : '#ef4444' }}>
                     {res.variacion >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    <span>{res.variacion >= 0 ? '+' : ''}{res.variacion.toFixed(2)}% vs día anterior</span>
+                    <span>{res.variacion >= 0 ? '+' : ''}{res.variacion.toFixed(2)}% {t('vs día anterior')}</span>
                   </div>
                 )}
 
@@ -188,17 +190,17 @@ const MacroIndicators: React.FC = () => {
                         <Line type="monotone" dataKey="valor" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 3, fill: '#3b82f6' }} />
                       </LineChart>
                     </ResponsiveContainer>
-                    <p style={{ margin: '6px 0 0', fontSize: '0.7rem', color: '#475569', textAlign: 'center' }}>Últimos 30 registros</p>
+                    <p style={{ margin: '6px 0 0', fontSize: '0.7rem', color: '#475569', textAlign: 'center' }}>{t('Últimos 30 registros')}</p>
                   </div>
                 )}
 
                 <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '0.78rem', color: '#64748b' }}>
-                  <p style={{ margin: 0 }}>Las <strong style={{ color: '#94a3b8' }}>reservas internacionales</strong> son los activos en moneda extranjera del BCRA. Indican la capacidad del banco central para intervenir en el mercado cambiario.</p>
+                  <p style={{ margin: 0 }}>{t('Las reservas internacionales son los activos en moneda extranjera del BCRA. Indican la capacidad del banco central para intervenir en el mercado cambiario.')}</p>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>Último dato: {new Date(res.fecha).toLocaleDateString('es-AR')} · Fuente: BCRA</p>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>{t('Último dato')}: {new Date(res.fecha).toLocaleDateString(language === 'en' ? 'en-US' : 'es-AR')} · {t('Fuente')}: BCRA</p>
               </>
             ) : (
-              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin datos disponibles</p>
+              <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{t('Sin datos disponibles')}</p>
             )}
           </div>
 
@@ -207,18 +209,18 @@ const MacroIndicators: React.FC = () => {
             <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,165,0,0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }} />
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Inflación Mensual</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Inflación Mensual')}</span>
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>
                   {infl.valor.toFixed(1)}%
                 </p>
-                <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>variación mensual del IPC (INDEC)</p>
+                <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>{t('variación mensual del IPC (INDEC)')}</p>
               </div>
               <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '0.78rem', color: '#64748b' }}>
-                <p style={{ margin: 0 }}>El <strong style={{ color: '#94a3b8' }}>Índice de Precios al Consumidor</strong> mide la variación de precios mensual. Su evolución impacta directamente en el tipo de cambio real.</p>
+                <p style={{ margin: 0 }}>{t('El Índice de Precios al Consumidor mide la variación de precios mensual. Su evolución impacta directamente en el tipo de cambio real.')}</p>
               </div>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>Período: {new Date(infl.fecha + 'T12:00:00').toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })} · Fuente: ArgentinaDatos / INDEC</p>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>{t('Período')}: {new Date(infl.fecha + 'T12:00:00').toLocaleDateString(language === 'en' ? 'en-US' : 'es-AR', { month: 'long', year: 'numeric' })} · {t('Fuente')}: ArgentinaDatos / INDEC</p>
             </div>
           )}
 

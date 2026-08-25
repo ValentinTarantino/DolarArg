@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Search, X, Menu, Download } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
+import { useLanguage } from './LanguageProvider';
 
 interface ExchangeRate {
   codigo: string;
@@ -24,6 +25,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab, onTabChange, onHighlightCard }: NavbarProps) {
+  const { t } = useLanguage();
   const [intlRates, setIntlRates] = useState<ExchangeRate[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -127,7 +129,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
         <button
           className="navbar-hamburger"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Menú"
+          aria-label={t('Menú')}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -157,7 +159,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
               }}
             >
               <Search size={16} />
-              <span>Buscar</span>
+              <span>{t('Buscar')}</span>
             </button>
             {searchOpen && (
               <div style={{
@@ -176,7 +178,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                   <input
                     type="text"
-                    placeholder="Buscar moneda..."
+                    placeholder={t('Buscar moneda...')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -399,12 +401,12 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
           </div>
 
           <div className="mobile-menu-section">
-            <p className="mobile-menu-label">Buscar cotización</p>
+            <p className="mobile-menu-label">{t('Buscar cotización')}</p>
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: searchQuery ? '8px' : '0' }}>
                 <input
                   type="text"
-                  placeholder="Buscar dólar, euro, real..."
+                  placeholder={t('Buscar dólar, euro, real...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{

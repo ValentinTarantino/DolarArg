@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useLanguage } from './LanguageProvider';
 
 interface FooterProps {
   onTabChange?: (tab: string) => void;
@@ -25,7 +26,8 @@ const sources = [
   { name: 'ArgentinaDatos', desc: 'Datos económicos abiertos', url: 'https://argentinadatos.com' },
 ];
 
-export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
+export default function Footer({ onTabChange }: FooterProps) {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -43,20 +45,13 @@ export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
             </span>
           </div>
           <p className="site-footer__brand-desc">
-            Cotizaciones del dólar y divisas en Argentina actualizadas en tiempo real. Compará tipos de cambio, configurá alertas y seguí el mercado cambiario.
+            {t('Cotizaciones del dólar y divisas en Argentina actualizadas en tiempo real. Compará tipos de cambio, configurá alertas y seguí el mercado cambiario.')}
           </p>
-          <div className="site-footer__badge">
-            <span className="site-footer__badge-dot" />
-            Datos en tiempo real
-          </div>
-          {lastUpdated && (
-            <p className="site-footer__updated">Última actualización: {lastUpdated}</p>
-          )}
         </div>
 
         {/* Columna 2 — Secciones */}
         <div className="site-footer__col">
-          <h4 className="site-footer__col-title">Secciones</h4>
+          <h4 className="site-footer__col-title">{t('Secciones')}</h4>
           <ul className="site-footer__links">
             {sections.map(s => (
               <li key={s.tab}>
@@ -67,7 +62,7 @@ export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                 >
-                  {s.label}
+                  {t(s.label)}
                 </button>
               </li>
             ))}
@@ -76,7 +71,7 @@ export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
 
         {/* Columna 3 — Fuentes */}
         <div className="site-footer__col">
-          <h4 className="site-footer__col-title">Fuentes de datos</h4>
+          <h4 className="site-footer__col-title">{t('Fuentes de datos')}</h4>
           <ul className="site-footer__links">
             {sources.map(s => (
               <li key={s.name}>
@@ -87,7 +82,7 @@ export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
                   className="site-footer__source-link"
                 >
                   <span className="site-footer__source-name">{s.name}</span>
-                  <span className="site-footer__source-desc">{s.desc}</span>
+                  <span className="site-footer__source-desc">{t(s.desc)}</span>
                 </a>
               </li>
             ))}
@@ -96,24 +91,24 @@ export default function Footer({ onTabChange, lastUpdated }: FooterProps) {
 
         {/* Columna 4 — Legal */}
         <div className="site-footer__col">
-          <h4 className="site-footer__col-title">Legal</h4>
+          <h4 className="site-footer__col-title">{t('Legal')}</h4>
           <div className="site-footer__disclaimer-badge">
-            ⚠ Solo informativo
+            {t('⚠ Solo informativo')}
           </div>
           <p className="site-footer__disclaimer">
-            Los datos publicados en este sitio son de carácter <strong>exclusivamente informativo</strong>. No constituyen asesoramiento financiero, ni recomendación de compra o venta de divisas. Verificá siempre con tu banco o casa de cambio antes de operar.
+            {t('Los datos publicados en este sitio son de carácter exclusivamente informativo. No constituyen asesoramiento financiero, ni recomendación de compra o venta de divisas. Verificá siempre con tu banco o casa de cambio antes de operar.')}
           </p>
           <p className="site-footer__disclaimer" style={{ marginTop: '10px' }}>
-            Las cotizaciones pueden presentar demoras o diferencias respecto a los valores reales del mercado.
+            {t('Las cotizaciones pueden presentar demoras o diferencias respecto a los valores reales del mercado.')}
           </p>
         </div>
       </div>
 
       {/* Bottom bar */}
       <div className="site-footer__bottom">
-        <span>© {year} DólarARG · Todos los derechos reservados</span>
+        <span>© {year} DólarARG · {t('Todos los derechos reservados')}</span>
         <span className="site-footer__bottom-sep">·</span>
-        <span>Hecho en Argentina 🇦🇷</span>
+        <span>{t('Hecho en Argentina 🇦🇷')}</span>
       </div>
     </footer>
   );
