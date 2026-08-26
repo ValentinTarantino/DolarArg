@@ -209,6 +209,8 @@ const translations: Array<[string, string]> = [
   ["Mayor mov.", "Biggest move"],
   ["Riesgo País", "Country Risk"],
   ["Bajo", "Low"],
+  ["Crear cuenta", "Create account"],
+  ["Si ese email está registrado, recibirás un enlace para restablecer tu contraseña.", "If that email is registered, you will receive a password reset link."],
   ["Dólar", "Dollar"],
   ["Real Brasileño", "Brazilian Real"],
   ["Peso Chileno", "Chilean Peso"],

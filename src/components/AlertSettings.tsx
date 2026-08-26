@@ -275,7 +275,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   <button type="submit" className="btn-primary" disabled={forgotLoading}>{forgotLoading ? 'Enviando...' : 'Enviar enlace'}</button>
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{forgotMsg}</div>
+                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{t(forgotMsg)}</div>
               )}
             </>
           ) : view === 'reset' ? (
@@ -303,6 +303,9 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
             </>
           ) : (
             <>
+              <h3 style={{ margin: '0 0 10px', fontSize: '1.15rem', color: '#f1f5f9' }}>
+                {isRegistering ? t('Crear cuenta') : t('Iniciar Sesión')}
+              </h3>
               <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '10px' }}>
                 {t('Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.')}
               </p>
