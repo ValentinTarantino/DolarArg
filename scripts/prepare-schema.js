@@ -77,12 +77,12 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "cockroachdb"
   url       = env("DATABASE_URL")
 }
 
 model DolarRate {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id @default(sequence())
   casa      String
   nombre    String
   compra    Float
@@ -94,7 +94,7 @@ model DolarRate {
 }
 
 model ExchangeRateHistory {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id @default(sequence())
   codigo    String   // EUR o BRL
   tipo      String   // oficial, blue, tarjeta
   compra    Float
@@ -106,7 +106,7 @@ model ExchangeRateHistory {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id @default(sequence())
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -114,7 +114,7 @@ model User {
 }
 
 model Alert {
-  id          Int      @id @default(autoincrement())
+  id          Int      @id @default(sequence())
   userId      Int
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   casa        String
@@ -125,7 +125,7 @@ model Alert {
 }
 
 model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id @default(sequence())
   email     String
   token     String   @unique
   expiresAt DateTime

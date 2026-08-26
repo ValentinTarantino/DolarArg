@@ -97,6 +97,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(formattedHistory);
   } catch (error: any) {
     console.error('Error en API history:', error);
-    return NextResponse.json({ error: 'Error interno del servidor', details: error.message }, { status: 500 });
+    try {
+      const { searchParams } = new URL(request.url);
+      const casa = searchParams.get('type') || 'blue';
+      const days = parseInt(searchParams.get('days') || '30', 10) || 30;
+      const publicResponse = await fetch('https://dolarapi.com/v1/dolares', { cache: 'no-store' });
+
+      if (publicResponse.ok) {
+        const publicRates = await publicResponse.json();
+        const currentRate = publicRates.find((rate: any) => rate.casa === casa);
+        if (currentRate) {
+          console.warn(`[HISTORY] Base de datos no disponible para ${casa}; usando DolarAPI como respaldo.`);
+          return NextResponse.json(buildFallbackHistory(casa, days, {
+            compra: Number(currentRate.compra),
+            venta: Number(currentRate.venta),
+          }));
+        }
+      }
+    } catch (fallbackError) {
+      console.error('Error generando historial de respaldo:', fallbackError);
+    }
+
+    return NextResponse.json({ error: 'No se pudo cargar el historial' }, { status: 503 });
   }
 }
