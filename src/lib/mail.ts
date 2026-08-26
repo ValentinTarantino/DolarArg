@@ -1,11 +1,17 @@
 import nodemailer from 'nodemailer';
 
-export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<boolean> {
+export async function sendPasswordResetEmail(to: string, resetUrl: string, language: 'es' | 'en' = 'es'): Promise<boolean> {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM || '"Dólar Hoy Argentina" <noreply@dolarhoy.com>';
+  const en = language === 'en';
+  const copy = en ? {
+    subject: '🔐 Reset your password — Dólar Hoy Argentina', title: 'Reset your password', badge: 'Security', headline: 'Reset your password', intro: 'We received a request to reset your account password.', action: 'Click the button below to choose a new password.', expires: 'This link expires in 1 hour.', button: 'Reset password', note: 'If you did not request this change, you can ignore this email. Your password will not be changed.', footer: 'This is an automated email from Dólar Hoy Argentina.', text: 'Reset your password by visiting:'
+  } : {
+    subject: '🔐 Restablecer contraseña — Dólar Hoy Argentina', title: 'Restablecer contraseña', badge: 'Seguridad', headline: 'Restablecer tu contraseña', intro: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta.', action: 'Hacé click en el botón de abajo para elegir una nueva contraseña.', expires: 'Este enlace expira en 1 hora.', button: 'Restablecer contraseña', note: 'Si no solicitaste este cambio, podés ignorar este correo. Tu contraseña no será modificada.', footer: 'Este es un correo automático de Dólar Hoy Argentina.', text: 'Restablecé tu contraseña ingresando a:'
+  };
 
   if (!host || !user || !pass) {
     console.warn(`[MAIL SIMULADOR] Reset de contraseña para ${to}. Link: ${resetUrl}`);
@@ -21,7 +27,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Restablecer contraseña</title>
+        <title>${copy.title}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0a0b10; color: #f1f5f9; margin: 0; padding: 0; }
           .container { max-width: 600px; margin: 20px auto; background-color: #12131c; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; }
@@ -40,20 +46,20 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
         <div class="container">
           <div class="header"><h1>Dólar Hoy Argentina</h1></div>
           <div class="body">
-            <div class="badge">Seguridad</div>
-            <div class="headline">Restablecer tu contraseña</div>
+            <div class="badge">${copy.badge}</div>
+            <div class="headline">${copy.headline}</div>
             <div class="description">
-              Recibimos una solicitud para restablecer la contraseña de tu cuenta.<br>
-              Hacé click en el botón de abajo para elegir una nueva contraseña.<br><br>
-              <strong>Este enlace expira en 1 hora.</strong>
+              ${copy.intro}<br>
+              ${copy.action}<br><br>
+              <strong>${copy.expires}</strong>
             </div>
-            <a href="${resetUrl}" class="btn">Restablecer contraseña</a>
+            <a href="${resetUrl}" class="btn">${copy.button}</a>
             <div class="note">
-              Si no solicitaste este cambio, podés ignorar este correo. Tu contraseña no será modificada.
+              ${copy.note}
             </div>
           </div>
           <div class="footer">
-            Este es un correo automático de Dólar Hoy Argentina.<br>
+            ${copy.footer}<br>
             © ${new Date().getFullYear()} Valentín Tarantino
           </div>
         </div>
@@ -64,8 +70,8 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
     const info = await transporter.sendMail({
       from,
       to,
-      subject: '🔐 Restablecer contraseña — Dólar Hoy Argentina',
-      text: `Restablecé tu contraseña ingresando a: ${resetUrl} (válido por 1 hora)`,
+      subject: copy.subject,
+      text: `${copy.text} ${resetUrl} (valid for 1 hour)`,
       html: htmlContent,
     });
 
@@ -82,13 +88,19 @@ export async function sendAlertEmail(
   casa: string,
   currentPrice: number,
   condition: string,
-  targetPrice: number
+  targetPrice: number,
+  language: string = 'es'
 ): Promise<boolean> {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM || '"Alertas Dólar" <noreply@dolarhoy.com>';
+  const copy = language === 'en' ? {
+    subject: '🚨 Alert triggered!', badge: 'Alert triggered', headline: `Your target price for the ${casa} dollar has been reached!`, target: 'Your Target Price', current: 'Current Sell Price', hello: 'Hello,', body: `The sell rate for the ${casa} dollar reached`, condition: 'meeting your alert condition', dashboard: 'View Live Dashboard', footer: 'This is an automated email from Dólar Hoy Argentina. Please do not reply to this message.', above: 'greater than or equal to (≥)', below: 'less than or equal to (≤)'
+  } : {
+    subject: '🚨 ¡Alerta Disparada!', badge: 'Alerta Disparada', headline: `¡Tu precio objetivo para el Dólar ${casa} ha sido alcanzado!`, target: 'Tu Precio Objetivo', current: 'Valor Actual Venta', hello: 'Hola,', body: `Te informamos que la cotización de venta del Dólar ${casa} alcanzó el valor de`, condition: 'cumpliendo con la condición establecida en tu alerta (que sea', dashboard: 'Ver Dashboard en Vivo', footer: 'Este es un correo automático de Dólar Hoy Argentina. Por favor no respondas a este mensaje.', above: 'mayor o igual a (≥)', below: 'menor o igual a (≤)'
+  };
 
   if (!host || !user || !pass) {
     console.warn(
@@ -118,7 +130,7 @@ export async function sendAlertEmail(
       mayorista: 'Mayorista',
     };
     const casaUpper = casaNombres[casa] ?? (casa.charAt(0).toUpperCase() + casa.slice(1));
-    const conditionText = condition === 'ABOVE' ? 'mayor o igual a (≥)' : 'menor o igual a (≤)';
+    const conditionText = condition === 'ABOVE' ? copy.above : copy.below;
     const conditionSymbol = condition === 'ABOVE' ? '≥' : '≤';
 
     const themeColor = {
@@ -307,35 +319,35 @@ export async function sendAlertEmail(
             <h1>Dólar Hoy Argentina</h1>
           </div>
           <div class="body">
-            <div class="notification-badge">Alerta Disparada</div>
-            <div class="headline">¡Tu precio objetivo para el Dólar ${casaUpper} ha sido alcanzado!</div>
+            <div class="notification-badge">${copy.badge}</div>
+            <div class="headline">${language === 'en' ? `Your target price for the ${casaUpper} dollar has been reached!` : `¡Tu precio objetivo para el Dólar ${casaUpper} ha sido alcanzado!`}</div>
             
             <!-- Caja de Precios estructurada en Tabla para compatibilidad total de correo -->
             <table class="pricing-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin: 25px 0; padding: 20px; width: 100% !important;">
               <tr>
                 <td class="pricing-cell target-cell" width="48%" align="center" valign="middle" style="text-align: center;">
-                  <div class="price-label" style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">Tu Precio Objetivo</div>
+                  <div class="price-label" style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">${copy.target}</div>
                   <div class="price-value alert-target" style="font-size: 26px; font-weight: 800; color: #f59e0b; white-space: nowrap;">${conditionSymbol} $${targetPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
                 </td>
                 <td class="pricing-divider" width="4%" align="center" valign="middle" style="text-align: center;">
                   <div class="divider-line" style="width: 1px; height: 50px; background-color: rgba(255, 255, 255, 0.12); margin: 0 auto;"></div>
                 </td>
                 <td class="pricing-cell current-cell" width="48%" align="center" valign="middle" style="text-align: center;">
-                  <div class="price-label" style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">Valor Actual Venta</div>
+                  <div class="price-label" style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">${copy.current}</div>
                   <div class="price-value current-price" style="font-size: 26px; font-weight: 800; color: ${themeColor}; white-space: nowrap;">$${currentPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
                 </td>
               </tr>
             </table>
 
             <div class="description">
-              Hola,<br><br>
-              Te informamos que la cotización de venta del <strong>Dólar ${casaUpper}</strong> alcanzó el valor de <strong>$${currentPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>, cumpliendo con la condición establecida en tu alerta (que sea <strong>${conditionText} $${targetPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>).
+              ${copy.hello}<br><br>
+              ${copy.body} <strong>$${currentPrice.toLocaleString(language === 'en' ? 'en-US' : 'es-AR', { minimumFractionDigits: 2 })}</strong>, ${copy.condition} <strong>${conditionText} $${targetPrice.toLocaleString(language === 'en' ? 'en-US' : 'es-AR', { minimumFractionDigits: 2 })}</strong>).
             </div>
 
-            <a href="${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}" class="btn-primary" style="display: inline-block; background-color: #6366f1; color: #ffffff !important; text-decoration: none !important; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); border: 1px solid #6366f1;">Ver Dashboard en Vivo</a>
+            <a href="${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}" class="btn-primary" style="display: inline-block; background-color: #6366f1; color: #ffffff !important; text-decoration: none !important; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); border: 1px solid #6366f6;">${copy.dashboard}</a>
           </div>
           <div class="footer">
-            Este es un correo automático de Dólar Hoy Argentina. Por favor no respondas a este mensaje.<br>
+            ${copy.footer}<br>
             © ${new Date().getFullYear()} Valentín Tarantino
           </div>
         </div>
@@ -346,8 +358,8 @@ export async function sendAlertEmail(
     const info = await transporter.sendMail({
       from,
       to,
-      subject: `🚨 ¡Alerta Disparada! Dólar ${casaUpper} está a $${currentPrice}`,
-      text: `Alerta Disparada: El Dólar ${casaUpper} llegó a $${currentPrice}, cumpliendo tu condición de ${conditionSymbol} $${targetPrice}.`,
+      subject: `${copy.subject} Dólar ${casaUpper}`,
+      text: `${copy.badge}: ${casaUpper} $${currentPrice}, ${conditionSymbol} $${targetPrice}.`,
       html: htmlContent,
     });
 

@@ -26,7 +26,8 @@ export async function POST(request: Request) {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const resetUrl = `${baseUrl}?reset_token=${token}`;
 
-      await sendPasswordResetEmail(email, resetUrl);
+      const language = request.headers.get('cookie')?.match(/(?:^|;\s*)dolararg-language=(en|es)/)?.[1] === 'en' ? 'en' : 'es';
+      await sendPasswordResetEmail(email, resetUrl, language);
     }
 
     return NextResponse.json({

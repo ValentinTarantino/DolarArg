@@ -30,7 +30,7 @@ async function checkAndTriggerAlerts(rates: any[]) {
 
           console.log(`[LOCAL CRON] ✅ Alerta #${alert.id} disparada para ${alert.user.email} - Dólar ${alert.casa} a $${price}`);
           try {
-            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value);
+            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value, alert.language);
           } catch (emailError) {
             console.error(`[LOCAL CRON] ❌ Error enviando email para alerta #${alert.id}:`, emailError);
           }

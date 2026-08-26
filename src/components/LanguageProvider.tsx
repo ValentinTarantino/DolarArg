@@ -147,6 +147,7 @@ const translations: Array<[string, string]> = [
   ["No hay datos disponibles", "No data available"],
   ["¿Olvidaste tu contraseña?", "Forgot your password?"],
   ["Tu contraseña fue restablecida exitosamente", "Your password has been reset successfully"],
+  ["Contraseña actualizada con éxito. Ya podés iniciar sesión.", "Password updated successfully. You can now sign in."],
   ["Comprar de a poco", "Buy little by little"],
   ["Buscar moneda...", "Search currency..."],
   ["Buscar", "Search"],
@@ -434,6 +435,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.localStorage.setItem("dolararg-language", language);
+    document.cookie = `dolararg-language=${language}; path=/; max-age=31536000; samesite=lax`;
     translatePage(language);
     let translating = false;
     const observer = new MutationObserver(() => {

@@ -265,14 +265,14 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
               {!forgotMsg ? (
                 <form onSubmit={handleForgotPassword} className="calculator-form">
                   <div className="input-container">
-                    <label>Correo Electrónico</label>
+                    <label>{t('Correo Electrónico')}</label>
                     <div className="input-wrapper">
                       <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
                       <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder={t('ejemplo@correo.com')} style={{ paddingLeft: '38px' }} required />
                     </div>
                   </div>
                   {forgotError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{forgotError}</div>}
-                  <button type="submit" className="btn-primary" disabled={forgotLoading}>{forgotLoading ? 'Enviando...' : 'Enviar enlace'}</button>
+                  <button type="submit" className="btn-primary" disabled={forgotLoading}>{forgotLoading ? t('Enviando...') : t('Enviar enlace')}</button>
                 </form>
               ) : (
                 <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{t(forgotMsg)}</div>
@@ -298,7 +298,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   <button type="submit" className="btn-primary" disabled={resetLoading}>{resetLoading ? t('Guardando...') : t('Guardar contraseña')}</button>
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{resetMsg}</div>
+                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>{t(resetMsg)}</div>
               )}
             </>
           ) : (
@@ -356,7 +356,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
               id="logout-btn"
             >
               <LogOut size={14} />
-              Salir
+              {t('Salir')}
             </button>
           </div>
 
@@ -426,16 +426,16 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   <div key={alert.id} className={`alert-item ${alert.isTriggered ? 'triggered' : ''}`}>
                     <div className="alert-info">
                       <span className="config">
-                        {getDolarName(alert.casa)} {alert.condition === 'ABOVE' ? '≥' : '≤'} ${alert.value}
+                        {t(getDolarName(alert.casa))} {alert.condition === 'ABOVE' ? '≥' : '≤'} ${alert.value}
                       </span>
                       <span className="status">
                         {alert.isTriggered ? (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f43f5e' }}>
-                            <CheckCircle size={12} /> Disparada
+                            <CheckCircle size={12} /> {t('Disparada')}
                           </span>
                         ) : (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981' }}>
-                            <Clock size={12} /> Activa
+                            <Clock size={12} /> {t('Activa')}
                           </span>
                         )}
                       </span>
@@ -444,7 +444,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                     <button
                       onClick={() => handleDeleteAlert(alert.id)}
                       className="delete-btn"
-                      title="Eliminar alerta"
+                      title={t('Eliminar alerta')}
                       id={`delete-alert-${alert.id}`}
                     >
                       <Trash2 size={16} />

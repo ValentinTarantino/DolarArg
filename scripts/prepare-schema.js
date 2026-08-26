@@ -121,6 +121,7 @@ model Alert {
   condition   String   // "ABOVE" or "BELOW"
   value       Float
   isTriggered Boolean  @default(false)
+  language    String   @default("es")
   createdAt   DateTime @default(now())
 }
 

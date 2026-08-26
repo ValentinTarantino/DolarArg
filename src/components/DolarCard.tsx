@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from './LanguageProvider';
 import {
   Globe,
   TrendingUp,
@@ -36,6 +37,7 @@ const DolarCard: React.FC<DolarCardProps> = ({
   variacion,
   isHighlighted
 }) => {
+  const { t, language } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const formattedBuy = compra ? compra.toFixed(2) : '-';
@@ -44,9 +46,11 @@ const DolarCard: React.FC<DolarCardProps> = ({
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const text = `💵 Dólar ${nombre} hoy en Argentina\n🟢 Compra: $${formattedBuy}\n🔴 Venta: $${formattedSell}\n📊 Brecha: ${spread}%\n\nDolarARG - dolararg.vercel.app`;
+    const text = language === 'en'
+      ? `💵 ${t('Dólar')} ${t(nombre)} ${t('Hoy').toLowerCase()} in Argentina\n🟢 ${t('Compra')}: $${formattedBuy}\n🔴 ${t('Venta')}: $${formattedSell}\n📊 ${t('Brecha')}: ${spread}%\n\nDolarARG - dolararg.vercel.app`
+      : `💵 Dólar ${nombre} hoy en Argentina\n🟢 Compra: $${formattedBuy}\n🔴 Venta: $${formattedSell}\n📊 Brecha: ${spread}%\n\nDolarARG - dolararg.vercel.app`;
     if (navigator.share) {
-      navigator.share({ title: `Dólar ${nombre}`, text });
+      navigator.share({ title: `${t('Dólar')} ${t(nombre)}`, text });
     } else {
       navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
@@ -94,24 +98,24 @@ const DolarCard: React.FC<DolarCardProps> = ({
       }}
     >
       <div className="card-header">
-        <span className="card-title">{`Dólar ${nombre}`}</span>
+        <span className="card-title">{`${t('Dólar')} ${t(nombre)}`}</span>
         <span className="card-badge-icon">{getIcon()}</span>
       </div>
 
       <div className="card-values">
         <div className="value-group">
-          <span className="label">Compra</span>
+          <span className="label">{t('Compra')}</span>
           <span className="price">${formattedBuy}</span>
         </div>
         <div className="value-group">
-          <span className="label">Venta</span>
+          <span className="label">{t('Venta')}</span>
           <span className="price" style={{ color: '#f43f5e' }}>${formattedSell}</span>
         </div>
       </div>
 
       <div className="card-footer">
         <div className="spread">
-          Brecha: <span>{spread}%</span>
+          {t('Brecha')}: <span>{spread}%</span>
         </div>
         {variacionFormateada && variacion !== undefined && (
           <div style={{
@@ -129,7 +133,7 @@ const DolarCard: React.FC<DolarCardProps> = ({
 
         <button
           onClick={handleShare}
-          title={copied ? '¡Copiado!' : 'Compartir'}
+          title={copied ? t('¡Copiado!') : t('Compartir')}
           style={{
             display: 'flex', alignItems: 'center', gap: '4px',
             background: 'transparent', border: 'none',
@@ -140,7 +144,7 @@ const DolarCard: React.FC<DolarCardProps> = ({
           }}
         >
           {copied ? <Check size={13} /> : <Share2 size={13} />}
-          <span>{copied ? '¡Copiado!' : 'Compartir'}</span>
+          <span>{copied ? t('¡Copiado!') : t('Compartir')}</span>
         </button>
       </div>
     </div>

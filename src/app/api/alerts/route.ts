@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { casa, condition, value } = await request.json();
+    const language = request.cookies.get('dolararg-language')?.value === 'en' ? 'en' : 'es';
 
     if (!casa || !condition || !value) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
@@ -56,15 +57,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El valor debe ser un número positivo' }, { status: 400 });
     }
 
-    // Obtener la cotización actual para esa casa en la base de datos
-    const latestRate = await prisma.dolarRate.findFirst({
+    // Obtener la cotización actual desde la base de datos
+    let latestRate = await prisma.dolarRate.findFirst({
       where: { casa },
       orderBy: { fecha: 'desc' }
     });
 
     let isTriggered = false;
-    if (latestRate) {
-      const price = latestRate.venta;
+    const latestRateIsFresh = latestRate
+      ? Date.now() - new Date(latestRate.fecha).getTime() <= 15 * 60 * 1000
+      : false;
+    let currentPrice = latestRateIsFresh ? latestRate?.venta : undefined;
+
+    // Si todavía no hay snapshot guardado, consultar la fuente pública.
+    if (currentPrice === undefined) {
+      try {
+        const publicResponse = await fetch('https://dolarapi.com/v1/dolares', { cache: 'no-store' });
+        if (publicResponse.ok) {
+          const publicRates = await publicResponse.json();
+          const publicRate = publicRates.find((rate: any) => rate.casa === casa);
+          if (publicRate) currentPrice = Number(publicRate.venta);
+        }
+      } catch (publicError) {
+        console.error('No se pudo consultar la cotización pública para evaluar la alerta:', publicError);
+      }
+    }
+
+    if (currentPrice === undefined && latestRate?.venta !== undefined) {
+      // Si la fuente pública no responde, usar el último valor conocido como
+      // último recurso, pero no bloquear la creación de la alerta.
+      currentPrice = latestRate.venta;
+    }
+
+    if (currentPrice !== undefined) {
+      const price = currentPrice;
       isTriggered =
         (condition === 'ABOVE' && price >= numericValue) ||
         (condition === 'BELOW' && price <= numericValue);
@@ -80,19 +106,20 @@ export async function POST(request: NextRequest) {
         casa,
         condition,
         value: numericValue,
-        isTriggered
+        isTriggered,
+        language
       }
     });
 
     // Si se disparó de forma inmediata, enviamos el correo electrónico
-    if (isTriggered && latestRate) {
+    if (isTriggered && currentPrice !== undefined) {
       // Buscar el correo del usuario para enviarle la alerta
       const user = await prisma.user.findUnique({
         where: { id: userId }
       });
       if (user?.email) {
         try {
-          await sendAlertEmail(user.email, casa, latestRate.venta, condition, numericValue);
+          await sendAlertEmail(user.email, casa, currentPrice, condition, numericValue, language);
         } catch (emailError) {
           console.error(`Error enviando email para nueva alerta:`, emailError);
         }

@@ -35,7 +35,7 @@ async function checkAndTriggerAlerts(rates: any[]) {
 
           // Enviar email
           try {
-            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value);
+            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value, alert.language);
           } catch (emailError) {
             console.error(`Error enviando email para alerta #${alert.id}:`, emailError);
           }
