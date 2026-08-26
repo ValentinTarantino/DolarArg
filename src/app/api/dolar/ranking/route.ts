@@ -49,6 +49,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(rankings);
   } catch (error: any) {
     console.error('Error en API ranking:', error);
-    return NextResponse.json({ error: 'Error interno', details: error.message }, { status: 500 });
+    return NextResponse.json([], { status: 200 });
   }
 }

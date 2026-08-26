@@ -99,6 +99,11 @@ export default function Home() {
     };
   }, []);
   useEffect(() => {
+    // En Vercel/Neon no mantener una conexión SSE por visitante: el endpoint
+    // consulta la base periódicamente y puede agotar rápidamente el límite
+    // mensual de compute. El polling de respaldo mantiene los datos frescos.
+    if (process.env.NODE_ENV === 'production') return;
+
     let eventSource: EventSource | null = null;
     let reconnectTimer: NodeJS.Timeout | null = null;
     let reconnectAttempts = 0;

@@ -42,18 +42,25 @@ async function checkAndTriggerAlerts(rates: any[]) {
 
 export async function GET() {
   try {
+    let latestRatesInDb: any[] = [];
+    let databaseAvailable = true;
 
-    const latestRatesInDb = await prisma.dolarRate.findMany({
-      orderBy: { fecha: 'desc' },
-      take: 7, 
-    });
+    try {
+      latestRatesInDb = await prisma.dolarRate.findMany({
+        orderBy: { fecha: 'desc' },
+        take: 7,
+      });
+    } catch (databaseError) {
+      databaseAvailable = false;
+      console.error('Base de datos no disponible; usando DolarAPI como fallback:', databaseError);
+    }
 
     const now = new Date();
-    let shouldFetch = false;
+    let shouldFetch = !databaseAvailable;
 
-    if (latestRatesInDb.length < 7) {
+    if (databaseAvailable && latestRatesInDb.length < 7) {
       shouldFetch = true;
-    } else {
+    } else if (databaseAvailable) {
       const latestDate = new Date(latestRatesInDb[0].fecha);
       if (now.getTime() - latestDate.getTime() > REVALIDATION_TIMEOUT_MS) {
         shouldFetch = true;
@@ -85,10 +92,14 @@ export async function GET() {
         }
 
         if (ratesToInsert.length > 0) {
-          await prisma.dolarRate.createMany({
-            data: ratesToInsert
-          });
-          console.log(`Se guardaron ${ratesToInsert.length} nuevas cotizaciones en la base de datos.`);
+          try {
+            await prisma.dolarRate.createMany({
+              data: ratesToInsert
+            });
+            console.log(`Se guardaron ${ratesToInsert.length} nuevas cotizaciones en la base de datos.`);
+          } catch (databaseError) {
+            console.error('No se pudieron guardar las cotizaciones; se devuelven igualmente desde DolarAPI:', databaseError);
+          }
           
           await checkAndTriggerAlerts(ratesToInsert);
 
@@ -104,13 +115,22 @@ export async function GET() {
     const desiredTypes = ["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"];
     const latestUniqueRates = [];
 
+    if (!databaseAvailable) {
+      return NextResponse.json(latestUniqueRates);
+    }
+
     for (const casa of desiredTypes) {
-      const latestRate = await prisma.dolarRate.findFirst({
-        where: { casa },
-        orderBy: { id: 'desc' }
-      });
-      if (latestRate) {
-        latestUniqueRates.push(latestRate);
+      try {
+        const latestRate = await prisma.dolarRate.findFirst({
+          where: { casa },
+          orderBy: { id: 'desc' }
+        });
+        if (latestRate) {
+          latestUniqueRates.push(latestRate);
+        }
+      } catch (databaseError) {
+        console.error('Error leyendo cotizaciones guardadas:', databaseError);
+        break;
       }
     }
 
