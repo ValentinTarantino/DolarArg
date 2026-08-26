@@ -113,7 +113,15 @@ export async function GET() {
     
     
     const desiredTypes = ["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"];
-    const latestUniqueRates = [];
+    const latestUniqueRates: Array<{
+      id: number;
+      casa: string;
+      nombre: string;
+      compra: number;
+      venta: number;
+      fecha: Date;
+      createdAt: Date;
+    }> = [];
 
     if (!databaseAvailable) {
       return NextResponse.json(latestUniqueRates);
