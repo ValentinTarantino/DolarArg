@@ -379,7 +379,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
 
       {ranking.length > 0 && !loading && !error && (
         <div className="ranking-panel">
-          <h4 className="ranking-title">{`Ranking de Rendimiento (${days} días)`}</h4>
+          <h4 className="ranking-title">{`${t('Ranking de Rendimiento')} (${days} ${t('días')})`}</h4>
           <div className="ranking-list">
             {ranking.map((item, i) => (
               <div key={item.casa} className={`ranking-row ${item.casa === selectedCasa ? 'active' : ''}`}>
