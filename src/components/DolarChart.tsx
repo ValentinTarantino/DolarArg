@@ -210,17 +210,17 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
 
       <div className="chart-controls">
         <div className="btn-group">
-          <button 
-            className={`tab-btn ${days === 7 ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${days === 7 ? 'active' : ''}`}
             onClick={() => setDays(7)}
           >
-            7 Días
+            {t('7 Días')}
           </button>
-          <button 
-            className={`tab-btn ${days === 30 ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${days === 30 ? 'active' : ''}`}
             onClick={() => setDays(30)}
           >
-            30 Días
+            {t('30 Días')}
           </button>
         </div>
 
