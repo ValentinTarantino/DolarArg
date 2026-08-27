@@ -3,6 +3,7 @@ import { prisma } from './db';
 import { sendAlertEmail } from './mail';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
+const HISTORICAL_API_BASE = 'https://api.argentinadatos.com/v1/cotizaciones/dolares';
 
 async function checkAndTriggerAlerts(rates: any[]) {
   try {
@@ -47,6 +48,95 @@ async function checkAndTriggerAlerts(rates: any[]) {
 }
 
 
+async function fillMissingHistoricalData() {
+  try {
+    console.log('[LOCAL CRON] 📊 Verificando datos históricos faltantes...');
+    
+    const casas = ["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"];
+    const daysToCheck = 7; // Verificar últimos 7 días
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysToCheck);
+    
+    let totalFilled = 0;
+    
+    for (const casa of casas) {
+      try {
+        const response = await fetch(`${HISTORICAL_API_BASE}/${casa}`, { cache: 'no-store' });
+        
+        if (!response.ok) {
+          console.warn(`[LOCAL CRON] No se pudo obtener historial para ${casa}`);
+          continue;
+        }
+        
+        const historicalData = await response.json();
+        
+        // Filtrar datos faltantes de los últimos días
+        const missingData = historicalData.filter((item: any) => {
+          const itemDate = new Date(item.fecha);
+          return itemDate >= startDate && item.compra !== null && item.venta !== null;
+        });
+        
+        if (missingData.length === 0) continue;
+        
+        // Verificar cuáles faltan en la BD
+        for (const item of missingData) {
+          const existing = await prisma.dolarRate.findFirst({
+            where: {
+              casa: casa,
+              fecha: {
+                gte: new Date(new Date(item.fecha).setHours(0, 0, 0, 0)),
+                lt: new Date(new Date(item.fecha).setHours(23, 59, 59, 999))
+              }
+            }
+          });
+          
+          if (!existing) {
+            try {
+              await prisma.dolarRate.create({
+                data: {
+                  casa: casa,
+                  nombre: getCasaNombre(casa),
+                  compra: Number(item.compra),
+                  venta: Number(item.venta),
+                  fecha: new Date(item.fecha)
+                }
+              });
+              totalFilled++;
+            } catch (error: any) {
+              if (error.code !== 'P2002') {
+                console.error(`[LOCAL CRON] Error insertando dato histórico ${casa}:`, error.message);
+              }
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.warn(`[LOCAL CRON] Error verificando historial ${casa}:`, error);
+      }
+    }
+    
+    if (totalFilled > 0) {
+      console.log(`[LOCAL CRON] ✅ Completados ${totalFilled} datos históricos faltantes`);
+    }
+    
+  } catch (error) {
+    console.error('[LOCAL CRON] Error en fillMissingHistoricalData:', error);
+  }
+}
+
+function getCasaNombre(casa: string): string {
+  const nombres: Record<string, string> = {
+    oficial: 'Oficial',
+    blue: 'Blue',
+    bolsa: 'Bolsa',
+    contadoconliqui: 'Contado con Liqui',
+    tarjeta: 'Tarjeta',
+    cripto: 'Cripto',
+    mayorista: 'Mayorista'
+  };
+  return nombres[casa] || casa;
+}
+
 async function runCronCycle() {
   try {
     console.log(`[LOCAL CRON] 🔄 Ejecutando ciclo a las ${new Date().toLocaleTimeString('es-AR')}`);
@@ -85,6 +175,12 @@ async function runCronCycle() {
     }
 
     await checkAndTriggerAlerts(ratesToInsert);
+    
+    // Completar datos históricos faltantes (cada 6 horas aprox)
+    const hour = now.getHours();
+    if (hour % 6 === 0) {
+      await fillMissingHistoricalData();
+    }
   } catch (error: any) {
     console.error('[LOCAL CRON] Error general:', error.message);
   }
