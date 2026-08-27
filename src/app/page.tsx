@@ -99,9 +99,6 @@ export default function Home() {
     };
   }, []);
   useEffect(() => {
-    // En Vercel/Neon no mantener una conexión SSE por visitante: el endpoint
-    // consulta la base periódicamente y puede agotar rápidamente el límite
-    // mensual de compute. El polling de respaldo mantiene los datos frescos.
     if (process.env.NODE_ENV === 'production') return;
 
     let eventSource: EventSource | null = null;
@@ -300,135 +297,135 @@ export default function Home() {
           </div>
         </header>
 
-      {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', fontSize: '1.25rem', color: '#94a3b8' }}>
-          Iniciando dashboard...
-        </div>
-      ) : error ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#f43f5e', fontWeight: 'bold' }}>
-          Error: {error}
-        </div>
-      ) : (
-        <>
-          <CurrencyNavbar activeTab={activeTab} onTabChange={setActiveTab} />
+        {loading ? (
+          <div style={{ padding: '60px', textAlign: 'center', fontSize: '1.25rem', color: '#94a3b8' }}>
+            Iniciando dashboard...
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#f43f5e', fontWeight: 'bold' }}>
+            Error: {error}
+          </div>
+        ) : (
+          <>
+            <CurrencyNavbar activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {activeTab === 'dolar' && (
-            <>
-              <main className="dolar-grid">
-                {rates.map((rate) => {
-                  const rankingItem = rankingData.find((r: any) => r.casa === rate.casa);
-                  const variacion = rankingItem ? rankingItem.variacion : undefined;
-                  const isHighlighted = highlightedCard?.currency === 'dolar' && highlightedCard?.tipo === rate.casa;
-                  return (
-                    <DolarCard
-                      key={rate.casa}
-                      casa={rate.casa}
-                      nombre={rate.nombre}
-                      compra={rate.compra}
-                      venta={rate.venta}
-                      source="DolarAPI"
-                      onSelect={(casa: string) => setSelectedCasa(casa)}
-                      isSelected={selectedCasa === rate.casa}
-                      variacion={variacion}
-                      isHighlighted={isHighlighted}
-                    />
-                  );
-                })}
-                {/* Glosario en el espacio vacío de la grilla */}
-                <div className="dolar-card" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '0', maxHeight: '200px' }}>
-                  <div className="card-header" style={{ marginBottom: '10px' }}>
-                    <span className="card-title" style={{ fontSize: '0.95rem' }}>Glosario</span>
-                  </div>
-                  <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
-                    {[
-                      { name: 'Dólar Oficial', desc: 'Cotización base del Banco Nación sin impuestos. Referencia para importaciones y tarjetas.', color: '#10b981' },
-                      { name: 'Dólar Blue', desc: 'Mercado informal (paralelo). Libre de impuestos y sin límites de compra.', color: '#6366f1' },
-                      { name: 'Dólar MEP / Bolsa', desc: 'Dólar legal mediante compra-venta de bonos en pesos y dólares. Sin límites.', color: '#f59e0b' },
-                      { name: 'Dólar CCL', desc: 'Contado con Liquidación. Permite dolarizar activos a través de acciones o bonos en el exterior.', color: '#06b6d4' },
-                      { name: 'Dólar Tarjeta', desc: 'Oficial + 30% de percepciones impositivas. Aplica a compras con tarjeta en moneda extranjera.', color: '#f43f5e' },
-                      { name: 'Dólar Cripto', desc: 'Cotización en plataformas cripto para stablecoins (USDT/DAI). Disponible 24hs.', color: '#a855f7' },
-                      { name: 'Dólar Mayorista', desc: 'Solo para bancos y grandes operadores. Menor spread, sin acceso al público general.', color: '#64748b' },
-                    ].map((item, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0, marginTop: '5px' }} />
-                        <div>
-                          <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{item.name}: </span>
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.desc}</span>
+            {activeTab === 'dolar' && (
+              <>
+                <main className="dolar-grid">
+                  {rates.map((rate) => {
+                    const rankingItem = rankingData.find((r: any) => r.casa === rate.casa);
+                    const variacion = rankingItem ? rankingItem.variacion : undefined;
+                    const isHighlighted = highlightedCard?.currency === 'dolar' && highlightedCard?.tipo === rate.casa;
+                    return (
+                      <DolarCard
+                        key={rate.casa}
+                        casa={rate.casa}
+                        nombre={rate.nombre}
+                        compra={rate.compra}
+                        venta={rate.venta}
+                        source="DolarAPI"
+                        onSelect={(casa: string) => setSelectedCasa(casa)}
+                        isSelected={selectedCasa === rate.casa}
+                        variacion={variacion}
+                        isHighlighted={isHighlighted}
+                      />
+                    );
+                  })}
+                  {/* Glosario en el espacio vacío de la grilla */}
+                  <div className="dolar-card" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '0', maxHeight: '200px' }}>
+                    <div className="card-header" style={{ marginBottom: '10px' }}>
+                      <span className="card-title" style={{ fontSize: '0.95rem' }}>Glosario</span>
+                    </div>
+                    <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                      {[
+                        { name: 'Dólar Oficial', desc: 'Cotización base del Banco Nación sin impuestos. Referencia para importaciones y tarjetas.', color: '#10b981' },
+                        { name: 'Dólar Blue', desc: 'Mercado informal (paralelo). Libre de impuestos y sin límites de compra.', color: '#6366f1' },
+                        { name: 'Dólar MEP / Bolsa', desc: 'Dólar legal mediante compra-venta de bonos en pesos y dólares. Sin límites.', color: '#f59e0b' },
+                        { name: 'Dólar CCL', desc: 'Contado con Liquidación. Permite dolarizar activos a través de acciones o bonos en el exterior.', color: '#06b6d4' },
+                        { name: 'Dólar Tarjeta', desc: 'Oficial + 30% de percepciones impositivas. Aplica a compras con tarjeta en moneda extranjera.', color: '#f43f5e' },
+                        { name: 'Dólar Cripto', desc: 'Cotización en plataformas cripto para stablecoins (USDT/DAI). Disponible 24hs.', color: '#a855f7' },
+                        { name: 'Dólar Mayorista', desc: 'Solo para bancos y grandes operadores. Menor spread, sin acceso al público general.', color: '#64748b' },
+                      ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0, marginTop: '5px' }} />
+                          <div>
+                            <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{item.name}: </span>
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.desc}</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </main>
+                </main>
 
-              {/* Indicadores Macroeconómicos */}
-              <section style={{ marginTop: '40px' }}>
-                <MacroIndicators />
-              </section>
+                {/* Indicadores Macroeconómicos */}
+                <section style={{ marginTop: '40px' }}>
+                  <MacroIndicators />
+                </section>
 
-              {/* Gráfico + Calculadora + Alertas + Noticias */}
-              <section style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: '1.5fr 2fr', gap: '24px' }} className="chart-main-grid">
-                <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                  <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
-                  <Calculator rates={rates} />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="alerts-news-grid">
-                    <AlertSettings rates={rates} />
-                    <NewsFeed />
+                {/* Gráfico + Calculadora + Alertas + Noticias */}
+                <section style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: '1.5fr 2fr', gap: '24px' }} className="chart-main-grid">
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                    <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
                   </div>
-                </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
+                    <Calculator rates={rates} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="alerts-news-grid">
+                      <AlertSettings rates={rates} />
+                      <NewsFeed />
+                    </div>
+                  </div>
+                </section>
+
+                {/* Banda Cambiaria BCRA */}
+                <section style={{ marginTop: '40px' }}>
+                  <ExchangeBands rates={rates} />
+                </section>
+
+                {/* Cotizaciones Bancos y Casas de Cambio */}
+                <section style={{ marginTop: '40px' }}>
+                  <BankRates />
+                </section>
+
+
+              </>
+            )}
+
+            {activeTab === 'euro' && (
+              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                <ExchangeRateSection currency="EUR" highlightedCard={highlightedCard} activeTab={activeTab} />
+                <UniversalConverter currency="EUR" />
               </section>
+            )}
 
-              {/* Banda Cambiaria BCRA */}
-              <section style={{ marginTop: '40px' }}>
-                <ExchangeBands rates={rates} />
+            {activeTab === 'real' && (
+              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                <ExchangeRateSection currency="BRL" highlightedCard={highlightedCard} activeTab={activeTab} />
+                <UniversalConverter currency="BRL" />
               </section>
+            )}
 
-              {/* Cotizaciones Bancos y Casas de Cambio */}
-              <section style={{ marginTop: '40px' }}>
-                <BankRates />
+            {activeTab === 'clp' && (
+              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                <ExchangeRateSection currency="CLP" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
+                <UniversalConverter currency="CLP" />
               </section>
+            )}
 
+            {activeTab === 'uyu' && (
+              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                <ExchangeRateSection currency="UYU" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
+                <UniversalConverter currency="UYU" />
+              </section>
+            )}
 
-            </>
-          )}
-
-          {activeTab === 'euro' && (
-            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <ExchangeRateSection currency="EUR" highlightedCard={highlightedCard} activeTab={activeTab} />
-              <UniversalConverter currency="EUR" />
-            </section>
-          )}
-
-          {activeTab === 'real' && (
-            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <ExchangeRateSection currency="BRL" highlightedCard={highlightedCard} activeTab={activeTab} />
-              <UniversalConverter currency="BRL" />
-            </section>
-          )}
-
-          {activeTab === 'clp' && (
-            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <ExchangeRateSection currency="CLP" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
-              <UniversalConverter currency="CLP" />
-            </section>
-          )}
-
-          {activeTab === 'uyu' && (
-            <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <ExchangeRateSection currency="UYU" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
-              <UniversalConverter currency="UYU" />
-            </section>
-          )}
-
-          {activeTab === 'cripto' && (
-            <section style={{ marginTop: '20px' }}>
-              <CryptoTable />
-            </section>
-          )}
-        </>
-      )}
+            {activeTab === 'cripto' && (
+              <section style={{ marginTop: '20px' }}>
+                <CryptoTable />
+              </section>
+            )}
+          </>
+        )}
 
       </div>
       <Footer onTabChange={setActiveTab} lastUpdated={lastUpdated} />

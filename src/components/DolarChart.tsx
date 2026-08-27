@@ -105,6 +105,9 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
     { casa: 'mayorista', nombre: 'Mayorista' }
   ];
 
+  // Derive name directly from selectedCasa — never lags behind the prop
+  const currentName = dolarTypes.find(d => d.casa === selectedCasa)?.nombre ?? selectedName;
+
   const stats = React.useMemo(() => {
     if (historyData.length < 2) return null;
     const ventas = historyData.map(d => d.venta).filter(v => v > 0);
@@ -155,7 +158,6 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 fontWeight: '600'
               }}
             >
-              {t(selectedName)}
               <ChevronDown size={16} style={{ transition: 'transform 0.2s', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
             </button>
             {dropdownOpen && (
@@ -204,7 +206,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
             )}
           </div>
         ) : (
-          <span>{selectedName}</span>
+          <span>{t(currentName)}</span>
         )}
       </div>
 
@@ -244,7 +246,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
         </div>
       ) : (
         <div className="chart-wrapper" style={{ height: '400px' }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" key={selectedCasa}>
             <LineChart data={historyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="compraGlow" x1="0" y1="0" x2="0" y2="1">
@@ -291,12 +293,12 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                       <p style={{ margin: '0 0 10px', fontWeight: 600 }}>{label}</p>
                       {venta && (
                         <p style={{ margin: '0 0 8px', color: color }}>
-                          {`${t('Venta')}: ${formatValue(Number(venta.value))}`}
+                          {`${t(currentName)} - ${t('Venta')}: ${formatValue(Number(venta.value))}`}
                         </p>
                       )}
                       {compra && (
                         <p style={{ margin: 0, color: '#10b981' }}>
-                          {`${t('Compra')}: ${formatValue(Number(compra.value))}`}
+                          {`${t(currentName)} - ${t('Compra')}: ${formatValue(Number(compra.value))}`}
                         </p>
                       )}
                     </div>
@@ -309,14 +311,24 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                   color: '#f8fafc' 
                 }} 
               />
-              <Legend 
-                verticalAlign="top" 
-                height={36} 
-                iconType="circle" 
-                style={{ fontSize: '0.85rem' }}
+              <Legend
+                verticalAlign="top"
+                height={36}
+                content={() => (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '0.85rem', paddingBottom: '10px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f8fafc' }}>
+                      <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+                      {`${t(currentName)} - ${t('Compra')}`}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f8fafc' }}>
+                      <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: color }} />
+                      {`${t(currentName)} - ${t('Venta')}`}
+                    </span>
+                  </div>
+                )}
               />
               <Line 
-                name={t('Compra')}
+                name={`${t(currentName)} - ${t('Compra')}`}
                 type="monotone" 
                 dataKey="compra" 
                 stroke="#10b981" 
@@ -325,7 +337,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
                 activeDot={{ r: 6 }} 
               />
               <Line 
-                name={t('Venta')}
+                name={`${t(currentName)} - ${t('Venta')}`}
                 type="monotone" 
                 dataKey="venta" 
                 stroke={color} 
@@ -399,3 +411,4 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
 };
 
 export default DolarChart;
+

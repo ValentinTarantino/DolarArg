@@ -76,7 +76,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   return (
     <div className="panel">
       <div className="panel-title">
-        <span>Calculadora de USD y Pesos</span>
+        <span>{t('Calculadora de USD y Pesos')}</span>
       </div>
 
       <div className="calculator-form">
@@ -95,7 +95,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
         </div>
 
         <div className="input-container">
-          <label>Monto a Convertir ({conversionDirection === 'usd-to-ars' ? 'USD' : 'ARS'})</label>
+          <label>{t('Monto a Convertir')} ({conversionDirection === 'usd-to-ars' ? 'USD' : 'ARS'})</label>
           <div className="input-wrapper">
             <span className="currency-symbol" style={{ left: '14px', fontSize: '0.85rem' }}>
               {conversionDirection === 'usd-to-ars' ? 'USD' : 'ARS'}
@@ -140,7 +140,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
             >
               {rates.map(r => (
                 <option key={r.casa} value={r.casa}>
-                  {rateType === 'compra' ? `Dólar ${r.nombre} (Compra: $${r.compra})` : `Dólar ${r.nombre} (Venta: $${r.venta})`}
+                  {rateType === 'compra' ? `${t('Dólar')} ${t(r.nombre)} (${t('Compra')}: $${r.compra})` : `${t('Dólar')} ${t(r.nombre)} (${t('Venta')}: $${r.venta})`}
                 </option>
               ))}
             </select>
@@ -175,7 +175,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
           {isOfficialOrCard ? (
             <>
               <div className="result-row">
-                <span>{conversionDirection === 'usd-to-ars' ? `Monto Base (USD ${numericAmount.toFixed(2)})` : `Monto Base (ARS ${numericAmount.toFixed(2)})`}</span>
+                <span>{conversionDirection === 'usd-to-ars' ? `${t('Monto Base')} (USD ${numericAmount.toFixed(2)})` : `${t('Monto Base')} (ARS ${numericAmount.toFixed(2)})`}</span>
                 <span>{conversionDirection === 'usd-to-ars' ? `ARS ${convertedValue.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `USD ${convertedValue.toFixed(2)}`}</span>
               </div>
               <div className="result-row">

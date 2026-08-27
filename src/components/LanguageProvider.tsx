@@ -113,6 +113,12 @@ const translations: Array<[string, string]> = [
   ["¡Alerta creada con éxito!", "Alert created successfully!"],
   ["USD → ARS (Dólares a Pesos)", "USD → ARS (Dollars to Pesos)"],
   ["ARS → USD (Pesos a Dólares)", "ARS → USD (Pesos to Dollars)"],
+  ["Monto Base", "Base Amount"],
+  ["Monto a Convertir", "Amount to Convert"],
+  ["Monto en Dólares", "Amount in Dollars"],
+  ["Monto en Pesos", "Amount in Pesos"],
+  ["Total Estimado", "Estimated Total"],
+
   ["¿Ya tenés cuenta? Iniciá sesión", "Already have an account? Sign in"],
   ["¿No tenés cuenta? Registrate", "Don't have an account? Sign up"],
   ["Error al cargar cotizaciones", "Error loading exchange rates"],
