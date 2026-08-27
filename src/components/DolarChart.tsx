@@ -47,11 +47,14 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/dolar/history?type=${selectedCasa}&days=${days}`);
+        const response = await fetch(`/api/dolar/history?type=${selectedCasa}&days=${days}`, {
+          cache: 'no-store'
+        });
         if (!response.ok) {
           throw new Error('No se pudo cargar el historial');
         }
         const data = await response.json();
+        console.log('[DolarChart] Datos recibidos:', data.length, 'registros');
         setHistoryData(data);
       } catch (err: any) {
         setError(err.message || 'Error cargando datos del gráfico');
