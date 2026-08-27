@@ -247,6 +247,8 @@ const translations: Array<[string, string]> = [
   ["Blue", "Blue"],
   ["MEP", "MEP"],
   ["Contado con Liqui", "Cash with Settlement"],
+  ["Contado con liqui", "Cash with Settlement"],
+  ["Condición", "Condition"],
   ["Tarjeta", "Card"],
   ["Cripto", "Crypto"],
   ["Mayorista", "Wholesale"],
