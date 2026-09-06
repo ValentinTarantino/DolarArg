@@ -48,6 +48,7 @@ const translations: Array<[string, string]> = [
   ["La carga tardó demasiado. Intentando de nuevo en segundo plano.", "Loading took too long. Retrying in the background."],
   ["Precio cerca del mínimo del período. Puede ser buen momento para comprar.", "Price near the period low. Could be a good time to buy."],
   ["Precio cerca del máximo del período. Considerar esperar.", "Price near the period high. Consider waiting."],
+  ["Precio en rango medio. Evaluar con cuidado.", "Price in the mid range. Evaluate carefully."],
   ["oficial + 30% de recargos impositivos vigentes en Argentina", "official rate + 30% in current Argentine tax surcharges"],
   ["Cotizaciones referenciales. Verificar con el banco antes de operar.", "Reference rates. Verify with your bank before trading."],
   ["Error al enviar el correo de restablecimiento", "Error sending password reset email"],
@@ -118,6 +119,10 @@ const translations: Array<[string, string]> = [
   ["Monto en Dólares", "Amount in Dollars"],
   ["Monto en Pesos", "Amount in Pesos"],
   ["Total Estimado", "Estimated Total"],
+  ["Credenciales inválidas", "Invalid credentials"],
+  ["Error al autenticar", "Authentication error"],
+  ["Por favor ingresa un precio objetivo", "Please enter a target price"],
+  ["Error al crear alerta", "Error creating alert"],
 
   ["¿Ya tenés cuenta? Iniciá sesión", "Already have an account? Sign in"],
   ["¿No tenés cuenta? Registrate", "Don't have an account? Sign up"],
@@ -239,7 +244,7 @@ const translations: Array<[string, string]> = [
   ["Mejor opción para comprar", "Best option for buying"],
   ["Mejor opción para vender", "Best option for selling"],
   ["💡 Cotizaciones referenciales. Verificar con el banco antes de operar.", "💡 Indicative rates. Check with your bank before trading."],
-  ["Al", "At"],
+
   ["de la banda", "of the band"],
   ["BANDA CAMBIARIA", "EXCHANGE BAND"],
   ["VALOR", "VALUE"],
@@ -252,6 +257,9 @@ const translations: Array<[string, string]> = [
   ["Oficial", "Official"],
   ["Blue", "Blue"],
   ["MEP", "MEP"],
+  ["Contado con Liquidación", "Cash with Settlement"],
+  ["Contado con liquidación", "Cash with Settlement"],
+  ["Contado Con Liquidación", "Cash with Settlement"],
   ["Contado con Liqui", "Cash with Settlement"],
   ["Contado con liqui", "Cash with Settlement"],
   ["Condición", "Condition"],
@@ -380,6 +388,13 @@ const translations: Array<[string, string]> = [
   ["Actualizar noticias", "Refresh news"],
   ["Actualizar cotización", "Refresh exchange rate"],
   ["Actualizar datos macro", "Refresh macro data"],
+  ["Fuente: CoinGecko · Top 50 por capitalización de mercado", "Source: CoinGecko · Top 50 by market capitalization"],
+  ["Cargando criptomonedas...", "Loading cryptocurrencies..."],
+  ["Límite de CoinGecko alcanzado. Reintentá en 1 minuto.", "CoinGecko rate limit reached. Try again in 1 minute."],
+  ["No se encontraron criptomonedas para", "No cryptocurrencies found for"],
+  ["Volumen (24h)", "Volume (24h)"],
+  ["NOMBRE", "NAME"],
+  ["PRECIO", "PRICE"],
 ];
 
 const translationsSorted: Array<[string, string]> = translations.sort(
@@ -415,7 +430,7 @@ function translatePage(language: Language) {
   let node: Node | null;
   while ((node = walker.nextNode())) nodes.push(node as Text);
   nodes.forEach((text) => {
-    if (text.parentElement?.closest("script, style, noscript")) return;
+    if (text.parentElement?.closest("script, style, noscript, [data-no-translate]")) return;
     const current = text.nodeValue || "";
     const source = originalText.get(text) ?? current;
     originalText.set(text, source);

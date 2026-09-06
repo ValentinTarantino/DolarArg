@@ -107,7 +107,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al autenticar');
+        throw new Error(t(data.error || 'Error al autenticar'));
       }
 
       if (isRegistering) {
@@ -188,7 +188,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
     setAlertSuccess(null);
 
     if (!alertValue) {
-      setAlertError('Por favor ingresa un precio objetivo');
+      setAlertError(t('Por favor ingresa un precio objetivo'));
       return;
     }
 

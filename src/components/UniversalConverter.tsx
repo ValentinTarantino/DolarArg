@@ -59,22 +59,38 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
   }, [fromAmount, fromCurrency, toCurrency, rates]);
 
   const handleAmountChange = (value: string, setter: (val: string) => void) => {
+    // Allow digits and dots (dots used as thousand separators in Argentine format)
     const sanitized = value.replace(/[^0-9.]/g, '');
-    const parts = sanitized.split('.');
-    if (parts.length > 2) {
-      setter(parts[0] + '.' + parts.slice(1).join(''));
-    } else {
-      setter(sanitized);
+    setter(sanitized);
+  };
+
+  // Strip thousand-separator dots and parse to number
+  const parseAmount = (val: string) => {
+    // If the dot is used as a decimal (e.g. "100.5") we keep it;
+    // but if there are multiple dots (e.g. "100.000.000") all are thousand separators
+    const dotCount = (val.match(/\./g) || []).length;
+    if (dotCount > 1) {
+      // Multiple dots → all are thousand separators
+      return Number(val.replace(/\./g, ''));
     }
+    if (dotCount === 1) {
+      const parts = val.split('.');
+      // If the decimal part has exactly 3 digits it's a thousand separator (e.g. "100.000")
+      if (parts[1]?.length === 3) {
+        return Number(val.replace(/\./g, ''));
+      }
+    }
+    return Number(val);
   };
 
   const calculateConversion = () => {
-    if (!fromAmount || isNaN(Number(fromAmount)) || rates.length === 0) {
+    const numericAmount = parseAmount(fromAmount);
+    if (!fromAmount || isNaN(numericAmount) || rates.length === 0) {
       setToAmount('0');
       return;
     }
 
-    let result = Number(fromAmount);
+    let result = numericAmount;
 
     if (fromCurrency === 'ARS') {
       const rateObj = rates.find(r => `${r.codigo}-${r.tipo}` === toCurrency);

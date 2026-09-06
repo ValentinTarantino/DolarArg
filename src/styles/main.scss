@@ -10,7 +10,7 @@
 body {
   font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: $bg-dark-deep;
-  background-image: 
+  background-image:
     radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
     radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
@@ -25,13 +25,16 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: $bg-dark-deep;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
@@ -59,6 +62,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+
+
 
   .header-badge {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
@@ -122,8 +127,15 @@ body {
   }
 
   @keyframes floatLogo {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-4px) scale(1.05); }
+
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+
+    50% {
+      transform: translateY(-4px) scale(1.05);
+    }
   }
 
   .subtitle {
@@ -238,10 +250,12 @@ body {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   }
+
   70% {
     transform: scale(1);
     box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
   }
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
@@ -293,32 +307,73 @@ body {
 
   // Variations by Dolar Type
   &.oficial {
-    &::before { background-color: $success; }
-    &:hover { box-shadow: 0 8px 32px 0 $success-glow; }
+    &::before {
+      background-color: $success;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $success-glow;
+    }
   }
+
   &.blue {
-    &::before { background-color: $primary; }
-    &:hover { box-shadow: 0 8px 32px 0 $primary-glow; }
+    &::before {
+      background-color: $primary;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $primary-glow;
+    }
   }
+
   &.bolsa {
-    &::before { background-color: $warning; }
-    &:hover { box-shadow: 0 8px 32px 0 $warning-glow; }
+    &::before {
+      background-color: $warning;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $warning-glow;
+    }
   }
+
   &.contadoconliqui {
-    &::before { background-color: $info; }
-    &:hover { box-shadow: 0 8px 32px 0 $info-glow; }
+    &::before {
+      background-color: $info;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $info-glow;
+    }
   }
+
   &.tarjeta {
-    &::before { background-color: $danger; }
-    &:hover { box-shadow: 0 8px 32px 0 $danger-glow; }
+    &::before {
+      background-color: $danger;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $danger-glow;
+    }
   }
+
   &.cripto {
-    &::before { background-color: $purple; }
-    &:hover { box-shadow: 0 8px 32px 0 $purple-glow; }
+    &::before {
+      background-color: $purple;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $purple-glow;
+    }
   }
+
   &.mayorista {
-    &::before { background-color: $slate; }
-    &:hover { box-shadow: 0 8px 32px 0 $slate-glow; }
+    &::before {
+      background-color: $slate;
+    }
+
+    &:hover {
+      box-shadow: 0 8px 32px 0 $slate-glow;
+    }
   }
 
   .card-header {
@@ -343,13 +398,47 @@ body {
       color: $text-secondary;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-      .oficial & { color: $success; background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.15); }
-      .blue & { color: $primary; background: rgba(99, 102, 241, 0.06); border-color: rgba(99, 102, 241, 0.15); }
-      .bolsa & { color: $warning; background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.15); }
-      .contadoconliqui & { color: $info; background: rgba(6, 182, 212, 0.06); border-color: rgba(6, 182, 212, 0.15); }
-      .tarjeta & { color: $danger; background: rgba(244, 63, 94, 0.06); border-color: rgba(244, 63, 94, 0.15); }
-      .cripto & { color: $purple; background: rgba(168, 85, 247, 0.06); border-color: rgba(168, 85, 247, 0.15); }
-      .mayorista & { color: $slate; background: rgba(100, 116, 139, 0.06); border-color: rgba(100, 116, 139, 0.15); }
+      .oficial & {
+        color: $success;
+        background: rgba(16, 185, 129, 0.06);
+        border-color: rgba(16, 185, 129, 0.15);
+      }
+
+      .blue & {
+        color: $primary;
+        background: rgba(99, 102, 241, 0.06);
+        border-color: rgba(99, 102, 241, 0.15);
+      }
+
+      .bolsa & {
+        color: $warning;
+        background: rgba(245, 158, 11, 0.06);
+        border-color: rgba(245, 158, 11, 0.15);
+      }
+
+      .contadoconliqui & {
+        color: $info;
+        background: rgba(6, 182, 212, 0.06);
+        border-color: rgba(6, 182, 212, 0.15);
+      }
+
+      .tarjeta & {
+        color: $danger;
+        background: rgba(244, 63, 94, 0.06);
+        border-color: rgba(244, 63, 94, 0.15);
+      }
+
+      .cripto & {
+        color: $purple;
+        background: rgba(168, 85, 247, 0.06);
+        border-color: rgba(168, 85, 247, 0.15);
+      }
+
+      .mayorista & {
+        color: $slate;
+        background: rgba(100, 116, 139, 0.06);
+        border-color: rgba(100, 116, 139, 0.15);
+      }
     }
   }
 
@@ -391,6 +480,7 @@ body {
 
     .spread {
       color: $text-secondary;
+
       span {
         font-weight: 600;
         color: $text-light;
@@ -540,9 +630,17 @@ body {
   }
 
   .stat-icon {
-    &.green { color: #10b981; }
-    &.red   { color: #ef4444; }
-    &.blue  { color: #6366f1; }
+    &.green {
+      color: #10b981;
+    }
+
+    &.red {
+      color: #ef4444;
+    }
+
+    &.blue {
+      color: #6366f1;
+    }
   }
 
   .stat-label {
@@ -559,8 +657,13 @@ body {
     color: #f8fafc;
     letter-spacing: -0.02em;
 
-    &.positive { color: #10b981; }
-    &.negative { color: #ef4444; }
+    &.positive {
+      color: #10b981;
+    }
+
+    &.negative {
+      color: #ef4444;
+    }
   }
 }
 
@@ -588,8 +691,15 @@ body {
 }
 
 @keyframes semaphorePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .semaphore-info {
@@ -676,8 +786,13 @@ body {
   text-align: right;
   min-width: 70px;
 
-  &.positive { color: #10b981; }
-  &.negative { color: #ef4444; }
+  &.positive {
+    color: #10b981;
+  }
+
+  &.negative {
+    color: #ef4444;
+  }
 }
 
 /* Calculator Panel */
@@ -711,7 +826,8 @@ body {
       font-size: 1rem;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       background: #12131c;
       border: 1px solid $glass-border;
@@ -1142,7 +1258,7 @@ body {
   @media (max-width: 1200px) {
     grid-template-columns: 1fr 1fr;
 
-    & > :first-child {
+    &> :first-child {
       grid-column: span 2;
     }
   }
@@ -1150,7 +1266,7 @@ body {
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
 
-    & > :first-child {
+    &> :first-child {
       grid-column: span 1;
     }
   }
@@ -1168,11 +1284,11 @@ body {
   margin-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding-bottom: 10px;
-  
+
   .news-icon {
     color: $primary;
   }
-  
+
   h3 {
     font-size: 1.25rem;
     font-weight: 700;
@@ -1219,7 +1335,7 @@ body {
     color: $text-light;
     line-height: 1.4;
   }
-  
+
   .news-date {
     font-size: 0.75rem;
     color: $text-muted;
@@ -1327,7 +1443,8 @@ body {
     }
 
     @media (max-width: 768px) {
-      display: none; /* Hide on mobile to save space */
+      display: none;
+      /* Hide on mobile to save space */
     }
 
     .ticker-wrapper {
@@ -1378,9 +1495,11 @@ body {
           .val-c {
             color: #10b981;
           }
+
           .val-v {
             color: #f43f5e;
           }
+
           .ticker-divider {
             color: rgba(255, 255, 255, 0.2);
             font-size: 0.75rem;
@@ -1394,6 +1513,7 @@ body {
     0% {
       transform: translate3d(0, 0, 0);
     }
+
     100% {
       transform: translate3d(-100%, 0, 0);
     }
@@ -1477,14 +1597,26 @@ body {
 }
 
 @keyframes statusPulse {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.6; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
 }
 
 /* Adjust Dashboard padding for the fixed navbar */
 .dashboard-container {
-  padding-top: 104px !important; /* Make room for 64px navbar + spacing */
+  padding-top: 104px !important;
+  /* Make room for 64px navbar + spacing */
 }
 
 /* ==========================================
@@ -1543,6 +1675,7 @@ body {
       opacity: 0;
       transform: translateY(-8px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -1598,8 +1731,13 @@ body {
     font-family: monospace;
     font-weight: 700;
 
-    .val-c { color: #10b981; }
-    .val-v { color: #f43f5e; }
+    .val-c {
+      color: #10b981;
+    }
+
+    .val-v {
+      color: #f43f5e;
+    }
   }
 }
 
@@ -1653,6 +1791,7 @@ body {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
   }
+
   .arbitrage-calc-column {
     border-left: none !important;
     padding-left: 0 !important;
@@ -1663,9 +1802,12 @@ body {
 
 /* Exchange Bands Styling */
 .bands-selector-tabs {
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+
+  /* Firefox */
   &::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
+    display: none;
+    /* Safari and Chrome */
   }
 
   button {
@@ -1683,18 +1825,18 @@ body {
   }
 
   /* Gauge SVG centrado y con ancho máximo controlado en mobile */
-  #bands-panel .bands-content-grid > div:first-child {
+  #bands-panel .bands-content-grid>div:first-child {
     align-items: center;
     width: 100%;
   }
 
-  #bands-panel .bands-content-grid > div:first-child svg {
+  #bands-panel .bands-content-grid>div:first-child svg {
     max-width: 260px !important;
     width: 100% !important;
   }
 
   /* Price pill full width en mobile */
-  #bands-panel .bands-content-grid > div:first-child > div {
+  #bands-panel .bands-content-grid>div:first-child>div {
     width: 100% !important;
     box-sizing: border-box;
   }
@@ -1743,7 +1885,7 @@ body {
       gap: 8px;
 
       /* Hide "Actualizado" text on tablets/mobile, just show icon */
-      > div:last-child {
+      >div:last-child {
         display: none !important;
       }
     }
@@ -1818,7 +1960,9 @@ body {
   .calculator-form {
     .input-container {
       .input-wrapper {
-        input, select {
+
+        input,
+        select {
           font-size: 0.95rem;
           padding: 10px 12px;
         }
@@ -1854,11 +1998,11 @@ body {
       gap: 6px;
 
       /* Hide "Buscar" text, keep just icon */
-      > div:first-child button > span {
+      >div:first-child button>span {
         display: none;
       }
 
-      > div:first-child button {
+      >div:first-child button {
         padding: 8px;
       }
     }
@@ -1914,7 +2058,7 @@ body {
   }
 
   /* Search dropdown becomes near-full-width */
-  .navbar-actions > div:first-child > div[style*="position: absolute"] {
+  .navbar-actions>div:first-child>div[style*="position: absolute"] {
     right: -8px !important;
     min-width: calc(100vw - 24px) !important;
     max-width: calc(100vw - 24px) !important;
@@ -2039,13 +2183,16 @@ body {
 .crypto-table-desktop {
   display: block;
 }
+
 .crypto-table-mobile {
   display: none;
 }
+
 @media (max-width: 768px) {
   .crypto-table-desktop {
     display: none;
   }
+
   .crypto-table-mobile {
     display: block;
 
@@ -2072,6 +2219,7 @@ body {
   }
 
   @media (max-width: 576px) {
+
     &--3,
     &--2 {
       grid-template-columns: 1fr;
@@ -2105,12 +2253,12 @@ body {
       line-height: 1.3;
     }
 
-    > div:first-child {
+    >div:first-child {
       flex-direction: column;
       align-items: flex-start !important;
     }
 
-    > div:first-child > div:last-child {
+    >div:first-child>div:last-child {
       width: 100%;
 
       button {
@@ -2119,7 +2267,7 @@ body {
       }
     }
 
-    .bank-cards-grid > div {
+    .bank-cards-grid>div {
       padding: 12px 8px;
       min-width: 0;
       overflow: hidden;
@@ -2138,6 +2286,7 @@ body {
 
   /* Ocultar columna SPREAD en pantallas muy chicas */
   @media (max-width: 400px) {
+
     table th:last-child,
     table td:last-child {
       display: none;
@@ -2156,6 +2305,7 @@ body {
 
 /* Prevent any inline-grid layouts from breaking on mobile */
 @media (max-width: 576px) {
+
   [style*="grid-template-columns: 1.2fr 1fr"],
   [style*="grid-template-columns: 1.5fr 1fr 1fr"],
   [style*="grid-template-columns: 1fr 1.25fr"],
@@ -2168,13 +2318,27 @@ body {
 
 /* ─── Splash Screen ─── */
 @keyframes splash-bar {
-  from { width: 0%; }
-  to   { width: 100%; }
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes splash-pulse-logo {
-  0%, 100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
-  50%       { transform: scale(1.06); box-shadow: 0 0 28px 8px rgba(99,102,241,0.25); }
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 28px 8px rgba(99, 102, 241, 0.25);
+  }
 }
 
 .splash-screen {
@@ -2203,8 +2367,8 @@ body {
     width: 88px;
     height: 88px;
     border-radius: 22px;
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(99,102,241,0.08));
-    border: 1.5px solid rgba(99,102,241,0.4);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(99, 102, 241, 0.08));
+    border: 1.5px solid rgba(99, 102, 241, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2227,7 +2391,7 @@ body {
   &__bar {
     width: 180px;
     height: 3px;
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
     border-radius: 99px;
     overflow: hidden;
   }

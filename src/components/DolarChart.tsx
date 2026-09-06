@@ -383,8 +383,8 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
             <CircleDot size={20} color="#fff" />
           </div>
           <div className="semaphore-info">
-            <span className="semaphore-label" style={{ color: semaphore.color }}>{semaphore.label}</span>
-            <span className="semaphore-desc">{semaphore.desc}</span>
+            <span className="semaphore-label" style={{ color: semaphore.color }}>{t(semaphore.label)}</span>
+            <span className="semaphore-desc">{t(semaphore.desc)}</span>
           </div>
         </div>
       )}

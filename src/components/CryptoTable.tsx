@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, TrendingDown, Search, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface Coin {
   rank: number;
@@ -53,6 +54,7 @@ const PctCell: React.FC<{ value: number | null }> = ({ value }) => {
 };
 
 const CryptoTable: React.FC = () => {
+  const { t, language } = useLanguage();
   const [coins, setCoins] = useState<Coin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,11 @@ const CryptoTable: React.FC = () => {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  // Build page label without using translatable words so the DOM translator can't corrupt the number
+  const pageLabel = language === 'en'
+    ? `Page ${page} of ${totalPages}`
+    : `Página ${page} de ${totalPages}`;
+
   const SortHeader: React.FC<{ label: string; k: SortKey }> = ({ label, k }) => (
     <th
       onClick={() => handleSort(k)}
@@ -120,10 +127,10 @@ const CryptoTable: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '1.4rem' }}></span>
-          <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>Cotizaciones de criptomonedas</span>
+          <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>{t('Cotizaciones de criptomonedas')}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {lastUpdated && <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Act. {lastUpdated}</span>}
+          {lastUpdated && <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('Act.')} {lastUpdated}</span>}
           <button onClick={fetchCoins} disabled={loading} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           </button>
@@ -134,7 +141,7 @@ const CryptoTable: React.FC = () => {
         <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
         <input
           type="text"
-          placeholder="Buscar criptomoneda..."
+          placeholder={t('Buscar criptomoneda...')}
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           style={{ width: '100%', padding: '10px 12px 10px 36px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#e2e8f0', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
@@ -144,12 +151,12 @@ const CryptoTable: React.FC = () => {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444', padding: '16px', background: 'rgba(239,68,68,0.08)', borderRadius: '10px', marginBottom: '16px' }}>
           <AlertTriangle size={16} />
-          <span>{error === 'Error 429' ? 'Límite de CoinGecko alcanzado. Reintentá en 1 minuto.' : error}</span>
+          <span>{error === 'Error 429' ? t('Límite de CoinGecko alcanzado. Reintentá en 1 minuto.') : error}</span>
         </div>
       )}
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Cargando criptomonedas...</div>
+        <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>{t('Cargando criptomonedas...')}</div>
       )}
 
       {!loading && !error && (
@@ -160,15 +167,15 @@ const CryptoTable: React.FC = () => {
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <SortHeader label="#" k="rank" />
-                  <th style={{ padding: '12px 14px', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Nombre</th>
-                  <SortHeader label="Precio" k="price" />
-                  <SortHeader label="1h %" k="change1h" />
-                  <SortHeader label="24h %" k="change24h" />
-                  <SortHeader label="7d %" k="change7d" />
-                  <SortHeader label="30d %" k="change30d" />
-                  <SortHeader label="Market cap" k="marketCap" />
-                  <SortHeader label="Volumen (24h)" k="volume24h" />
-                  <th style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>Circulante</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>{t('Nombre')}</th>
+                  <SortHeader label={t('Precio')} k="price" />
+                  <SortHeader label="1H %" k="change1h" />
+                  <SortHeader label="24H %" k="change24h" />
+                  <SortHeader label="7D %" k="change7d" />
+                  <SortHeader label="30D %" k="change30d" />
+                  <SortHeader label="Market Cap" k="marketCap" />
+                  <SortHeader label={t('Volumen (24h)')} k="volume24h" />
+                  <th style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(15,23,42,0.6)' }}>{t('Circulante')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,8 +216,8 @@ const CryptoTable: React.FC = () => {
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <th style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)' }}>#</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)' }}>NOMBRE</th>
-                  <th onClick={() => handleSort('price')} style={{ padding: '10px 12px', textAlign: 'right', color: sortKey === 'price' ? '#3b82f6' : '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)', cursor: 'pointer' }}>PRECIO {sortKey === 'price' ? (sortDir === 'asc' ? '↑' : '↓') : ''}</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)' }}>{t('NOMBRE')}</th>
+                  <th onClick={() => handleSort('price')} style={{ padding: '10px 12px', textAlign: 'right', color: sortKey === 'price' ? '#3b82f6' : '#64748b', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(15,23,42,0.6)', cursor: 'pointer' }}>{t('PRECIO')} {sortKey === 'price' ? (sortDir === 'asc' ? '↑' : '↓') : ''}</th>
                 </tr>
               </thead>
               <tbody>
@@ -233,7 +240,7 @@ const CryptoTable: React.FC = () => {
             </table>
           </div>
           {filtered.length === 0 && (
-            <p style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No se encontraron criptomonedas para "{search}"</p>
+            <p style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>{t('No se encontraron criptomonedas para')} &ldquo;{search}&rdquo;</p>
           )}
 
           {/* Paginación */}
@@ -244,24 +251,25 @@ const CryptoTable: React.FC = () => {
                 disabled={page === 1}
                 style={{ padding: '8px 16px', background: page === 1 ? 'rgba(255,255,255,0.03)' : 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: page === 1 ? '#475569' : '#3b82f6', cursor: page === 1 ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
               >
-                ← Anterior
+                {t('← Anterior')}
               </button>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                Página <strong style={{ color: '#f1f5f9' }}>{page}</strong> de <strong style={{ color: '#f1f5f9' }}>{totalPages}</strong>
+              {/* pageLabel is built in JS — data-no-translate prevents the DOM observer from caching and reverting it */}
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }} data-no-translate="true">
+                {pageLabel}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 style={{ padding: '8px 16px', background: page === totalPages ? 'rgba(255,255,255,0.03)' : 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: page === totalPages ? '#475569' : '#3b82f6', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
               >
-                Siguiente →
+                {t('Siguiente →')}
               </button>
             </div>
           )}
         </div>
       )}
 
-      <p style={{ marginTop: '12px', fontSize: '0.72rem', color: '#475569', textAlign: 'right' }}>Fuente: CoinGecko · Top 50 por capitalización de mercado</p>
+      <p style={{ marginTop: '12px', fontSize: '0.72rem', color: '#475569', textAlign: 'right' }}>{t('Fuente: CoinGecko · Top 50 por capitalización de mercado')}</p>
     </div>
   );
 };
