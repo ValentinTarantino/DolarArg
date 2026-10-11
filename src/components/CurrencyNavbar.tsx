@@ -26,7 +26,8 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
     const scrollerRect = scroller.getBoundingClientRect();
     const buttonRect = activeButton.getBoundingClientRect();
     const offset = buttonRect.left - scrollerRect.left - (scroller.clientWidth - buttonRect.width) / 2;
-    scroller.scrollTo({ left: Math.max(0, scroller.scrollLeft + offset), behavior: 'smooth' });
+    // Apply selection changes immediately so they cannot interrupt a later swipe gesture.
+    scroller.scrollTo({ left: Math.max(0, scroller.scrollLeft + offset), behavior: 'auto' });
   }, [activeTab]);
 
   return (

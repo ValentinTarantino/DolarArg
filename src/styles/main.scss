@@ -70,6 +70,9 @@ body {
 .currency-dashboard {
   position: relative;
   isolation: isolate;
+  --currency-accent: #00ff44;
+  --currency-accent-glow: rgba(0, 255, 0, 0.55);
+  --currency-accent-line: rgba(0, 255, 0, 0.7);
 
   &::before {
     content: '';
@@ -82,9 +85,29 @@ body {
   }
 
   &--real { --currency-page-glow: rgba(16, 185, 129, 0.16); }
-  &--clp { --currency-page-glow: rgba(213, 43, 30, 0.16); }
-  &--uyu { --currency-page-glow: rgba(117, 170, 219, 0.18); }
-  &--euro { --currency-page-glow: rgba(234, 179, 8, 0.15); }
+  &--clp {
+    --currency-page-glow: rgba(213, 43, 30, 0.16);
+    --currency-accent: #ff7777;
+    --currency-accent-glow: rgba(255, 95, 95, 0.58);
+    --currency-accent-line: rgba(255, 119, 119, 0.76);
+  }
+  &--uyu {
+    --currency-page-glow: rgba(117, 170, 219, 0.18);
+    --currency-accent: #8ccfff;
+    --currency-accent-glow: rgba(117, 190, 255, 0.58);
+    --currency-accent-line: rgba(140, 207, 255, 0.76);
+  }
+  &--euro {
+    --currency-page-glow: rgba(234, 179, 8, 0.15);
+    --currency-accent: #ffd166;
+    --currency-accent-glow: rgba(255, 193, 64, 0.58);
+    --currency-accent-line: rgba(255, 209, 102, 0.76);
+  }
+  &--cripto {
+    --currency-accent: #f7931a;
+    --currency-accent-glow: rgba(247, 147, 26, 0.62);
+    --currency-accent-line: rgba(247, 147, 26, 0.8);
+  }
 
   &--dolar::before {
     background: radial-gradient(ellipse at 50% 12%, rgba(0, 70, 35, 0.34), transparent 62%);
@@ -461,8 +484,8 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.32em;
-    color: rgba(0, 255, 0, 0.9);
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.55);
+    color: var(--currency-accent);
+    text-shadow: 0 0 10px var(--currency-accent-glow);
     white-space: nowrap;
   }
 
@@ -472,11 +495,11 @@ body {
     flex-shrink: 0;
 
     &:first-child {
-      background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.7));
+        background: linear-gradient(90deg, transparent, var(--currency-accent-line));
     }
 
     &:last-child {
-      background: linear-gradient(90deg, rgba(0, 255, 0, 0.7), transparent);
+        background: linear-gradient(90deg, var(--currency-accent-line), transparent);
     }
   }
 
@@ -2855,6 +2878,7 @@ body {
     font-size: clamp(0.5rem, 2vw, 0.62rem);
     font-weight: 800;
     letter-spacing: clamp(0.1em, 1vw, 0.2em);
+    text-transform: uppercase;
   }
 
   &__logo {
@@ -3202,7 +3226,7 @@ body {
     border-radius: 16px !important;
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
+    scroll-snap-type: none;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 
@@ -3215,7 +3239,7 @@ body {
     flex: 0 0 auto;
     min-height: 44px;
     padding: 9px 12px !important;
-    scroll-snap-align: start;
+    scroll-snap-align: none;
     font-size: 0.82rem !important;
   }
 

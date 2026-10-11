@@ -45,7 +45,13 @@ export async function saveChangedExchangeRates(rates: ExchangeRateInput[], fecha
     });
 
     return !previous || previous.compra !== rate.compra || previous.venta !== rate.venta
-      ? { ...rate, fecha }
+      ? {
+          codigo: rate.codigo,
+          tipo: rate.tipo,
+          compra: rate.compra,
+          venta: rate.venta,
+          fecha,
+        }
       : null;
   }));
   const changed = snapshots.filter((rate): rate is ExchangeRateInput & { fecha: Date } => rate !== null);

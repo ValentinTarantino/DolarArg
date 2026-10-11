@@ -14,6 +14,7 @@ Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso c
 | ORM | Prisma 5 |
 | Base de datos | SQLite local / PostgreSQL en AWS RDS |
 | Gráficos | Recharts |
+| Modelos 3D | Three.js (WebGLRenderer y TextGeometry) |
 | Íconos | Lucide React |
 | Email | Nodemailer |
 | Web Scraping | Cheerio + Axios |
@@ -279,6 +280,7 @@ Fullstack platform for monitoring real-time exchange rates for US Dollar, Euro, 
 | ORM | Prisma 5 |
 | Database | Local SQLite / PostgreSQL on Amazon RDS |
 | Charts | Recharts |
+| 3D Models | Three.js (WebGLRenderer and TextGeometry) |
 | Icons | Lucide React |
 | Email | Nodemailer |
 | Web Scraping | Cheerio + Axios |

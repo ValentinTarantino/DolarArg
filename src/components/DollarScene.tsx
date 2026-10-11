@@ -5,16 +5,44 @@ import * as THREE from 'three';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
+function createOutlinedGlyph(geometry: THREE.BufferGeometry, color: string) {
+  const emptyFace = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+  const sideFill = new THREE.MeshBasicMaterial({ color });
+  const mesh = new THREE.Mesh(geometry, [emptyFace, sideFill]);
+  const outline = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geometry, 1),
+    new THREE.LineBasicMaterial({ color, depthTest: false })
+  );
+  const group = new THREE.Group();
+  group.add(mesh, outline);
+  return group;
+}
+
+function createOutlinedBox(geometry: THREE.BoxGeometry, color: string) {
+  const sideMaterials = Array.from({ length: 4 }, () => new THREE.MeshBasicMaterial({ color }));
+  const mesh = new THREE.Mesh(geometry, [
+    ...sideMaterials,
+    new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }),
+  ]);
+  const outline = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geometry, 1),
+    new THREE.LineBasicMaterial({ color, depthTest: false })
+  );
+  const group = new THREE.Group();
+  group.add(mesh, outline);
+  return group;
+}
+
 /**
  * DollarScene — Símbolo "$" 3D con bordes wireframe verdes.
  *
  * - La geometría se genera con TextGeometry (fuente helvetiker local en /public/fonts).
- * - SOLO se renderizan los bordes: EdgesGeometry + LineSegments + LineBasicMaterial (#00FF00).
- * - La malla sólida NO se añade a la escena → interior completamente hueco.
+ * - Los glifos conservan el frente hueco y muestran sus laterales sólidos al rotar.
  * - Canvas transparente (sin background en la escena; el CSS de .dollar-hero pone el fondo).
  * - Sin seguimiento de cursor: la cámara solo se mueve con OrbitControls (drag/zoom)
  *   y el modelo gira solo (autoRotate).
- * - Sin partículas ni elementos de fondo: solo el "$" wireframe.
+ * - Sin partículas ni elementos de fondo: solo el símbolo wireframe.
  */
 const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '$', color = '#22c55e' }) => {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -97,9 +125,7 @@ const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '
           glyphs.forEach(({ glyph, bounds, color: glyphColor }) => {
             const width = bounds.max.x - bounds.min.x;
             glyph.translate(x - bounds.min.x, -(bounds.max.y + bounds.min.y) / 2, -(bounds.max.z + bounds.min.z) / 2);
-            const edges = new THREE.EdgesGeometry(glyph, 1);
-            symbolGroup.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: glyphColor })));
-            glyph.dispose();
+            symbolGroup.add(createOutlinedGlyph(glyph, glyphColor));
             x += width + spacing;
           });
         } else if (symbol === '₿') {
@@ -163,6 +189,41 @@ const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '
             stem.position.set(x, 0, 0.14);
             symbolGroup.add(stem);
           });
+        } else if (symbol === '$' || symbol === 'R$') {
+          // Separar las letras y el asta evita que sus aristas se superpongan al rotar.
+          const glyphs = (symbol === 'R$' ? ['R', 'S'] : ['S']).map((character) => {
+            const geometry = new TextGeometry(character, textOptions);
+            geometry.computeBoundingBox();
+            return { character, geometry, bounds: geometry.boundingBox! };
+          });
+          const spacing = symbol === 'R$' ? 0.08 : 0;
+          const totalWidth = glyphs.reduce(
+            (sum, glyph) => sum + glyph.bounds.max.x - glyph.bounds.min.x,
+            0
+          ) + spacing * (glyphs.length - 1);
+          const minY = Math.min(...glyphs.map(({ bounds }) => bounds.min.y));
+          const maxY = Math.max(...glyphs.map(({ bounds }) => bounds.max.y));
+          const minZ = Math.min(...glyphs.map(({ bounds }) => bounds.min.z));
+          const maxZ = Math.max(...glyphs.map(({ bounds }) => bounds.max.z));
+          const height = maxY - minY;
+          let cursorX = -totalWidth / 2;
+          let stemX = 0;
+
+          glyphs.forEach(({ character, geometry, bounds }) => {
+            const glyphWidth = bounds.max.x - bounds.min.x;
+            if (character === 'S') stemX = cursorX + glyphWidth / 2;
+            geometry.translate(
+              cursorX - bounds.min.x,
+              -(minY + maxY) / 2,
+              -(minZ + maxZ) / 2
+            );
+            symbolGroup.add(createOutlinedGlyph(geometry, color));
+            cursorX += glyphWidth + spacing;
+          });
+
+          const stem = createOutlinedBox(new THREE.BoxGeometry(0.065, height + 0.24, 0.3), color);
+          stem.position.x = stemX;
+          symbolGroup.add(stem);
         } else if (symbol === '€') {
           const geometry = new TextGeometry('C', textOptions);
           geometry.computeBoundingBox();
@@ -172,20 +233,13 @@ const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '
             -(bb.max.y + bb.min.y) / 2,
             -(bb.max.z + bb.min.z) / 2
           );
-          symbolGroup.add(new THREE.LineSegments(
-            new THREE.EdgesGeometry(geometry, 1),
-            new THREE.LineBasicMaterial({ color })
-          ));
-          geometry.dispose();
+          symbolGroup.add(createOutlinedGlyph(geometry, color));
 
           // Las barras cruzan la C y sobresalen hacia la izquierda, como en el glifo €.
           [-0.13, 0.13].forEach((y) => {
-            const bar = new THREE.BoxGeometry(0.95, 0.055, 0.3);
-            const edges = new THREE.EdgesGeometry(bar, 1);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color }));
-            line.position.set(-0.25, y, 0);
-            symbolGroup.add(line);
-            bar.dispose();
+            const bar = createOutlinedBox(new THREE.BoxGeometry(0.95, 0.055, 0.3), color);
+            bar.position.set(-0.25, y, 0);
+            symbolGroup.add(bar);
           });
         } else {
           const geometry = new TextGeometry(symbol, textOptions);
@@ -197,24 +251,10 @@ const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '
             -(bb.max.z + bb.min.z) / 2
           );
 
-          const edges = new THREE.EdgesGeometry(geometry, 1);
-          symbolGroup.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color })));
-          geometry.dispose();
+          symbolGroup.add(createOutlinedGlyph(geometry, color));
         }
 
-        // ── Interior transparente ────────────────────────────────
-        // La malla sólida NO se renderiza: el "$" es hueco y se ve a
-        // través de él. Alternativa (malla invisible para raycasting):
-        //
-        //   const fill = new THREE.Mesh(
-        //     geometry,
-        //     new THREE.MeshBasicMaterial({
-        //       transparent: true,
-        //       opacity: 0,       // invisible
-        //       depthWrite: false, // no escribe en el depth buffer
-        //     })
-        //   );
-        //   scene.add(fill);
+        // Los interiores de los glifos permanecen transparentes.
 
       },
       undefined,

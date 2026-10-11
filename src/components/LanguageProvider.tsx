@@ -14,6 +14,7 @@ const translations: Array<[string, string]> = [
 
   // --- Kicker del hero 3D ---
   ["Cotizaciones en tiempo real", "Real-time exchange rates"],
+  ["Datos del mercado en vivo", "Live market data"],
 
   // --- Long descriptions (sort-first by length) ---
   ["Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.", "Sign up or sign in to receive real-time alerts when the dollar reaches your target price."],

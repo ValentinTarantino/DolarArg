@@ -253,7 +253,7 @@ export default function Home() {
           <div className="splash-screen__content">
             <div className="splash-screen__eyebrow">
               <span>ARGENTINA</span>
-              <span>LIVE MARKET DATA</span>
+              <span>{t('Datos del mercado en vivo')}</span>
             </div>
             <div className="splash-screen__logo">
               <span className="splash-screen__coin-ring" />
