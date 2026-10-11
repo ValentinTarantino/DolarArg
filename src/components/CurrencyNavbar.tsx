@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface CurrencyNavbarProps {
   activeTab: string;
@@ -8,6 +8,7 @@ interface CurrencyNavbarProps {
 }
 
 const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange }) => {
+  const tabsRef = useRef<HTMLDivElement>(null);
   const tabs = [
     { id: 'dolar',  label: 'Dólar',        icon: 'https://flagcdn.com/w40/us.png' },
     { id: 'real',   label: 'Real',          icon: 'https://flagcdn.com/w40/br.png' },
@@ -16,6 +17,17 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
     { id: 'euro',   label: 'Euro',          icon: 'https://flagcdn.com/w40/eu.png' },
     { id: 'cripto', label: 'Cripto',        icon: 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400' },
   ];
+
+  useEffect(() => {
+    const scroller = tabsRef.current;
+    const activeButton = scroller?.querySelector<HTMLButtonElement>('[aria-selected="true"]');
+    if (!scroller || !activeButton) return;
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    const offset = buttonRect.left - scrollerRect.left - (scroller.clientWidth - buttonRect.width) / 2;
+    scroller.scrollTo({ left: Math.max(0, scroller.scrollLeft + offset), behavior: 'smooth' });
+  }, [activeTab]);
 
   return (
     <div className="currency-navbar-shell" style={{
@@ -29,7 +41,7 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
       padding: '12px 0',
       borderBottom: '1px solid rgba(255,255,255,0.1)'
     }}>
-      <div className="currency-navbar-tabs" style={{
+      <div ref={tabsRef} className="currency-navbar-tabs" role="tablist" aria-label="Seleccionar moneda" style={{
         display: 'flex',
         gap: '12px',
         padding: '12px',
@@ -43,6 +55,8 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
           <button
             key={tab.id}
             className="currency-navbar-tab"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
             style={{
               padding: '10px 20px',

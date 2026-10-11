@@ -253,7 +253,6 @@ export default function Home() {
           <div className="splash-screen__content">
             <div className="splash-screen__eyebrow">
               <span>ARGENTINA</span>
-              <span className="splash-screen__eyebrow-divider" />
               <span>LIVE MARKET DATA</span>
             </div>
             <div className="splash-screen__logo">

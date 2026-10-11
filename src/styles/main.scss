@@ -2836,27 +2836,25 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: min(calc(100% - 40px), 360px);
-    flex-shrink: 0;
+    width: min(calc(100% - 32px), 360px);
+    min-width: 0;
+    margin-block: auto;
     padding-block: clamp(12px, 3vh, 28px);
+    text-align: center;
     animation: splash-content-in 0.8s cubic-bezier(0.2, 0.75, 0.25, 1) both;
   }
 
   &__eyebrow {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 9px;
     margin-bottom: 28px;
     color: #7f91a9;
-    font-size: 0.62rem;
+    font-size: clamp(0.5rem, 2vw, 0.62rem);
     font-weight: 800;
-    letter-spacing: 0.2em;
-  }
-
-  &__eyebrow-divider {
-    width: 22px;
-    height: 1px;
-    background: rgba(148, 163, 184, 0.3);
+    letter-spacing: clamp(0.1em, 1vw, 0.2em);
   }
 
   &__logo {
@@ -2901,7 +2899,7 @@ body {
 
   &__name {
     margin-top: 25px;
-    font-size: 2.15rem;
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
     font-weight: 900;
     letter-spacing: 0.045em;
     line-height: 1;
@@ -3012,15 +3010,15 @@ body {
 @media (max-width: 480px) {
   .splash-screen {
     &__content {
-      width: min(calc(100% - 32px), 360px);
-      padding-block: 10px;
+      width: min(calc(100% - 28px), 360px);
+      padding-block: 12px;
     }
 
     &__eyebrow {
       gap: 7px;
       margin-bottom: clamp(16px, 4vh, 26px);
-      font-size: clamp(0.5rem, 2.4vw, 0.62rem);
-      letter-spacing: 0.15em;
+      font-size: clamp(0.48rem, 2.4vw, 0.62rem);
+      letter-spacing: clamp(0.09em, 1vw, 0.15em);
     }
 
     &__logo {
@@ -3034,7 +3032,7 @@ body {
 
     &__name {
       margin-top: clamp(16px, 4vh, 24px);
-      font-size: clamp(1.75rem, 8vw, 2.1rem);
+      font-size: clamp(1.6rem, 8vw, 2.1rem);
     }
 
     &__loading {
@@ -3053,10 +3051,10 @@ body {
 
 @media (max-height: 600px) {
   .splash-screen {
-    align-items: flex-start;
+    align-items: center;
 
     &__content {
-      padding-block: 8px;
+      padding-block: 10px;
     }
 
     &__eyebrow {
@@ -3064,8 +3062,8 @@ body {
     }
 
     &__logo {
-      width: 72px;
-      height: 72px;
+      width: clamp(64px, 18vh, 76px);
+      height: clamp(64px, 18vh, 76px);
     }
 
     &__dollar {
@@ -3074,7 +3072,7 @@ body {
 
     &__name {
       margin-top: 12px;
-      font-size: 1.8rem;
+      font-size: clamp(1.55rem, 6vh, 1.8rem);
     }
 
     &__tagline {
@@ -3368,6 +3366,50 @@ body {
       justify-content: space-between;
       margin-left: 30px;
     }
+  }
+}
+
+/* Keep the fixed and currency navigation inside narrow mobile viewports. */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .navbar-premium {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: 100%;
+
+    .navbar-container {
+      width: 100%;
+      min-width: 0;
+      max-width: 1400px;
+      box-sizing: border-box;
+    }
+
+    .navbar-brand {
+      min-width: 0;
+      max-width: calc(100% - 52px);
+    }
+  }
+
+  .navbar-hamburger {
+    margin-left: auto;
+  }
+
+  .currency-navbar-shell {
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .currency-navbar-tabs {
+    box-sizing: border-box;
+    min-width: 0;
+    scroll-padding-inline: 12px;
   }
 }
 
