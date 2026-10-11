@@ -167,9 +167,9 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '14px 16px',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: '10px',
+    backgroundColor: 'rgba(255,255,255,0.025)',
+    border: '1px solid rgba(148,163,184,0.16)',
+    borderRadius: '9px',
     color: '#f1f5f9',
     fontSize: '1.1rem',
     fontWeight: 600,
@@ -180,8 +180,8 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
   const selectStyle: React.CSSProperties = {
     width: '100%',
     padding: '10px 12px',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.025)',
+    border: '1px solid rgba(148,163,184,0.14)',
     borderRadius: '8px',
     color: '#94a3b8',
     fontSize: '0.82rem',
@@ -192,7 +192,7 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
   };
 
   return (
-    <div className="panel">
+    <div className="panel converter-panel">
       {!currency && (
         <div className="panel-title">
           <span>Conversor de Monedas</span>
@@ -207,10 +207,10 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Fila principal: origen — swap — destino */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '12px', alignItems: 'center' }}>
+          <div className="converter-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '14px', alignItems: 'center' }}>
 
             {/* Origen */}
-            <div>
+            <div className="converter-side">
               <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)} style={selectStyle}>
                 {currencies.map(curr => (
                   <option key={curr.code} value={curr.code}>
@@ -235,22 +235,22 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
               style={{
                 width: '40px', height: '40px',
                 borderRadius: '50%',
-                backgroundColor: 'rgba(59,130,246,0.15)',
-                border: '1px solid rgba(59,130,246,0.4)',
-                color: '#3b82f6',
+                backgroundColor: 'rgba(255,255,255,0.035)',
+                border: '1px solid rgba(148,163,184,0.2)',
+                color: '#94a3b8',
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(59,130,246,0.15)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.035)'; }}
             >
               <ArrowRightLeft size={16} />
             </button>
 
             {/* Destino */}
-            <div>
+            <div className="converter-side converter-side--target">
               <select value={toCurrency} onChange={(e) => setToCurrency(e.target.value)} style={selectStyle}>
                 {currencies.map(curr => (
                   <option key={curr.code} value={curr.code}>
@@ -262,24 +262,28 @@ const UniversalConverter: React.FC<UniversalConverterProps> = ({ currency }) => 
                 type="text"
                 value={toAmount}
                 readOnly
-                style={{ ...inputStyle, color: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', cursor: 'default' }}
+                style={{ ...inputStyle, color: '#e2e8f0', cursor: 'default' }}
               />
             </div>
           </div>
 
           {/* Resultado */}
-          <div style={{
+          <div className="converter-result" style={{
             padding: '14px 18px',
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.06))',
-            border: '1px solid rgba(59,130,246,0.2)',
+            background: 'linear-gradient(100deg, rgba(52,211,153,0.055), rgba(255,255,255,0.018) 55%)',
+            border: '1px solid rgba(52,211,153,0.16)',
             borderRadius: '10px',
-            textAlign: 'center',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '14px',
           }}>
-            <p style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resultado</p>
-            <p style={{ color: '#f1f5f9', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+            <p style={{ color: '#64748b', fontSize: '0.68rem', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Resultado</p>
+            <p style={{ color: '#f1f5f9', fontSize: '1rem', fontWeight: 650, margin: 0, textAlign: 'right' }}>
               <span style={{ color: '#94a3b8' }}>{fromAmount} {getCurrencyDisplayName(fromCurrency)}</span>
               <span style={{ color: '#475569', margin: '0 8px' }}>=</span>
-              <span style={{ color: '#10b981' }}>{toAmount} {getCurrencyDisplayName(toCurrency)}</span>
+              <span style={{ color: '#e2e8f0' }}>{toAmount} {getCurrencyDisplayName(toCurrency)}</span>
             </p>
           </div>
 

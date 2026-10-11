@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Space_Grotesk } from "next/font/google";
 import "@/styles/main.scss";
 import { startLocalCron } from "@/lib/cron-local";
 import { LanguageProvider, LanguageSwitcher } from "@/components/LanguageProvider";
@@ -25,6 +25,12 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-outfit",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://dolararg.vercel.app";
@@ -108,7 +114,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={outfit.variable}>
+    <html lang="es" className={`${outfit.variable} ${spaceGrotesk.variable}`}>
       <head>
         <meta name="theme-color" content="#6366f1" />
         <meta name="mobile-web-app-capable" content="yes" />

@@ -55,7 +55,7 @@ const BankRates: React.FC = () => {
   const best = sorted[0];
 
   return (
-    <div className="panel" id="bank-rates-panel">
+    <div className="panel font-standard bank-rates-panel" id="bank-rates-panel">
       {/* Header con toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
@@ -100,11 +100,11 @@ const BankRates: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{t('COMPRA')}</p>
-                  <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#10b981' }}>${rate.compra.toFixed(2)}</p>
+                  <p className="bank-rate-number" style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#10b981' }}>${rate.compra.toFixed(2)}</p>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ margin: '0 0 3px', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{t('VENTA')}</p>
-                  <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#ef4444' }}>${rate.venta.toFixed(2)}</p>
+                  <p className="bank-rate-number" style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#ef4444' }}>${rate.venta.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -133,7 +133,7 @@ const BankRates: React.FC = () => {
               <Trophy size={20} color="#10b981" />
               <div>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{sortBy === 'venta' ? t('Mejor opción para comprar') : t('Mejor opción para vender')}</p>
-                <p style={{ margin: '2px 0 0', fontSize: '1rem', fontWeight: 800, color: '#f1f5f9' }}>
+                <p className="bank-rate-number" style={{ margin: '2px 0 0', fontSize: '1rem', fontWeight: 800, color: '#f1f5f9' }}>
                   {best.banco} — {sortBy === 'venta' ? `${t('Venta')} $${best.venta.toFixed(2)}` : `${t('Compra')} $${best.compra.toFixed(2)}`}
                 </p>
               </div>
@@ -162,9 +162,9 @@ const BankRates: React.FC = () => {
                         {isBest ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
                       </td>
                       <td style={{ padding: '10px 12px', color: '#e2e8f0', fontWeight: 600 }}>{rate.banco}</td>
-                      <td style={{ padding: '10px 12px', color: '#10b981', fontWeight: 700, textAlign: 'right' }}>${rate.compra.toFixed(2)}</td>
-                      <td style={{ padding: '10px 12px', color: '#ef4444', fontWeight: 700, textAlign: 'right' }}>${rate.venta.toFixed(2)}</td>
-                      <td style={{ padding: '10px 12px', color: '#94a3b8', textAlign: 'right' }}>{spread}%</td>
+                      <td className="bank-rate-number" style={{ padding: '10px 12px', color: '#10b981', fontWeight: 700, textAlign: 'right' }}>${rate.compra.toFixed(2)}</td>
+                      <td className="bank-rate-number" style={{ padding: '10px 12px', color: '#ef4444', fontWeight: 700, textAlign: 'right' }}>${rate.venta.toFixed(2)}</td>
+                      <td className="bank-rate-number" style={{ padding: '10px 12px', color: '#94a3b8', textAlign: 'right' }}>{spread}%</td>
                     </tr>
                   );
                 })}

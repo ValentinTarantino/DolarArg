@@ -123,7 +123,7 @@ const CryptoTable: React.FC = () => {
   );
 
   return (
-    <div className="panel" style={{ padding: '24px' }}>
+    <div className="panel crypto-prices-panel" style={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '1.4rem' }}></span>

@@ -137,7 +137,7 @@ const DolarChart: React.FC<DolarChartProps> = ({ selectedCasa, selectedName, onS
   }, [stats]);
 
   return (
-    <div className="panel">
+    <div className="panel font-standard dollar-performance-panel">
       <div className="panel-title" style={{ position: 'relative' }}>
         <span>Evolución del Dolar: </span>
         {onSelectCasa ? (

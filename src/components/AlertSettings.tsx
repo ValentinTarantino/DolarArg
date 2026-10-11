@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Bell, LogOut, User, Lock, Mail, Trash2, CheckCircle, Clock, ArrowLeft, KeyRound } from 'lucide-react';
+import { Bell, LogOut, User, Lock, Mail, Trash2, CheckCircle, Clock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { useLanguage } from './LanguageProvider';
 
 interface Alert {
@@ -24,6 +24,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const [view, setView] = useState<'auth' | 'forgot' | 'reset'>('auth');
@@ -34,6 +35,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
 
   const [resetToken, setResetToken] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState<string>('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetMsg, setResetMsg] = useState<string | null>(null);
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState<boolean>(false);
@@ -236,7 +238,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
 
   if (loading) {
     return (
-      <div className="panel">
+      <div className="panel font-standard alerts-panel">
         <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
           {t('Cargando configuración de alertas...')}
         </div>
@@ -245,7 +247,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
   }
 
   return (
-    <div className="panel">
+    <div className="panel font-standard alerts-panel">
       <div className="panel-title">
         <span>{t('Configuración de Alertas')}</span>
       </div>
@@ -291,7 +293,10 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                     <label>{t('Nueva contraseña')}</label>
                     <div className="input-wrapper">
                       <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                      <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required minLength={6} />
+                      <input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px', paddingRight: '42px' }} required minLength={6} />
+                      <button type="button" onClick={() => setShowNewPassword(value => !value)} aria-label={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} title={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', color: '#64748b', background: 'transparent', border: 0, cursor: 'pointer' }}>
+                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
                   </div>
                   {resetError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{resetError}</div>}
@@ -321,7 +326,10 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   <label>{t('Contraseña')}</label>
                   <div className="input-wrapper">
                     <Lock size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
-                    <input id="auth-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px' }} required />
+                    <input id="auth-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ paddingLeft: '38px', paddingRight: '42px' }} required />
+                    <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', color: '#64748b', background: 'transparent', border: 0, cursor: 'pointer' }}>
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
                 {authError && (

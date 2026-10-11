@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLanguage } from './LanguageProvider';
 import { Calculator as CalcIcon } from 'lucide-react';
 
@@ -24,45 +24,42 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   const [rateType, setRateType] = useState<'compra' | 'venta'>('venta');
 
   // Obtener la tasa seleccionada (compra o venta)
-  const currentRate = rates.find(r => r.casa === selectedCasa);
-  const rateValue = currentRate ? (rateType === 'compra' ? currentRate.compra : currentRate.venta) : 1;
+  const currentRate = useMemo(
+    () => rates.find(r => r.casa === selectedCasa),
+    [rates, selectedCasa]
+  );
+  const rateValue = useMemo(
+    () => currentRate ? (rateType === 'compra' ? currentRate.compra : currentRate.venta) : 1,
+    [currentRate, rateType]
+  );
 
   const numericAmount = parseFloat(amount) || 0;
   const taxGananciasPercent = parseFloat(customTaxGanancias) || 0;
 
-  let convertedValue = 0;
-  let taxGanancias = 0;
-  let totalWithTaxes = 0;
-
   // Si es oficial o tarjeta, desglosamos los impuestos
   const isOfficialOrCard = selectedCasa === 'oficial' || selectedCasa === 'tarjeta';
+  const { convertedValue, taxGanancias, totalWithTaxes } = useMemo(() => {
+    let convertedValue = 0;
+    let taxGanancias = 0;
 
-  // Conversión según la dirección seleccionada
-  if (conversionDirection === 'usd-to-ars') {
-    // USD a ARS
-    if (isOfficialOrCard) {
+    if (conversionDirection === 'usd-to-ars') {
+      if (isOfficialOrCard) {
+        const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
+        convertedValue = numericAmount * oficialRate;
+        taxGanancias = convertedValue * (taxGananciasPercent / 100);
+      } else {
+        convertedValue = numericAmount * rateValue;
+      }
+    } else if (isOfficialOrCard) {
       const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
-      const baseValue = numericAmount * oficialRate;
-      taxGanancias = baseValue * (taxGananciasPercent / 100);
-      convertedValue = baseValue;
-      totalWithTaxes = baseValue + taxGanancias;
-    } else {
-      convertedValue = numericAmount * rateValue;
-      totalWithTaxes = convertedValue;
-    }
-  } else {
-    // ARS a USD
-    if (isOfficialOrCard) {
-      const oficialRate = rates.find(r => r.casa === 'oficial')?.venta || rateValue;
-      const baseValue = numericAmount / oficialRate;
-      taxGanancias = baseValue * (taxGananciasPercent / 100);
-      convertedValue = baseValue;
-      totalWithTaxes = baseValue + taxGanancias;
+      convertedValue = numericAmount / oficialRate;
+      taxGanancias = convertedValue * (taxGananciasPercent / 100);
     } else {
       convertedValue = numericAmount / rateValue;
-      totalWithTaxes = convertedValue;
     }
-  }
+
+    return { convertedValue, taxGanancias, totalWithTaxes: convertedValue + taxGanancias };
+  }, [conversionDirection, isOfficialOrCard, numericAmount, rateValue, rates, taxGananciasPercent]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Home', 'End'].includes(e.key)) {
@@ -74,7 +71,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
   };
 
   return (
-    <div className="panel">
+    <div className="panel font-standard calculator-panel">
       <div className="panel-title">
         <span>{t('Calculadora de USD y Pesos')}</span>
       </div>
@@ -171,7 +168,7 @@ const Calculator: React.FC<CalculatorProps> = ({ rates }) => {
           </div>
         )}
 
-        <div className="calculator-results">
+        <div className="calculator-results" key={`${selectedCasa}-${rateType}-${conversionDirection}`}>
           {isOfficialOrCard ? (
             <>
               <div className="result-row">

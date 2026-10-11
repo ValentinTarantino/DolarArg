@@ -1,0 +1,22 @@
+name: Update exchange rates
+
+on:
+  schedule:
+    # GitHub Actions runs on UTC and may start a few minutes after the scheduled time.
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: update-exchange-rates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Fetch current rates and save them to RDS
+        run: >-
+          curl --fail --silent --show-error
+          --retry 2 --retry-delay 5 --max-time 45
+          https://dolar-arg.duckdns.org/api/dolar/cron

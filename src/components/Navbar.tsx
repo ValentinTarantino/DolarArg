@@ -5,6 +5,9 @@ import { Activity, Search, X, Menu, Download } from 'lucide-react';
 import { DolarRate } from '@/types/dolar';
 import { useLanguage } from './LanguageProvider';
 
+const normalizeSearchText = (value: string) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
 interface ExchangeRate {
   codigo: string;
   nombre: string;
@@ -98,7 +101,7 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
         <div className="navbar-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="brand-logo-glow"></div>
           <span className="brand-name">
-            DÓLAR<span className="brand-highlight">ARG</span>
+            DÓLAR<span className="brand-highlight argentina-colors">ARG</span>
           </span>
         </div>
 
@@ -209,18 +212,21 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                     <X size={16} />
                   </button>
                 </div>
-                {searchQuery && (() => {
-                  const t = searchQuery.toLowerCase();
+                {searchQuery.trim() && (() => {
+                  const query = normalizeSearchText(searchQuery);
                   const btnStyle = { width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left' as const, borderRadius: '6px', transition: 'background 0.2s', display: 'flex', alignItems: 'center', gap: '10px' };
                   const hover = (e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => { e.currentTarget.style.background = enter ? 'rgba(255,255,255,0.05)' : 'transparent'; };
                   const flag = (src: string) => <img src={src} alt="" width={20} height={14} style={{borderRadius:'2px',flexShrink:0}} />;
                   const sub = (text: string) => <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '1px' }}>{text}</span>;
 
-                  const dolarItems = rates.filter(r => `dólar ${r.nombre}`.toLowerCase().includes(t) || r.casa.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || t === 'd' || t === 'dolar');
-                  const showEur = 'euro'.includes(t) || t === 'e' || 'eur'.includes(t);
-                  const showBrl = 'real'.includes(t) || t === 'r' || 'brl'.includes(t);
-                  const showClp = 'peso chileno'.includes(t) || 'chileno'.includes(t) || 'clp'.includes(t);
-                  const showUyu = 'peso uruguayo'.includes(t) || 'uruguayo'.includes(t) || 'uyu'.includes(t);
+                  const dolarItems = rates.filter(r => {
+                    const searchable = normalizeSearchText(`dólar dollar ${r.nombre} ${r.casa} ${t(r.nombre)} ${t(`Dólar ${r.nombre}`)}`);
+                    return searchable.includes(query);
+                  });
+                  const showEur = normalizeSearchText('euro eur').includes(query);
+                  const showBrl = normalizeSearchText('real brasileño brazilian real brl').includes(query);
+                  const showClp = normalizeSearchText('peso chileno chilean peso clp').includes(query);
+                  const showUyu = normalizeSearchText('peso uruguayo uruguayan peso uyu').includes(query);
                   const eurOfi = intlRates.find(r => r.codigo === 'EUR' && r.tipo === 'oficial');
                   const brlOfi = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'oficial');
                   const clpOfi = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'oficial');
@@ -430,17 +436,20 @@ export default function Navbar({ rates, isLiveConnected, lastUpdated, activeTab,
                   </button>
                 )}
               </div>
-              {searchQuery && (() => {
-                  const t = searchQuery.toLowerCase();
+              {searchQuery.trim() && (() => {
+                  const query = normalizeSearchText(searchQuery);
                   const btnStyle = { width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left' as const, borderRadius: '6px', transition: 'background 0.2s', display: 'flex', alignItems: 'center', gap: '10px' };
                   const hover = (e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => { e.currentTarget.style.background = enter ? 'rgba(255,255,255,0.05)' : 'transparent'; };
                   const flag = (src: string) => <img src={src} alt="" width={20} height={14} style={{borderRadius:'2px',flexShrink:0}} />;
                   const sub = (text: string) => <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '1px' }}>{text}</span>;
-                  const dolarItems = rates.filter(r => `dólar ${r.nombre}`.toLowerCase().includes(t) || r.casa.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || t === 'd' || t === 'dolar');
-                  const showEur = 'euro'.includes(t) || t === 'e' || 'eur'.includes(t);
-                  const showBrl = 'real'.includes(t) || t === 'r' || 'brl'.includes(t);
-                  const showClp = 'peso chileno'.includes(t) || 'chileno'.includes(t) || 'clp'.includes(t);
-                  const showUyu = 'peso uruguayo'.includes(t) || 'uruguayo'.includes(t) || 'uyu'.includes(t);
+                  const dolarItems = rates.filter(r => {
+                    const searchable = normalizeSearchText(`dólar dollar ${r.nombre} ${r.casa} ${t(r.nombre)} ${t(`Dólar ${r.nombre}`)}`);
+                    return searchable.includes(query);
+                  });
+                  const showEur = normalizeSearchText('euro eur').includes(query);
+                  const showBrl = normalizeSearchText('real brasileño brazilian real brl').includes(query);
+                  const showClp = normalizeSearchText('peso chileno chilean peso clp').includes(query);
+                  const showUyu = normalizeSearchText('peso uruguayo uruguayan peso uyu').includes(query);
                   const eurOfi = intlRates.find(r => r.codigo === 'EUR' && r.tipo === 'oficial');
                   const brlOfi = intlRates.find(r => r.codigo === 'BRL' && r.tipo === 'oficial');
                   const clpOfi = clpUyuRates.find(r => r.codigo === 'CLP' && r.tipo === 'oficial');

@@ -25,15 +25,16 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora
 type ReservasData = { valor: number; fecha: string; variacion: number | null; history: { fecha: string; valor: number }[] };
 
 function parseReservasBcra(json: any): ReservasData | null {
-  const items: { fecha: string; valor: number }[] = json?.results?.[0]?.detalle ?? [];
-  if (items.length < 2) return null;
+  const items: { fecha: string; valor: number }[] = (json?.results?.[0]?.detalle ?? [])
+    .filter((item: any) => typeof item?.fecha === 'string' && Number.isFinite(Number(item?.valor)));
+  if (items.length === 0) return null;
   const sorted = [...items].sort((a, b) => a.fecha.localeCompare(b.fecha));
   const last = sorted[sorted.length - 1];
   const prev = sorted[sorted.length - 2];
   return {
     valor: last.valor,
     fecha: last.fecha,
-    variacion: prev ? ((last.valor - prev.valor) / prev.valor) * 100 : null,
+    variacion: prev && prev.valor !== 0 ? ((last.valor - prev.valor) / prev.valor) * 100 : null,
     history: sorted.slice(-30).map(d => ({ fecha: d.fecha, valor: d.valor })),
   };
 }
@@ -49,12 +50,21 @@ export async function GET() {
     // Riesgo país
     let riesgoPais: { valor: number; fecha: string; variacion: number | null } | null = null;
     if (riesgoRes.status === 'fulfilled' && riesgoRes.value.ok) {
-      const data: { fecha: string; valor: number }[] = await riesgoRes.value.json();
-      if (Array.isArray(data) && data.length >= 2) {
-        const last = data[data.length - 1];
-        const prev = data[data.length - 2];
-        riesgoPais = { valor: last.valor, fecha: last.fecha, variacion: prev ? ((last.valor - prev.valor) / prev.valor) * 100 : null };
-      }
+      try {
+        const data: { fecha: string; valor: number }[] = await riesgoRes.value.json();
+        const sorted = Array.isArray(data)
+          ? data.filter(item => typeof item?.fecha === 'string' && Number.isFinite(Number(item?.valor))).sort((a, b) => a.fecha.localeCompare(b.fecha))
+          : [];
+        if (sorted.length > 0) {
+          const last = sorted[sorted.length - 1];
+          const prev = sorted[sorted.length - 2];
+          riesgoPais = {
+            valor: Number(last.valor),
+            fecha: last.fecha,
+            variacion: prev && Number(prev.valor) !== 0 ? ((Number(last.valor) - Number(prev.valor)) / Number(prev.valor)) * 100 : null,
+          };
+        }
+      } catch (_) {}
     }
 
     // Reservas BCRA con cache en memoria
@@ -80,19 +90,34 @@ export async function GET() {
     // Inflación mensual
     let inflacion: { valor: number; fecha: string } | null = null;
     if (inflacionRes.status === 'fulfilled' && inflacionRes.value.ok) {
-      const data: { fecha: string; valor: number }[] = await inflacionRes.value.json();
-      if (Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
-        inflacion = { valor: last.valor, fecha: last.fecha };
-      }
+      try {
+        const data: { fecha: string; valor: number }[] = await inflacionRes.value.json();
+        const sorted = Array.isArray(data)
+          ? data.filter(item => typeof item?.fecha === 'string' && Number.isFinite(Number(item?.valor))).sort((a, b) => a.fecha.localeCompare(b.fecha))
+          : [];
+        const last = sorted[sorted.length - 1];
+        if (last) inflacion = { valor: Number(last.valor), fecha: last.fecha };
+      } catch (_) {}
     }
 
-    return NextResponse.json({ riesgoPais, reservas, inflacion });
+    if (!riesgoPais && !reservas && !inflacion) {
+      return NextResponse.json({ error: 'No se pudieron obtener indicadores de las fuentes externas' }, {
+        status: 502,
+        headers: { 'Cache-Control': 'no-store, max-age=0' },
+      });
+    }
+
+    return NextResponse.json({ riesgoPais, reservas, inflacion }, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   } catch (error: any) {
     // Si todo falla, devolver cache si existe
     if (cachedReservas) {
       return NextResponse.json({ riesgoPais: null, reservas: cachedReservas, inflacion: null });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, {
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   }
 }

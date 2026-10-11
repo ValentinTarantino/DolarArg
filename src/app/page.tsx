@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import DolarCard from '@/components/DolarCard';
 import DolarChart from '@/components/DolarChart';
 import Calculator from '@/components/Calculator';
@@ -15,9 +16,11 @@ import BankRates from '@/components/BankRates';
 import MacroIndicators from '@/components/MacroIndicators';
 import CryptoTable from '@/components/CryptoTable';
 import Footer from '@/components/Footer';
-import { DollarSign } from 'lucide-react';
+import MarketStatus from '@/components/MarketStatus';
 import { DolarRate } from '@/types/dolar';
 import { useLanguage } from '@/components/LanguageProvider';
+
+const DollarScene = dynamic(() => import('@/components/DollarScene'), { ssr: false });
 export default function Home() {
   const { t } = useLanguage();
   const [rates, setRates] = useState<DolarRate[]>([]);
@@ -229,6 +232,8 @@ export default function Home() {
 
   const selectedRate = rates.find(r => r.casa === selectedCasa);
   const selectedName = selectedRate ? selectedRate.nombre : 'Blue';
+  const currencySymbol = ({ dolar: '$', real: 'R$', clp: 'CLP$', uyu: 'UY$', euro: '€', cripto: '₿' } as Record<string, string>)[activeTab] ?? '$';
+  const currencyColor = activeTab === 'clp' ? '#D52B1E' : activeTab === 'euro' ? '#EAB308' : '#22c55e';
 
   // Limpiar el resaltado después de 500ms (duración de la transición)
   useEffect(() => {
@@ -243,59 +248,49 @@ export default function Home() {
   return (
     <>
       {splashVisible && (
-        <div className={`splash-screen${splashFading ? ' splash-screen--fading' : ''}`}>
+        <div className={`splash-screen${splashFading ? ' splash-screen--fading' : ''}`} role="status" aria-live="polite">
+          <div className="splash-screen__grid" aria-hidden="true" />
           <div className="splash-screen__content">
+            <div className="splash-screen__eyebrow">
+              <span>ARGENTINA</span>
+              <span className="splash-screen__eyebrow-divider" />
+              <span>LIVE MARKET DATA</span>
+            </div>
             <div className="splash-screen__logo">
+              <span className="splash-screen__coin-ring" />
               <span className="splash-screen__dollar">$</span>
             </div>
             <div className="splash-screen__name">
-              <span style={{ color: '#ffffff' }}>DÓLAR</span><span style={{ color: '#6366f1' }}>ARG</span>
+              <span style={{ color: '#ffffff' }}>DÓLAR</span><span className="argentina-colors">ARG</span>
             </div>
-            <div className="splash-screen__bar">
-              <div className="splash-screen__bar-fill" />
+            <p className="splash-screen__tagline">{t('Cotizaciones en tiempo real')}</p>
+            <div className="splash-screen__loading">
+              <div className="splash-screen__loading-label">
+                <span>{t('Cargando cotizaciones...')}</span>
+                <span className="splash-screen__loading-state">LIVE</span>
+              </div>
+              <div className="splash-screen__bar">
+                <div className="splash-screen__bar-fill" />
+              </div>
             </div>
-            <p className="splash-screen__sub">Cargando cotizaciones...</p>
+            <div className="splash-screen__markets" aria-hidden="true">
+              <span>ARS / USD</span><i /><span>BRL</span><i /><span>CLP</span><i /><span>EUR</span>
+            </div>
           </div>
         </div>
       )}
       <Navbar rates={rates} isLiveConnected={isLiveConnected} lastUpdated={lastUpdated} activeTab={activeTab} onTabChange={setActiveTab} onHighlightCard={setHighlightedCard} />
-      <div className="dashboard-container">
-        <header className="header">
-          <span className="header-badge">{t('Mercado Cambiario')}</span>
-          <div className="title-container">
-            <div className="logo-glow"></div>
-            <DollarSign size={38} className="header-logo" />
-            <h1>{t('Cotizaciones')}</h1>
+      <div className={`dashboard-container currency-dashboard currency-dashboard--${activeTab}`}>
+        {/* ── 3D Dollar Hero ── */}
+        <div className="dollar-hero">
+          <DollarScene symbol={currencySymbol} color={currencyColor} />
+          {/* Kicker decorativo sobre el modelo (no interfiere con el canvas) */}
+          <div className="dollar-hero__kicker">
+            <span className="dollar-hero__kicker-line" />
+            <span className="dollar-hero__kicker-text">{t('Cotizaciones en tiempo real')}</span>
+            <span className="dollar-hero__kicker-line" />
           </div>
-          <p className="subtitle">{t('Argentina en tiempo real')}</p>
-          <div className="header-stats">
-            {[
-              { label: t('Tipos de cambio'), value: `${rates.length}`, color: '#94a3b8' },
-              ...(() => {
-                const oficial = rates.find(r => r.casa === 'oficial');
-                const blue = rates.find(r => r.casa === 'blue');
-                const items = [];
-                if (blue) items.push({ label: t('Spread blue'), value: `$${(blue.venta - blue.compra).toFixed(0)}`, color: '#94a3b8' });
-                const topMover = rankingData.length > 0 ? rankingData.reduce((a: any, b: any) => Math.abs(b.variacion ?? 0) > Math.abs(a.variacion ?? 0) ? b : a, rankingData[0]) : null;
-                if (topMover?.variacion != null) {
-                  const up = topMover.variacion >= 0;
-                  items.push({ label: `${t('Mayor mov.')} (${t(topMover.nombre ?? topMover.casa)})`, value: `${up ? '+' : ''}${topMover.variacion.toFixed(2)}%`, color: up ? '#10b981' : '#ef4444' });
-                }
-                if (oficial && blue) {
-                  const brecha = ((blue.venta - oficial.venta) / oficial.venta * 100);
-                  items.push({ label: t('Brecha'), value: `${brecha.toFixed(1)}%`, color: brecha > 50 ? '#ef4444' : brecha > 20 ? '#f59e0b' : '#10b981' });
-                }
-                return items;
-              })()
-            ].map((item, i, arr) => (
-              <span key={item.label} className="header-stats__item">
-                <span className="header-stats__label">{item.label}:</span>
-                <span className="header-stats__value" style={{ color: item.color }}>{item.value}</span>
-                {i < arr.length - 1 && <span className="header-stats__sep">|</span>}
-              </span>
-            ))}
-          </div>
-        </header>
+        </div>
 
         {loading ? (
           <div style={{ padding: '60px', textAlign: 'center', fontSize: '1.25rem', color: '#94a3b8' }}>
@@ -332,11 +327,11 @@ export default function Home() {
                     );
                   })}
                   {/* Glosario en el espacio vacío de la grilla */}
-                  <div className="dolar-card" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '0', maxHeight: '200px' }}>
+                  <div className="dolar-card glosario-card" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: '0', fontFamily: 'var(--font-space), sans-serif' }}>
                     <div className="card-header" style={{ marginBottom: '10px' }}>
                       <span className="card-title" style={{ fontSize: '0.95rem' }}>Glosario</span>
                     </div>
-                    <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                    <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', lineHeight: 1.5 }}>
                       {[
                         { name: 'Dólar Oficial', desc: 'Cotización base del Banco Nación sin impuestos. Referencia para importaciones y tarjetas.', color: '#10b981' },
                         { name: 'Dólar Blue', desc: 'Mercado informal (paralelo). Libre de impuestos y sin límites de compra.', color: '#6366f1' },
@@ -346,16 +341,17 @@ export default function Home() {
                         { name: 'Dólar Cripto', desc: 'Cotización en plataformas cripto para stablecoins (USDT/DAI). Disponible 24hs.', color: '#a855f7' },
                         { name: 'Dólar Mayorista', desc: 'Solo para bancos y grandes operadores. Menor spread, sin acceso al público general.', color: '#64748b' },
                       ].map((item, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0, marginTop: '5px' }} />
+                        <div key={i}>
                           <div>
-                            <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#f1f5f9' }}>{item.name}: </span>
+                            <span style={{ fontWeight: 700, fontSize: '0.78rem', color: item.color }}>{item.name}: </span>
                             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.desc}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
+                  {/* Widget: Estado del mercado */}
+                  <MarketStatus />
                 </main>
 
                 {/* Indicadores Macroeconómicos */}
@@ -364,13 +360,13 @@ export default function Home() {
                 </section>
 
                 {/* Gráfico + Calculadora + Alertas + Noticias */}
-                <section style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: '1.5fr 2fr', gap: '24px' }} className="chart-main-grid">
+                <section style={{ marginTop: '40px' }} className="chart-main-grid">
                   <div style={{ minWidth: 0, overflow: 'hidden' }}>
                     <DolarChart selectedCasa={selectedCasa} selectedName={selectedName} onSelectCasa={setSelectedCasa} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
                     <Calculator rates={rates} />
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="alerts-news-grid">
+                    <div className="alerts-news-grid">
                       <AlertSettings rates={rates} />
                       <NewsFeed />
                     </div>
@@ -392,28 +388,28 @@ export default function Home() {
             )}
 
             {activeTab === 'euro' && (
-              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <section className="currency-zone currency-zone--euro" style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 <ExchangeRateSection currency="EUR" highlightedCard={highlightedCard} activeTab={activeTab} />
                 <UniversalConverter currency="EUR" />
               </section>
             )}
 
             {activeTab === 'real' && (
-              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <section className="currency-zone currency-zone--real" style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 <ExchangeRateSection currency="BRL" highlightedCard={highlightedCard} activeTab={activeTab} />
                 <UniversalConverter currency="BRL" />
               </section>
             )}
 
             {activeTab === 'clp' && (
-              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <section className="currency-zone currency-zone--chile" style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 <ExchangeRateSection currency="CLP" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
                 <UniversalConverter currency="CLP" />
               </section>
             )}
 
             {activeTab === 'uyu' && (
-              <section style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <section className="currency-zone currency-zone--uruguay" style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 <ExchangeRateSection currency="UYU" highlightedCard={highlightedCard} activeTab={activeTab} apiEndpoint="/api/exchange-rates/clp-uyu" />
                 <UniversalConverter currency="UYU" />
               </section>

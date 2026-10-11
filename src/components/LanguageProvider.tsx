@@ -12,6 +12,9 @@ const translations: Array<[string, string]> = [
   ["Official Dollar: Cotización base del Banco Nación sin impuestos.", "Official Dollar: Banco Nación base rate, before taxes."],
   ["Blue Dollar: Mercado informal (paralelo).", "Blue Dollar: Informal (parallel) market."],
 
+  // --- Kicker del hero 3D ---
+  ["Cotizaciones en tiempo real", "Real-time exchange rates"],
+
   // --- Long descriptions (sort-first by length) ---
   ["Regístrate o inicia sesión para recibir alertas en tiempo real cuando el dólar alcance tu precio objetivo.", "Sign up or sign in to receive real-time alerts when the dollar reaches your target price."],
   ["Los datos publicados en este sitio son de carácter exclusivamente informativo. No constituyen asesoramiento financiero, ni recomendación de compra o venta de divisas. Verificá siempre con tu banco o casa de cambio antes de operar.", "The data published on this site is for informational purposes only. It does not constitute financial advice or a recommendation to buy or sell currencies. Always verify rates with your bank or exchange house before trading."],
@@ -119,6 +122,20 @@ const translations: Array<[string, string]> = [
   ["Monto en Dólares", "Amount in Dollars"],
   ["Monto en Pesos", "Amount in Pesos"],
   ["Total Estimado", "Estimated Total"],
+  ["Hora actual · Argentina", "Current time · Argentina"],
+  ["Cuenta regresiva", "Countdown"],
+  ["MERCADO ABIERTO", "MARKET OPEN"],
+  ["MERCADO CERRADO", "MARKET CLOSED"],
+  ["FIN DE SEMANA", "WEEKEND"],
+  ["Faltan para la apertura", "Until the market opens"],
+  ["Faltan para que abra el mercado", "Until the market opens"],
+  ["Faltan para el cierre", "Until the market closes"],
+  ["Lunes 10:00 hs", "Monday 10:00 AM"],
+  ["Hoy 10:00 hs", "Today 10:00 AM"],
+  ["Hoy 15:00 hs", "Today 3:00 PM"],
+  ["Mañana 10:00 hs", "Tomorrow 10:00 AM"],
+  ["Lun – Vie · 10:00 a 15:00", "Mon–Fri · 10:00 AM–3:00 PM"],
+  ["Sesión inactiva", "Session inactive"],
   ["Credenciales inválidas", "Invalid credentials"],
   ["Error al autenticar", "Authentication error"],
   ["Por favor ingresa un precio objetivo", "Please enter a target price"],
@@ -492,9 +509,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function LanguageSwitcher() {
   const { language, setLanguage } = useContext(LanguageContext);
   return (
-    <div style={{ position: "fixed", right: 16, bottom: 16, zIndex: 2000, display: "flex", gap: 4, padding: 4, borderRadius: 999, background: "#12131c", border: "1px solid rgba(255,255,255,.12)" }}>
-      <button type="button" onClick={() => setLanguage("es")} aria-pressed={language === "es"} style={{ border: 0, borderRadius: 999, padding: "6px 10px", cursor: "pointer", color: "#fff", background: language === "es" ? "#6366f1" : "transparent" }}>ES</button>
-      <button type="button" onClick={() => setLanguage("en")} aria-pressed={language === "en"} style={{ border: 0, borderRadius: 999, padding: "6px 10px", cursor: "pointer", color: "#fff", background: language === "en" ? "#6366f1" : "transparent" }}>EN</button>
+    <div className="language-switcher" role="group" aria-label="Language">
+      <button className={`language-switcher__button${language === "es" ? " is-active" : ""}`} type="button" onClick={() => setLanguage("es")} aria-pressed={language === "es"} aria-label="Español">ES</button>
+      <button className={`language-switcher__button${language === "en" ? " is-active" : ""}`} type="button" onClick={() => setLanguage("en")} aria-pressed={language === "en"} aria-label="English">EN</button>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function NewsFeed() {
 
   if (loading) {
     return (
-      <div className="news-feed card">
+      <div className="news-feed card font-standard">
         <div className="news-header">
           <h3>Noticias Económicas</h3>
         </div>
@@ -43,7 +43,7 @@ export default function NewsFeed() {
   if (news.length === 0) return null;
 
   return (
-    <div className="news-feed card">
+    <div className="news-feed card font-standard">
       <div className="news-header">
         <h3>Noticias Económicas</h3>
       </div>

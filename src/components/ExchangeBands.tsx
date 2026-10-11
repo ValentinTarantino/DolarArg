@@ -41,7 +41,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
 
   if (rates.length === 0 || !activeRate || loadingBandas || !bandas) {
     return (
-      <div className="panel" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
+      <div className="panel font-standard exchange-bands-panel" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
         <p style={{ color: '#94a3b8' }}>{t('Cargando bandas cambiarias...')}</p>
       </div>
     );
@@ -106,7 +106,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
   const fmt = (n: number) => n.toLocaleString(language === 'en' ? 'en-US' : 'es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="panel" id="bands-panel" style={{ marginTop: '24px' }}>
+    <div className="panel font-standard exchange-bands-panel" id="bands-panel" style={{ marginTop: '24px' }}>
 
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
@@ -173,7 +173,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
             boxShadow: `0 4px 20px ${stateColor}25`,
             width: '88%',
           }}>
-            <span style={{ fontSize: '1rem', fontWeight: 800, color: stateColor, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            <span className="band-number" style={{ fontSize: '1rem', fontWeight: 800, color: stateColor, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               {`${t('Dólar')} ${t(activeRate.nombre)}: $${fmt(currentPrice)}`}
             </span>
           </div>
@@ -243,7 +243,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
                       <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: row.color, display: 'inline-block', flexShrink: 0 }} />
                       {t(row.label)}
                     </td>
-                    <td style={{ padding: '10px', color: '#fff', fontWeight: 700, textAlign: 'right' }}>
+                    <td className="band-number" style={{ padding: '10px', color: '#fff', fontWeight: 700, textAlign: 'right' }}>
                       ${fmt(row.value)}
                     </td>
                   </tr>
@@ -270,7 +270,7 @@ export default function ExchangeBands({ rates }: ExchangeBandsProps) {
                   <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: rng.color, display: 'inline-block', flexShrink: 0 }} />
                   <span style={{ color: rng.color, fontWeight: 700, fontSize: '0.82rem', minWidth: '80px' }}>{t(rng.name)}</span>
                   <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{rng.pct}</span>
-                  <span style={{ marginLeft: 'auto', color: '#cbd5e1', fontSize: '0.78rem', fontFamily: 'monospace' }}>
+                  <span className="band-number" style={{ marginLeft: 'auto', color: '#cbd5e1', fontSize: '0.78rem' }}>
                     ${fmt(rng.min)} – ${fmt(rng.max)}
                   </span>
                 </div>

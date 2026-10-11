@@ -38,10 +38,9 @@ export default function Footer({ onTabChange }: FooterProps) {
         {/* Columna 1 — Marca */}
         <div className="site-footer__col site-footer__col--brand">
           <div className="site-footer__logo">
-            <span className="site-footer__logo-dollar">$</span>
             <span className="site-footer__logo-text">
               <span style={{ color: '#ffffff' }}>DÓLAR</span>
-              <span style={{ color: '#6366f1' }}>ARG</span>
+              <span className="argentina-colors">ARG</span>
             </span>
           </div>
           <p className="site-footer__brand-desc">

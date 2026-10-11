@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Símbolo del Dólar 3D — Wireframe Verde</title>
+
+  <style>
+    /* ── Reset mínimo: el canvas ocupa toda la ventana ───────────── */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* Sin fondo propio: el canvas es transparente y se "flota" sobre
+         el fondo de la página que lo contenga (o sobre negro del body).
+         Se usa #050508 solo como fallback visual del navegador. */
+      background: #050508;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      /* Sin background-color: el interior de la escena queda transparente */
+    }
+
+    #app canvas {
+      display: block;
+    }
+
+    /* ── Overlay de instrucciones (esquina inferior) ─────────────── */
+    #hint {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      font: 500 13px/1.4 system-ui, -apple-system, sans-serif;
+      color: rgba(0, 255, 0, 0.55);
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.6s ease;
+    }
+
+    /* ── Estado de carga / error ─────────────────────────────────── */
+    #status {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font: 500 14px/1.5 system-ui, -apple-system, sans-serif;
+      color: rgba(0, 255, 0, 0.8);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #status.error {
+      color: #ff5555;
+    }
+
+    #status.hidden {
+      opacity: 0;
+    }
+  </style>
+
+  <!-- ──────────────────────────────────────────────────────────────
+       Import map: define los alias de módulos ES para "three" y sus
+       addons. Versión pineada a 0.186.1 = three instalado en el
+       proyecto (package.json), para garantizar compatibilidad.
+       ────────────────────────────────────────────────────────────── -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.186.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.186.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <div id="status">Cargando fuente…</div>
+  <div id="hint">Arrastra para rotar · Rueda para zoom</div>
+
+  <script type="module">
+    // ══════════════════════════════════════════════════════════════
+    //  Imports de Three.js (ES modules vía import map)
+    // ══════════════════════════════════════════════════════════════
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+    // ── Referencias al DOM ──────────────────────────────────────
+    const app = document.getElementById('app');
+    const statusEl = document.getElementById('status');
+    const hintEl = document.getElementById('hint');
+
+    // ══════════════════════════════════════════════════════════════
+    //  1. RENDERER — canvas transparente (sin background)
+    // ══════════════════════════════════════════════════════════════
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,               // permite transparencia total
+    });
+    renderer.setClearColor(0x000000, 0);  // clear alpha 0 → sin color de fondo
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    app.appendChild(renderer.domElement);
+
+    // ══════════════════════════════════════════════════════════════
+    //  2. ESCENA Y CÁMARA PERSPECTIVA
+    // ══════════════════════════════════════════════════════════════
+    const scene = new THREE.Scene();
+    // Sin scene.background ni Fog: el interior se ve a través del "$"
+    // y el canvas conserva su transparencia.
+
+    const camera = new THREE.PerspectiveCamera(
+      45,                                     // campo de visión
+      window.innerWidth / window.innerHeight, // aspect ratio
+      0.1,                                    // near
+      100                                     // far
+    );
+    camera.position.set(0, 0.4, 6);   // ligeramente elevada y al frente
+    camera.lookAt(0, 0, 0);
+
+    // ══════════════════════════════════════════════════════════════
+    //  3. ILUMINACIÓN (ambiental + 2 direccionales)
+    //     Nota: LineBasicMaterial no responde a luces, pero se
+    //     incluyen por si se añade una malla de relleno después.
+    // ══════════════════════════════════════════════════════════════
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    keyLight.position.set(4, 5, 5);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0x00ff88, 0.6); // relleno verde tenue
+    fillLight.position.set(-4, 2, -3);
+    scene.add(fillLight);
+
+    // ══════════════════════════════════════════════════════════════
+    //  4. GEOMETRÍA DEL SÍMBOLO "$" (TextGeometry)
+    // ══════════════════════════════════════════════════════════════
+    const FONT_URL =
+      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r186/examples/fonts/helvetiker_regular.typeface.json';
+
+    const loader = new FontLoader();
+
+    loader.load(
+      FONT_URL,
+
+      // ── Éxito: construir geometría, bordes y montar en escena ──
+      (font) => {
+        const geometry = new TextGeometry('$', {
+          font,
+          size: 2,            // altura del glifo
+          depth: 0.45,        // extrusión en Z (three ≥ r160 usa "depth")
+          curveSegments: 16,  // suavidad de las curvas de la "S"
+          bevelEnabled: false // sin bisel → bordes más limpios para EdgesGeometry
+        });
+
+        // Centrar la geometría en el origen (boundingBox → translate)
+        geometry.computeBoundingBox();
+        const bb = geometry.boundingBox;
+        const cx = (bb.max.x + bb.min.x) / 2;
+        const cy = (bb.max.y + bb.min.y) / 2;
+        const cz = (bb.max.z + bb.min.z) / 2;
+        geometry.translate(-cx, -cy, -cz);
+
+        // ────────────────────────────────────────────────────────
+        //  EFECTO DE BORDES: EdgesGeometry + LineSegments
+        //  Solo los contornos/arestas se dibujan, en verde neón.
+        // ────────────────────────────────────────────────────────
+        const edges = new THREE.EdgesGeometry(geometry, 1); // umbral 1°
+        const lineMaterial = new THREE.LineBasicMaterial({
+          color: 0x00ff00,       // verde brillante
+          transparent: false     // opacidad plena para el trazo
+        });
+        const wireframe = new THREE.LineSegments(edges, lineMaterial);
+        scene.add(wireframe);
+
+        // ────────────────────────────────────────────────────────
+        //  INTERIOR TRANSPARENTE: la malla sólida NO se añade a la
+        //  escena → el "$" es completamente hueco y se ve a través.
+        //
+        //  Alternativa (si se necesitara la malla invisible para
+        //  raycasting/hit-testing), crear un mesh con:
+        //
+        //    const fill = new THREE.Mesh(
+        //      geometry,
+        //      new THREE.MeshBasicMaterial({
+        //        transparent: true,
+        //        opacity: 0,        // invisible
+        //        depthWrite: false   // no escribir en el depth buffer
+        //      })
+        //    );
+        //    scene.add(fill);
+        // ────────────────────────────────────────────────────────
+
+        // Liberar la geometría original: los datos ya viven en `edges`
+        geometry.dispose();
+
+        // Ocultar el indicador de carga
+        statusEl.textContent = '';
+        statusEl.classList.add('hidden');
+      },
+
+      // ── Progreso de carga (pc simply updates el texto) ────────
+      (xhr) => {
+        if (xhr.total) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          statusEl.textContent = `Cargando fuente… ${pct}%`;
+        }
+      },
+
+      // ── Error: informar al usuario ────────────────────────────
+      () => {
+        statusEl.textContent =
+          'No se pudo cargar la fuente. Requiere conexión a internet (CDN).';
+        statusEl.classList.add('error');
+      }
+    );
+
+    // ══════════════════════════════════════════════════════════════
+    //  5. CONTROLES ORBITALES
+    //     - autoRotate: el modelo gira SOLO (sin seguir el cursor)
+    //     - El usuario solo interactúa al arrastrar / hacer zoom
+    //     - Sin listeners de mousemove: la cámara no sigue al cursor
+    // ══════════════════════════════════════════════════════════════
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;      // inercia suave
+    controls.dampingFactor = 0.06;
+    controls.enablePan = false;         // sin desplazamiento lateral
+    controls.minDistance = 3;           // zoom acotado
+    controls.maxDistance = 12;
+    controls.autoRotate = true;         // gira solo
+    controls.autoRotateSpeed = 2.0;     // vueltas "cómodas" (~6 s/rev a 60 fps)
+    controls.target.set(0, 0, 0);       // orbital alrededor del origen
+
+    // ══════════════════════════════════════════════════════════════
+    //  6. RESIZE — mantener cámara y renderer coherentes
+    // ══════════════════════════════════════════════════════════════
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    //  7. BUCLE DE RENDERIZADO
+    // ══════════════════════════════════════════════════════════════
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();  // aplica damping + autoRotate
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Ocultar el hint tras unos segundos para no estorbar
+    setTimeout(() => {
+      hintEl.style.opacity = '0';
+    }, 6000);
+  </script>
+</body>
+</html>

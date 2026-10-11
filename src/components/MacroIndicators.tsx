@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 import { useLanguage } from './LanguageProvider';
@@ -29,11 +29,11 @@ interface MacroData {
   inflacion: Inflacion | null;
 }
 
-const getRiesgoPaisLabel = (valor: number) => {
-  if (valor < 600) return { label: 'Bajo', color: '#10b981' };
-  if (valor < 1000) return { label: 'Moderado', color: '#f59e0b' };
-  if (valor < 1500) return { label: 'Alto', color: '#f97316' };
-  return { label: 'Crítico', color: '#ef4444' };
+const getRiesgoPaisColor = (valor: number) => {
+  if (valor < 600) return '#00c878';
+  if (valor < 1000) return '#f59e0b';
+  if (valor < 1500) return '#f97316';
+  return '#ef4444';
 };
 
 const formatMillones = (val: number) => {
@@ -44,7 +44,7 @@ const formatMillones = (val: number) => {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload?.length) {
     return (
-      <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px 10px', fontSize: '0.75rem', color: '#e2e8f0' }}>
+      <div className="macro-indicators__tooltip" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '6px 10px', fontSize: '0.75rem', color: '#e2e8f0' }}>
         {formatMillones(payload[0].value)}
       </div>
     );
@@ -59,40 +59,54 @@ const MacroIndicators: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
-      const res = await fetch('/api/macro');
+      const res = await fetch('/api/macro', { cache: 'no-store' });
       if (!res.ok) throw new Error('Error al cargar datos macro');
       const json = await res.json();
-      setData(json);
-      setLastUpdated(new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
+      setData(current => ({
+        riesgoPais: json.riesgoPais ?? current?.riesgoPais ?? null,
+        reservas: json.reservas ?? current?.reservas ?? null,
+        inflacion: json.inflacion ?? current?.inflacion ?? null,
+      }));
+      setLastUpdated(new Date().toLocaleTimeString(language === 'en' ? 'en-US' : 'es-AR', { hour: '2-digit', minute: '2-digit' }));
     } catch (e: any) {
-      setError(e.message);
+      if (!silent) setError(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [language]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    void fetchData();
+    const refreshInterval = window.setInterval(() => void fetchData(true), 5 * 60 * 1000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void fetchData(true);
+    };
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [fetchData]);
 
   const rp = data?.riesgoPais;
   const res = data?.reservas;
   const infl = data?.inflacion;
-  const rpStatus = rp ? getRiesgoPaisLabel(rp.valor) : null;
+  const rpColor = rp ? getRiesgoPaisColor(rp.valor) : null;
 
   return (
-    <div className="panel">
+    <div className="panel macro-indicators">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
           <span>{t('Indicadores Macroeconómicos')}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {lastUpdated && <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('Act.')} {lastUpdated}</span>}
-          <button onClick={fetchData} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <button onClick={() => void fetchData(true)} aria-label={t('Actualizar indicadores macroeconómicos')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <RefreshCw size={14} />
           </button>
         </div>
@@ -113,23 +127,17 @@ const MacroIndicators: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
 
           {/* Riesgo País */}
-          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${rpStatus ? rpStatus.color + '33' : 'rgba(255,255,255,0.08)'}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${rpColor ? rpColor + '33' : 'rgba(255,255,255,0.08)'}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: rpStatus?.color || '#94a3b8', boxShadow: `0 0 8px ${rpStatus?.color || '#94a3b8'}` }} />
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Riesgo País')}</span>
               </div>
-              {rpStatus && (
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', background: rpStatus.color + '22', color: rpStatus.color, border: `1px solid ${rpStatus.color}44` }}>
-                  {t(rpStatus.label)}
-                </span>
-              )}
             </div>
 
             {rp ? (
               <>
                 <div>
-                  <p style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: rpStatus?.color || '#f1f5f9', lineHeight: 1 }}>
+                  <p className="macro-indicators__value" style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: rpColor || '#f1f5f9', lineHeight: 1 }}>
                     {rp.valor.toLocaleString('es-AR')}
                   </p>
                   <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>{t('puntos básicos (EMBI+)')}</p>
@@ -137,7 +145,7 @@ const MacroIndicators: React.FC = () => {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {rp.variacion !== null && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: rp.variacion >= 0 ? '#ef4444' : '#10b981' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: rp.variacion >= 0 ? '#ef4444' : '#00c878' }}>
                       {rp.variacion >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                       <span>{rp.variacion >= 0 ? '+' : ''}{rp.variacion.toFixed(2)}% {t('vs día anterior')}</span>
                     </div>
@@ -158,7 +166,6 @@ const MacroIndicators: React.FC = () => {
           {/* Reservas BCRA */}
           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 8px #3b82f6' }} />
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Reservas BCRA')}</span>
             </div>
 
@@ -167,7 +174,7 @@ const MacroIndicators: React.FC = () => {
                 <div>
                   <p style={{ margin: 0, lineHeight: 1 }}>
                     <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.04em', marginRight: '6px' }}>USD</span>
-                    <span style={{ fontSize: '2.8rem', fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em' }}>
+                    <span className="macro-indicators__value" style={{ fontSize: '2.8rem', fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em' }}>
                       {res.valor >= 1000 ? `${(res.valor / 1000).toFixed(1)}B` : `${res.valor.toFixed(0)}M`}
                     </span>
                   </p>
@@ -175,7 +182,7 @@ const MacroIndicators: React.FC = () => {
                 </div>
 
                 {res.variacion !== null && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: res.variacion >= 0 ? '#10b981' : '#ef4444' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', fontWeight: 600, color: res.variacion >= 0 ? '#00c878' : '#ef4444' }}>
                     {res.variacion >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                     <span>{res.variacion >= 0 ? '+' : ''}{res.variacion.toFixed(2)}% {t('vs día anterior')}</span>
                   </div>
@@ -208,11 +215,10 @@ const MacroIndicators: React.FC = () => {
           {infl && (
             <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,165,0,0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }} />
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Inflación Mensual')}</span>
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>
+                <p className="macro-indicators__value" style={{ margin: 0, fontSize: '2.8rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>
                   {infl.valor.toFixed(1)}%
                 </p>
                 <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>{t('variación mensual del IPC (INDEC)')}</p>
