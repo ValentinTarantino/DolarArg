@@ -21,6 +21,13 @@ jobs:
             cd ~/DolarArg
             git pull origin main
             npm install
-            npm run build
-            npx prisma generate
+            export PRISMA_SCHEMA_TARGET=postgresql
+            if npm run build; then
+              BUILD_STATUS=0
+            else
+              BUILD_STATUS=$?
+            fi
+            unset PRISMA_SCHEMA_TARGET
+            node scripts/prepare-schema.js --sqlite
+            if [ "$BUILD_STATUS" -ne 0 ]; then exit "$BUILD_STATUS"; fi
             pm2 restart dolar-app

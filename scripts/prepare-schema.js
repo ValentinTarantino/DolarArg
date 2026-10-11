@@ -77,12 +77,12 @@ generator client {
 }
 
 datasource db {
-  provider  = "cockroachdb"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
 }
 
 model DolarRate {
-  id        Int      @id @default(sequence())
+  id        Int      @id @default(autoincrement())
   casa      String
   nombre    String
   compra    Float
@@ -94,7 +94,7 @@ model DolarRate {
 }
 
 model ExchangeRateHistory {
-  id        Int      @id @default(sequence())
+  id        Int      @id @default(autoincrement())
   codigo    String   // EUR o BRL
   tipo      String   // oficial, blue, tarjeta
   compra    Float
@@ -106,7 +106,7 @@ model ExchangeRateHistory {
 }
 
 model User {
-  id        Int      @id @default(sequence())
+  id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -114,7 +114,7 @@ model User {
 }
 
 model Alert {
-  id          Int      @id @default(sequence())
+  id          Int      @id @default(autoincrement())
   userId      Int
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   casa        String
@@ -126,7 +126,7 @@ model Alert {
 }
 
 model PasswordResetToken {
-  id        Int      @id @default(sequence())
+  id        Int      @id @default(autoincrement())
   email     String
   token     String   @unique
   expiresAt DateTime
@@ -134,11 +134,19 @@ model PasswordResetToken {
 }
 `;
 
-if (process.env.VERCEL || process.env.VERCEL_ENV) {
-  console.log('🔄 Vercel detectado - preparando schema para PostgreSQL...');
+const forceSqlite = process.argv.includes('--sqlite');
+const usePostgres = !forceSqlite && (
+  process.argv.includes('--postgres') ||
+  process.env.PRISMA_SCHEMA_TARGET === 'postgresql' ||
+  process.env.VERCEL ||
+  process.env.VERCEL_ENV
+);
+
+if (usePostgres) {
+  console.log('Preparing Prisma schema for PostgreSQL...');
   fs.writeFileSync(schemaPath, postgresSchema, 'utf-8');
-  console.log('✅ Schema actualizado a PostgreSQL');
+  console.log('Prisma schema set to PostgreSQL');
 } else {
-  console.log('📝 Desarrollo local - usando SQLite');
+  console.log('Preparing Prisma schema for local SQLite...');
   fs.writeFileSync(schemaPath, sqliteSchema, 'utf-8');
 }

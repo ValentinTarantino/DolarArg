@@ -76,8 +76,8 @@ const DollarScene: React.FC<{ symbol?: string; color?: string }> = ({ symbol = '
 
         if (symbol === 'CLP$' || symbol === 'UY$') {
           const chars = symbol === 'CLP$' ? [
-            { char: 'C', color: '#ffffff' },
-            { char: 'L', color: '#4D8FE8' },
+            { char: 'C', color: '#B8443E' },
+            { char: 'L', color: '#B8443E' },
             { char: 'P', color: '#B8443E' },
             { char: '$', color: '#22c55e' },
           ] : [

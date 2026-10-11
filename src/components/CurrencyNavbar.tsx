@@ -18,7 +18,7 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
   ];
 
   return (
-    <div style={{
+    <div className="currency-navbar-shell" style={{
       display: 'flex',
       justifyContent: 'center',
       marginBottom: '24px',
@@ -29,7 +29,7 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
       padding: '12px 0',
       borderBottom: '1px solid rgba(255,255,255,0.1)'
     }}>
-      <div style={{
+      <div className="currency-navbar-tabs" style={{
         display: 'flex',
         gap: '12px',
         padding: '12px',
@@ -42,6 +42,7 @@ const CurrencyNavbar: React.FC<CurrencyNavbarProps> = ({ activeTab, onTabChange 
         {tabs.map(tab => (
           <button
             key={tab.id}
+            className="currency-navbar-tab"
             onClick={() => onTabChange(tab.id)}
             style={{
               padding: '10px 20px',

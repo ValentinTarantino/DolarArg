@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendAlertEmail } from '@/lib/mail';
+import { pruneOldRateHistory, saveChangedDolarRates } from '@/lib/rate-history';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
 
@@ -52,14 +53,20 @@ async function checkAndTriggerAlerts(rates: any[]) {
 }
 
 /**
- * Endpoint Vercel Cron que se ejecuta cada 10 minutos
- * Obtiene cotizaciones actuales y verifica alertas
+ * Endpoint de actualizacion programada de cotizaciones y alertas.
  */
 export async function GET() {
   try {
     console.log('[CRON] Iniciando verificación de cotizaciones y alertas...');
 
     // Obtener cotizaciones actuales de la API pública
+    try {
+      const pruned = await pruneOldRateHistory();
+      console.log(`[CRON] Limpieza: ${pruned.dolarRatesDeleted} cotizaciones y ${pruned.exchangeRatesDeleted} registros EUR/BRL anteriores a ${pruned.cutoff}`);
+    } catch (cleanupError) {
+      console.error('[CRON] Error limpiando historial vencido:', cleanupError);
+    }
+
     const response = await fetch(PUBLIC_API_URL, { cache: 'no-store' });
 
     if (!response.ok) {
@@ -86,32 +93,31 @@ export async function GET() {
 
     console.log(`[CRON] Obtenidas ${currentRates.length} cotizaciones actuales`);
 
-    // Guardar las cotizaciones actuales en la BD
+    // Guardar solo cambios reales y mantener acotado el historial local.
     const now = new Date();
-    const ratesToInsert = currentRates.map((rate: any) => ({
+    const ratesToSave = currentRates.map((rate: any) => ({
       casa: rate.casa,
       nombre: rate.nombre,
       compra: rate.compra,
       venta: rate.venta,
-      fecha: now,
     }));
 
+    let ratesSaved = 0;
     try {
-      await prisma.dolarRate.createMany({
-        data: ratesToInsert
-      });
-      console.log(`[CRON] Se guardaron ${ratesToInsert.length} cotizaciones en la BD`);
+      ratesSaved = await saveChangedDolarRates(ratesToSave, now);
+      console.log(`[CRON] Se guardaron ${ratesSaved} cotizaciones con cambios`);
     } catch (dbError) {
       console.error('[CRON] Error guardando cotizaciones:', dbError);
     }
 
     // Verificar y disparar alertas
-    const alertsTriggered = await checkAndTriggerAlerts(ratesToInsert);
+    const alertsTriggered = await checkAndTriggerAlerts(ratesToSave);
 
     return NextResponse.json({
       success: true,
       timestamp: now.toISOString(),
       ratesObtained: currentRates.length,
+      ratesSaved,
       alertsTriggered: alertsTriggered,
       message: 'Cron job completado exitosamente'
     });

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getEurBrlVariants } from '@/lib/exchange-rates';
-import { prisma } from '@/lib/db';
+import { saveChangedExchangeRates } from '@/lib/rate-history';
 
 export async function GET() {
   try {
@@ -13,23 +13,12 @@ export async function GET() {
       );
     }
 
-    // Guardar histórico en BD automáticamente
-    const now = new Date();
-    for (const rate of rates) {
-      try {
-        await prisma.exchangeRateHistory.create({
-          data: {
-            codigo: rate.codigo,
-            tipo: rate.tipo,
-            compra: rate.compra,
-            venta: rate.venta,
-            fecha: now
-          }
-        });
-      } catch (dbError) {
-        // Si falla al guardar un registro, continuar con los demás
-        console.warn(`Error guardando histórico para ${rate.codigo} ${rate.tipo}:`, dbError);
-      }
+    try {
+      const savedCount = await saveChangedExchangeRates(rates);
+      console.log(`[EXCHANGE RATES] Se guardaron ${savedCount} cotizaciones con cambios`);
+    } catch (dbError) {
+      // The live rates are still useful if optional history storage fails.
+      console.warn('Error guardando historico EUR/BRL:', dbError);
     }
 
     return NextResponse.json(rates);

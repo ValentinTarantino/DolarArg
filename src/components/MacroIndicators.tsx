@@ -100,7 +100,7 @@ const MacroIndicators: React.FC = () => {
 
   return (
     <div className="panel macro-indicators">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
+      <div className="macro-indicators__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px', marginBottom: '20px' }}>
         <div className="panel-title" style={{ border: 'none', padding: 0, margin: 0 }}>
           <span>{t('Indicadores Macroeconómicos')}</span>
         </div>
@@ -124,10 +124,10 @@ const MacroIndicators: React.FC = () => {
       )}
 
       {!loading && !error && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+        <div className="macro-indicators__grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
 
           {/* Riesgo País */}
-          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${rpColor ? rpColor + '33' : 'rgba(255,255,255,0.08)'}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="macro-indicators__card" style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${rpColor ? rpColor + '33' : 'rgba(255,255,255,0.08)'}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Riesgo País')}</span>
@@ -164,7 +164,7 @@ const MacroIndicators: React.FC = () => {
           </div>
 
           {/* Reservas BCRA */}
-          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="macro-indicators__card" style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Reservas BCRA')}</span>
             </div>
@@ -213,7 +213,7 @@ const MacroIndicators: React.FC = () => {
 
           {/* Inflación mensual */}
           {infl && (
-            <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,165,0,0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="macro-indicators__card" style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,165,0,0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('Inflación Mensual')}</span>
               </div>

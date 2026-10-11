@@ -80,10 +80,7 @@ const BankRates: React.FC = () => {
       {view === 'cards' ? (
         <div className="bank-cards-grid">
           {rates.map((rate, index) => (
-            <div key={index} style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', transition: 'all 0.25s ease' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
-            >
+            <div key={index} className="bank-rate-card" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px', height: '60px', alignItems: 'center' }}>
                 {rate.logoUrl
                   ? <img

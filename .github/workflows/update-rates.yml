@@ -1,9 +1,6 @@
 name: Update exchange rates
 
 on:
-  schedule:
-    # GitHub Actions runs on UTC and may start a few minutes after the scheduled time.
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 concurrency:

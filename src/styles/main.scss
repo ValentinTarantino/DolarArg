@@ -321,6 +321,24 @@ body {
 
   .glosario-card {
     max-height: 200px;
+
+    // Keep the glossary visually static when the pointer passes over it.
+    transition: none;
+
+    &::after {
+      transition: none;
+    }
+
+    &:hover {
+      background: $glass-bg;
+      border-color: $glass-border;
+      box-shadow: $shadow-card;
+      transform: none;
+    }
+
+    &:hover::after {
+      opacity: 0.35;
+    }
   }
 
   /* Market Status Layout default (desktop) */
@@ -2138,7 +2156,7 @@ body {
     }
 
     .navbar-ticker-container {
-      max-width: 400px;
+      max-width: 300px;
     }
   }
 
@@ -2151,10 +2169,12 @@ body {
 /* Tablet portrait & landscape phones (768px) */
 @media (max-width: 768px) {
   .navbar-premium {
-    height: 56px;
+    --navbar-height: 56px;
+    height: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
 
     .navbar-container {
-      padding: 0 12px;
+      padding: 0 max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px));
       gap: 8px;
     }
 
@@ -2191,7 +2211,7 @@ body {
   }
 
   .dashboard-container {
-    padding: 80px 14px 30px 14px !important;
+    padding: calc(80px + env(safe-area-inset-top, 0px)) 14px 30px 14px !important;
     gap: 24px;
   }
 
@@ -2267,7 +2287,8 @@ body {
 /* Mobile (576px) */
 @media (max-width: 576px) {
   .navbar-premium {
-    height: 52px;
+    --navbar-height: 52px;
+    height: calc(var(--navbar-height) + env(safe-area-inset-top, 0px));
 
     .navbar-brand {
       gap: 6px;
@@ -2292,7 +2313,7 @@ body {
   }
 
   .dashboard-container {
-    padding: 72px 10px 24px 10px !important;
+    padding: calc(72px + env(safe-area-inset-top, 0px)) 10px 24px 10px !important;
     gap: 18px;
   }
 
@@ -2363,7 +2384,7 @@ body {
   }
 
   .dashboard-container {
-    padding: 68px 8px 20px 8px !important;
+    padding: calc(68px + env(safe-area-inset-top, 0px)) 8px 20px 8px !important;
   }
 
   .header {
@@ -2501,6 +2522,12 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  @media (max-width: 900px) and (min-width: 577px) {
+    &--3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 576px) {
 
     &--3,
@@ -2538,6 +2565,13 @@ body {
     padding-top: 22px !important;
     padding-bottom: 22px !important;
   }
+}
+
+/* Currency cards should appear immediately when switching Real/CLP/UYU/EUR zones. */
+.exchange-panel,
+.exchange-panel .exchange-cards-grid > div {
+  animation: none !important;
+  transition: none !important;
 }
 
 .crypto-prices-panel {
@@ -2762,8 +2796,13 @@ body {
 .splash-screen {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   z-index: 9999;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 0 max(16px, env(safe-area-inset-bottom, 0px));
   isolation: isolate;
   background:
     radial-gradient(ellipse at 50% 42%, rgba(16, 185, 129, 0.1), transparent 34%),
@@ -2798,6 +2837,8 @@ body {
     flex-direction: column;
     align-items: center;
     width: min(calc(100% - 40px), 360px);
+    flex-shrink: 0;
+    padding-block: clamp(12px, 3vh, 28px);
     animation: splash-content-in 0.8s cubic-bezier(0.2, 0.75, 0.25, 1) both;
   }
 
@@ -2930,6 +2971,126 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  .navbar-premium {
+    .navbar-container {
+      padding-left: max(10px, env(safe-area-inset-left, 0px));
+      padding-right: max(10px, env(safe-area-inset-right, 0px));
+    }
+  }
+
+  .navbar-mobile-menu {
+    max-height: calc(100vh - 56px);
+    max-height: calc(100dvh - var(--navbar-height, 56px) - env(safe-area-inset-top, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .navbar-hamburger {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
+  .mobile-menu-rate {
+    min-width: 0;
+    flex-wrap: wrap;
+
+    .mobile-rate-name {
+      min-width: 90px;
+    }
+
+    .mobile-rate-value {
+      margin-left: auto;
+      gap: 8px;
+      font-size: clamp(0.68rem, 3vw, 0.8rem);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .splash-screen {
+    &__content {
+      width: min(calc(100% - 32px), 360px);
+      padding-block: 10px;
+    }
+
+    &__eyebrow {
+      gap: 7px;
+      margin-bottom: clamp(16px, 4vh, 26px);
+      font-size: clamp(0.5rem, 2.4vw, 0.62rem);
+      letter-spacing: 0.15em;
+    }
+
+    &__logo {
+      width: clamp(78px, 23vw, 96px);
+      height: clamp(78px, 23vw, 96px);
+    }
+
+    &__dollar {
+      font-size: clamp(2.8rem, 13vw, 3.4rem);
+    }
+
+    &__name {
+      margin-top: clamp(16px, 4vh, 24px);
+      font-size: clamp(1.75rem, 8vw, 2.1rem);
+    }
+
+    &__loading {
+      margin-top: clamp(24px, 6vh, 36px);
+    }
+
+    &__markets {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: clamp(18px, 4vh, 26px);
+      font-size: clamp(0.52rem, 2.5vw, 0.6rem);
+    }
+  }
+}
+
+@media (max-height: 600px) {
+  .splash-screen {
+    align-items: flex-start;
+
+    &__content {
+      padding-block: 8px;
+    }
+
+    &__eyebrow {
+      margin-bottom: 12px;
+    }
+
+    &__logo {
+      width: 72px;
+      height: 72px;
+    }
+
+    &__dollar {
+      font-size: 2.6rem;
+    }
+
+    &__name {
+      margin-top: 12px;
+      font-size: 1.8rem;
+    }
+
+    &__tagline {
+      margin-top: 6px;
+    }
+
+    &__loading {
+      margin-top: 18px;
+    }
+
+    &__markets {
+      margin-top: 12px;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .splash-screen__content,
   .splash-screen__logo,
@@ -3015,6 +3176,198 @@ body {
   &__tooltip {
     font-family: var(--font-space, 'Space Grotesk'), 'Outfit', sans-serif !important;
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Mobile fit and touch ergonomics */
+@media (max-width: 768px) {
+  :where(button, a, input, select, textarea) {
+    touch-action: manipulation;
+  }
+
+  .currency-navbar-shell {
+    justify-content: flex-start !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 16px !important;
+    padding: 8px 0 !important;
+    overflow: hidden;
+  }
+
+  .currency-navbar-tabs {
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    width: 100%;
+    max-width: 100%;
+    padding: 6px !important;
+    border-radius: 16px !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .currency-navbar-tab {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 9px 12px !important;
+    scroll-snap-align: start;
+    font-size: 0.82rem !important;
+  }
+
+  .currency-navbar-tab img {
+    flex: 0 0 auto;
+  }
+
+  .macro-indicators__grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .macro-indicators__card {
+    min-width: 0;
+    padding: 16px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .macro-indicators__header {
+    margin-bottom: 14px !important;
+  }
+
+  .language-switcher {
+    right: max(10px, env(safe-area-inset-right, 0px));
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .navbar-mobile-menu {
+    left: max(0px, env(safe-area-inset-left, 0px));
+    right: max(0px, env(safe-area-inset-right, 0px));
+  }
+
+  .mobile-menu-rate {
+    .mobile-rate-name {
+      overflow-wrap: anywhere;
+    }
+
+    .mobile-rate-value {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+
+  .exchange-rate-number,
+  .macro-indicators__value {
+    font-size: clamp(1.65rem, 8vw, 2.45rem) !important;
+    overflow-wrap: anywhere;
+  }
+
+  .chart-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .bank-cards-grid,
+  .exchange-cards-grid {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    width: 100%;
+    padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  .navbar-premium .navbar-container {
+    gap: 8px;
+  }
+
+  .navbar-premium .navbar-brand .brand-name {
+    letter-spacing: 0.01em;
+  }
+
+  .header .title-container {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .panel {
+    min-width: 0;
+  }
+
+  .dolar-card {
+    min-width: 0;
+
+    .card-header {
+      gap: 8px;
+    }
+
+    .card-title {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .card-values {
+      gap: 10px;
+    }
+
+    .card-footer {
+      flex-wrap: wrap;
+      row-gap: 8px;
+    }
+  }
+
+  .alert-form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .language-switcher {
+    padding: 3px;
+    border-radius: 12px;
+
+    &__button {
+      min-width: 38px;
+      height: 32px;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar-premium .navbar-brand .brand-name {
+    font-size: 0.74rem;
+  }
+
+  .navbar-hamburger {
+    width: 38px;
+    height: 38px;
+  }
+
+  .panel {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .dolar-card .card-values .value-group span.price {
+    font-size: 1.2rem;
+  }
+
+  .mobile-menu-rate {
+    align-items: flex-start;
+    flex-wrap: wrap;
+
+    .mobile-rate-value {
+      flex-basis: 100%;
+      justify-content: space-between;
+      margin-left: 30px;
+    }
   }
 }
 

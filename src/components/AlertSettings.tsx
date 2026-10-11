@@ -369,7 +369,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
           </div>
 
           <form onSubmit={handleCreateAlert} className="calculator-form" id="create-alert-form">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div className="alert-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <div className="input-container">
                 <label>{t('Dólar')}</label>
                 <div className="input-wrapper">

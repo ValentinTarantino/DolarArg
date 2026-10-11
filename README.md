@@ -1,6 +1,6 @@
 # DólarARG
 
-Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso chileno, peso uruguayo y criptomonedas en Argentina en tiempo real, con historial, gráficos, calculadora, alertas, bandas cambiarias del BCRA y soporte PWA (instalable como app).
+Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso chileno, peso uruguayo y criptomonedas en Argentina en tiempo real, con historial, gráficos, calculadora, alertas, bandas cambiarias del BCRA y soporte PWA (instalable como app). Incluye una interfaz responsive para mobile, selector de monedas deslizable y tarjetas optimizadas para interacción táctil.
 
 ---
 
@@ -12,23 +12,39 @@ Plataforma fullstack para monitorear cotizaciones del dólar, euro, real, peso c
 | Lenguaje | TypeScript 5 |
 | Estilos | SASS (SCSS) |
 | ORM | Prisma 5 |
-| Base de datos | SQLite (desarrollo) / compatible con PostgreSQL (producción) |
+| Base de datos | SQLite local / PostgreSQL en AWS RDS |
 | Gráficos | Recharts |
 | Íconos | Lucide React |
 | Email | Nodemailer |
 | Web Scraping | Cheerio + Axios |
 | Cron (dev) | node-cron |
-| Cron (prod) | Vercel Cron Jobs |
-| Deploy | Vercel |
+| Cron (prod) | cron-job.org (cada 30 minutos) |
+| Deploy | AWS EC2 (GitHub Actions + SSH + PM2) |
 | PWA | Web App Manifest + Service Worker |
 | SEO | OpenGraph, Twitter Cards, Sitemap, Robots.txt |
 | APK | Firma con Android Studio (apksigner) |
 
 ---
 
+## Infraestructura en AWS
+
+La aplicación de producción utiliza estos servicios en **US East (Ohio), `us-east-2`**:
+
+| Servicio | Uso |
+|---|---|
+| Amazon EC2 | Ejecuta Next.js en Linux. PM2 mantiene el proceso `dolar-app`. |
+| Amazon RDS for PostgreSQL | Guarda cotizaciones, historial, usuarios y alertas en la instancia `dolar-db`. |
+| Amazon VPC y grupos de seguridad | Aíslan los recursos y permiten la conexión de la aplicación a PostgreSQL por el puerto 5432. La base no necesita exposición pública. |
+| GitHub Actions | Al hacer push a `main`, se conecta por SSH a EC2, actualiza el código, compila con Prisma para PostgreSQL y reinicia PM2. |
+| DuckDNS | `dolar-arg.duckdns.org` es el dominio usado para acceder al sitio y al endpoint del cron. |
+
+El actualizador externo de **cron-job.org** llama `https://dolar-arg.duckdns.org/api/dolar/cron` cada 30 minutos. Las credenciales de AWS para el despliegue se configuran como secretos de GitHub (`AWS_HOST` y `AWS_SSH_KEY`); no deben guardarse en el repositorio. La URL de conexión a RDS y las demás variables de ejecución se configuran en el servidor.
+
+---
+
 ## Base de Datos
 
-Se usa **SQLite** en desarrollo (archivo `prisma/dev.db`) y puede configurarse con **PostgreSQL** o cualquier base compatible con Prisma en producción, simplemente cambiando el `provider` en `schema.prisma` y la variable `DATABASE_URL`.
+Se usa **SQLite** localmente (`prisma/dev.db`) y **PostgreSQL en Amazon RDS** en producción. `prisma/dev.db` está excluido de Git. El script `scripts/prepare-schema.js` prepara el esquema adecuado: localmente genera el cliente SQLite; el workflow de despliegue define `PRISMA_SCHEMA_TARGET=postgresql` para generar el cliente de producción antes de compilar la aplicación.
 
 ### Modelos (schema.prisma)
 
@@ -93,7 +109,7 @@ model Alert {
 
 ## Backend — API Routes
 
-Todas las rutas viven en `src/app/api/` y corren como funciones serverless en Vercel.
+Todas las rutas viven en `src/app/api/` y se ejecutan en la aplicación Next.js alojada en AWS EC2.
 
 ### `/api/dolar` — Cotizaciones actuales
 Consulta la API pública [dolarapi.com](https://dolarapi.com) y devuelve las cotizaciones del dólar (oficial, blue, MEP, CCL, tarjeta, cripto, mayorista). También persiste los datos en la base de datos.
@@ -117,10 +133,10 @@ GET /api/dolar/history?type=blue&days=30
 ```
 
 ### `/api/dolar/cron` — Cron endpoint (producción)
-Endpoint HTTP que invoca Vercel Cron cada 5 minutos. Llama a dolarapi.com, guarda las cotizaciones en la base de datos y verifica las alertas activas de los usuarios.
+Endpoint HTTP llamado por cron-job.org cada 30 minutos: `https://dolar-arg.duckdns.org/api/dolar/cron`. Consulta dolarapi.com, guarda únicamente las cotizaciones cuyo precio de compra o venta cambió, limpia registros de más de 45 días y verifica las alertas activas. El workflow `Update exchange rates` de GitHub Actions queda disponible para ejecución manual.
 
 ### `/api/exchange-rates` — Euro y Real
-Obtiene cotizaciones de EUR y BRL cruzando los tipos de dólar (oficial, blue, tarjeta) con la tasa de cambio USD→EUR/BRL desde [exchangerate-api.com](https://exchangerate-api.com).
+Obtiene cotizaciones de EUR y BRL cruzando los tipos de dólar (oficial, blue, tarjeta) con la tasa de cambio USD→EUR/BRL desde [exchangerate-api.com](https://exchangerate-api.com). El historial persiste solo cuando cambia el precio de compra o venta.
 
 ### `/api/bandas` — Banda Cambiaria BCRA
 Calcula matemáticamente las bandas del BCRA desde su fecha de inicio (11 de abril de 2025), aplicando el deslizamiento mensual: 1% fijo hasta diciembre 2025 y ~2.8% desde enero 2026 (estimado por IPC con rezago T-2). No requiere base de datos, el cálculo es puramente aritmético.
@@ -139,25 +155,13 @@ Registro, login y logout con **JWT** (jsonwebtoken) y contraseñas hasheadas con
 ## Sistema de Actualización de Datos
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  CADA 5 MINUTOS                     │
-│                                                     │
-│  Vercel Cron ──► /api/dolar/cron                    │
-│  (prod)               │                             │
-│                        ▼                            │
-│  node-cron ──► runCronCycle()                       │
-│  (dev)                │                             │
-│                        ▼                            │
-│          fetch dolarapi.com/v1/dolares              │
-│                        │                            │
-│                        ▼                            │
-│          prisma.dolarRate.createMany()              │
-│          (guarda snapshot en SQLite/PostgreSQL)     │
-│                        │                            │
-│                        ▼                            │
-│          checkAndTriggerAlerts()                    │
-│          (envía emails si hay alertas activas)      │
-└─────────────────────────────────────────────────────┘
+Producción (cada 30 minutos): cron-job.org → /api/dolar/cron → dolarapi.com
+                                              │
+                                              ├─ guarda solo precios que cambiaron
+                                              ├─ elimina historial de más de 45 días
+                                              └─ revisa alertas y envía emails
+
+Desarrollo: node-cron ejecuta el ciclo local cada 10 minutos y usa SQLite.
 
 ┌─────────────────────────────────────────────────────┐
 │                  EN EL FRONTEND                     │
@@ -234,6 +238,7 @@ SEO completo implementado con Next.js Metadata API:
 
 ```env
 DATABASE_URL="file:./dev.db"         # SQLite en desarrollo
+# En producción: URL de conexión PostgreSQL de Amazon RDS (secrets de EC2)
 JWT_SECRET="tu_secreto_jwt"
 EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT=587
@@ -260,7 +265,7 @@ EMAIL_PASS="tu_contraseña_app"
 
 # DólarARG (EN)
 
-Fullstack platform for monitoring real-time exchange rates for US Dollar, Euro, Brazilian Real, Chilean Peso, Uruguayan Peso, and cryptocurrencies in Argentina, featuring historical data, charts, calculator, price alerts, BCRA exchange rate bands, and PWA support (installable as an app).
+Fullstack platform for monitoring real-time exchange rates for US Dollar, Euro, Brazilian Real, Chilean Peso, Uruguayan Peso, and cryptocurrencies in Argentina, featuring historical data, charts, calculator, price alerts, BCRA exchange rate bands, and PWA support (installable as an app). It includes a mobile-responsive interface, swipeable currency selector, and cards optimized for touch interaction.
 
 ---
 
@@ -272,23 +277,39 @@ Fullstack platform for monitoring real-time exchange rates for US Dollar, Euro, 
 | Language | TypeScript 5 |
 | Styling | SASS (SCSS) |
 | ORM | Prisma 5 |
-| Database | SQLite (development) / PostgreSQL compatible (production) |
+| Database | Local SQLite / PostgreSQL on Amazon RDS |
 | Charts | Recharts |
 | Icons | Lucide React |
 | Email | Nodemailer |
 | Web Scraping | Cheerio + Axios |
 | Cron (dev) | node-cron |
-| Cron (prod) | Vercel Cron Jobs |
-| Deploy | Vercel |
+| Cron (prod) | cron-job.org (every 30 minutes) |
+| Deploy | AWS EC2 (GitHub Actions + SSH + PM2) |
 | PWA | Web App Manifest + Service Worker |
 | SEO | OpenGraph, Twitter Cards, Sitemap, Robots.txt |
 | APK | Signed with Android Studio (apksigner) |
 
 ---
 
+## AWS Infrastructure
+
+The production application uses these services in **US East (Ohio), `us-east-2`**:
+
+| Service | Usage |
+|---|---|
+| Amazon EC2 | Runs Next.js on Linux. PM2 keeps the `dolar-app` process running. |
+| Amazon RDS for PostgreSQL | Stores rates, history, users, and alerts in the `dolar-db` instance. |
+| Amazon VPC and security groups | Isolate resources and allow the application to connect to PostgreSQL on port 5432. The database does not need public exposure. |
+| GitHub Actions | On pushes to `main`, connects to EC2 over SSH, updates the code, builds Prisma for PostgreSQL, and restarts PM2. |
+| DuckDNS | `dolar-arg.duckdns.org` is the domain used to reach the site and cron endpoint. |
+
+The external **cron-job.org** scheduler calls `https://dolar-arg.duckdns.org/api/dolar/cron` every 30 minutes. AWS deployment credentials are configured as GitHub secrets (`AWS_HOST` and `AWS_SSH_KEY`) and must not be committed to the repository. The RDS connection URL and other runtime variables are configured on the server.
+
+---
+
 ## Database
 
-**SQLite** is used in development (file `prisma/dev.db`) and can be configured with **PostgreSQL** or any Prisma-compatible database in production by simply changing the `provider` in `schema.prisma` and the `DATABASE_URL` environment variable.
+**SQLite** is used locally (`prisma/dev.db`) and **PostgreSQL on Amazon RDS** is used in production. `prisma/dev.db` is excluded from Git. `scripts/prepare-schema.js` prepares the appropriate schema: local builds generate the SQLite client, while the deployment workflow sets `PRISMA_SCHEMA_TARGET=postgresql` to generate the production client before building.
 
 ### Models (schema.prisma)
 
@@ -354,7 +375,7 @@ model Alert {
 
 ## Backend — API Routes
 
-All routes live in `src/app/api/` and run as serverless functions on Vercel.
+All routes live in `src/app/api/` and run in the Next.js app hosted on AWS EC2.
 
 ### `/api/dolar` — Current Exchange Rates
 Queries the public API [dolarapi.com](https://dolarapi.com) and returns dollar exchange rates (official, blue, MEP, CCL, credit card, crypto, wholesale). Also persists data to the database.
@@ -378,10 +399,10 @@ GET /api/dolar/history?type=blue&days=30
 ```
 
 ### `/api/dolar/cron` — Cron Endpoint (Production)
-HTTP endpoint invoked by Vercel Cron every 5 minutes. Calls dolarapi.com, saves exchange rates to the database, and checks active user alerts.
+HTTP endpoint called by cron-job.org every 30 minutes: `https://dolar-arg.duckdns.org/api/dolar/cron`. It queries dolarapi.com, stores only rates whose buy or sell price changed, removes records older than 45 days, and checks active alerts. The GitHub Actions `Update exchange rates` workflow remains available for manual runs.
 
 ### `/api/exchange-rates` — Euro and Real
-Gets EUR and BRL exchange rates by crossing dollar types (official, blue, credit card) with the USD→EUR/BRL exchange rate from [exchangerate-api.com](https://exchangerate-api.com).
+Gets EUR and BRL exchange rates by crossing dollar types (official, blue, credit card) with the USD→EUR/BRL exchange rate from [exchangerate-api.com](https://exchangerate-api.com). History is stored only when the buy or sell price changes.
 
 ### `/api/bandas` — BCRA Exchange Rate Bands
 Mathematically calculates BCRA bands from their start date (April 11, 2025), applying monthly crawling peg: 1% fixed until December 2025 and ~2.8% from January 2026 (estimated using CPI with T-2 lag). No database required, calculation is purely arithmetic.
@@ -400,25 +421,13 @@ Registration, login, and logout with **JWT** (jsonwebtoken) and passwords hashed
 ## Data Update System
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  EVERY 5 MINUTES                    │
-│                                                     │
-│  Vercel Cron ──► /api/dolar/cron                    │
-│  (prod)               │                             │
-│                        ▼                            │
-│  node-cron ──► runCronCycle()                       │
-│  (dev)                │                             │
-│                        ▼                            │
-│          fetch dolarapi.com/v1/dolares              │
-│                        │                            │
-│                        ▼                            │
-│          prisma.dolarRate.createMany()              │
-│          (saves snapshot to SQLite/PostgreSQL)      │
-│                        │                            │
-│                        ▼                            │
-│          checkAndTriggerAlerts()                    │
-│          (sends emails if active alerts)            │
-└─────────────────────────────────────────────────────┘
+Production (every 30 minutes): cron-job.org → /api/dolar/cron → dolarapi.com
+                                                  │
+                                                  ├─ stores only changed prices
+                                                  ├─ deletes history older than 45 days
+                                                  └─ checks alerts and sends emails
+
+Development: node-cron runs the local cycle every 10 minutes and uses SQLite.
 
 ┌─────────────────────────────────────────────────────┐
 │                  IN THE FRONTEND                    │
@@ -492,6 +501,7 @@ Complete SEO implemented with Next.js Metadata API:
 
 ```env
 DATABASE_URL="file:./dev.db"         # SQLite in development
+# In production: Amazon RDS PostgreSQL connection URL (configured on EC2)
 JWT_SECRET="your_jwt_secret"
 EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT=587

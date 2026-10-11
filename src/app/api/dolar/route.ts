@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendAlertEmail } from '@/lib/mail';
+import { saveChangedDolarRates } from '@/lib/rate-history';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
 const REVALIDATION_TIMEOUT_MS = 10 * 60 * 1000; 
@@ -93,10 +94,8 @@ export async function GET() {
 
         if (ratesToInsert.length > 0) {
           try {
-            await prisma.dolarRate.createMany({
-              data: ratesToInsert
-            });
-            console.log(`Se guardaron ${ratesToInsert.length} nuevas cotizaciones en la base de datos.`);
+            const savedCount = await saveChangedDolarRates(ratesToInsert, now);
+            console.log(`Se guardaron ${savedCount} cotizaciones con cambios en la base de datos.`);
           } catch (databaseError) {
             console.error('No se pudieron guardar las cotizaciones; se devuelven igualmente desde DolarAPI:', databaseError);
           }
