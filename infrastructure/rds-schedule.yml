@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Start and stop the dolar-db RDS instance on an Argentina-time schedule.
+
+Parameters:
+  DBInstanceIdentifier:
+    Type: String
+    Default: dolar-db
+    Description: The RDS DB instance identifier to schedule.
+
+Resources:
+  RdsScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Allows EventBridge Scheduler to start and stop only the selected RDS instance.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StartStopSelectedRdsInstance
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:StartDBInstance
+                  - rds:StopDBInstance
+                Resource: !Sub arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${DBInstanceIdentifier}
+
+  StopDolarDbSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Description: Stops dolar-db every day at 03:00 Buenos Aires time.
+      ScheduleExpression: cron(0 3 * * ? *)
+      ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: ENABLED
+      Target:
+        Arn: arn:aws:scheduler:::aws-sdk:rds:stopDBInstance
+        RoleArn: !GetAtt RdsScheduleRole.Arn
+        Input: !Sub '{"DbInstanceIdentifier":"${DBInstanceIdentifier}"}'
+
+  StartDolarDbSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Description: Starts dolar-db daily at 11:30 Buenos Aires time, allowing time for recovery before noon.
+      ScheduleExpression: cron(30 11 * * ? *)
+      ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      State: ENABLED
+      Target:
+        Arn: arn:aws:scheduler:::aws-sdk:rds:startDBInstance
+        RoleArn: !GetAtt RdsScheduleRole.Arn
+        Input: !Sub '{"DbInstanceIdentifier":"${DBInstanceIdentifier}"}'
+
+Outputs:
+  StopScheduleName:
+    Description: EventBridge Scheduler schedule that stops the DB at 03:00 Argentina time.
+    Value: !Ref StopDolarDbSchedule
+  StartScheduleName:
+    Description: EventBridge Scheduler schedule that starts the DB at 11:30 Argentina time.
+    Value: !Ref StartDolarDbSchedule
