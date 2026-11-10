@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { isDynamoEnabled, saveChangedDolarRates as saveDynamoDolarRates, saveChangedExchangeRates as saveDynamoExchangeRates } from '@/lib/dynamo';
 
 const HISTORY_RETENTION_DAYS = 45;
 
@@ -18,6 +19,7 @@ type ExchangeRateInput = {
 
 /** Store a snapshot only when its buy or sell price changed. */
 export async function saveChangedDolarRates(rates: DolarRateInput[], fecha = new Date()) {
+  if (isDynamoEnabled()) return saveDynamoDolarRates(rates, fecha);
   const snapshots = await Promise.all(rates.map(async (rate) => {
     const previous = await prisma.dolarRate.findFirst({
       where: { casa: rate.casa },
@@ -37,6 +39,7 @@ export async function saveChangedDolarRates(rates: DolarRateInput[], fecha = new
 
 /** Store a snapshot only when its buy or sell price changed. */
 export async function saveChangedExchangeRates(rates: ExchangeRateInput[], fecha = new Date()) {
+  if (isDynamoEnabled()) return saveDynamoExchangeRates(rates, fecha);
   const snapshots = await Promise.all(rates.map(async (rate) => {
     const previous = await prisma.exchangeRateHistory.findFirst({
       where: { codigo: rate.codigo, tipo: rate.tipo },
@@ -62,6 +65,10 @@ export async function saveChangedExchangeRates(rates: ExchangeRateInput[], fecha
 
 /** Keep 30-day charts working and leave 15 days of outage margin. */
 export async function pruneOldRateHistory(now = new Date()) {
+  if (isDynamoEnabled()) {
+    // DynamoDB tables use TTL; expired items are filtered by the read queries.
+    return { cutoff: now.toISOString(), dolarRatesDeleted: 0, exchangeRatesDeleted: 0 };
+  }
   const cutoff = new Date(now);
   cutoff.setDate(cutoff.getDate() - HISTORY_RETENTION_DAYS);
 

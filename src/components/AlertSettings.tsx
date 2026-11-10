@@ -333,7 +333,7 @@ const AlertSettings: React.FC<AlertSettingsProps> = ({ rates }) => {
                   </div>
                 </div>
                 {authError && (
-                  <div style={{ color: authError.includes('exitoso') ? '#10b981' : '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{authError}</div>
+                  <div style={{ color: /exitoso|successful/i.test(authError) ? '#10b981' : '#f43f5e', fontSize: '0.85rem', fontWeight: 600 }}>{authError}</div>
                 )}
                 <button type="submit" className="btn-primary" id="auth-submit-btn">{isRegistering ? t('Registrarse') : t('Iniciar Sesión')}</button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendAlertEmail } from '@/lib/mail';
 import { pruneOldRateHistory, saveChangedDolarRates } from '@/lib/rate-history';
+import { getDynamoActiveAlerts, getDynamoUserById, isDynamoEnabled, markDynamoAlertTriggered } from '@/lib/dynamo';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
 
@@ -10,10 +11,9 @@ const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
  */
 async function checkAndTriggerAlerts(rates: any[]) {
   try {
-    const activeAlerts = await prisma.alert.findMany({
-      where: { isTriggered: false },
-      include: { user: true }
-    });
+    const activeAlerts = isDynamoEnabled()
+      ? await getDynamoActiveAlerts()
+      : await prisma.alert.findMany({ where: { isTriggered: false }, include: { user: true } });
 
     let alertsTriggered = 0;
 
@@ -26,17 +26,16 @@ async function checkAndTriggerAlerts(rates: any[]) {
           (alert.condition === 'BELOW' && price <= alert.value);
 
         if (conditionMet) {
-          await prisma.alert.update({
-            where: { id: alert.id },
-            data: { isTriggered: true }
-          });
+          if (isDynamoEnabled()) await markDynamoAlertTriggered(alert.id, alert.userId);
+          else await prisma.alert.update({ where: { id: alert.id }, data: { isTriggered: true } });
           alertsTriggered++;
 
           console.log(`[ALERTA DISPARADA] Alerta #${alert.id} para ${alert.user.email} - Dólar ${alert.casa} a $${price} (${alert.condition} $${alert.value})`);
 
           // Enviar email
+          const user = isDynamoEnabled() ? await getDynamoUserById(alert.userId) : (alert as any).user;
           try {
-            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value, alert.language);
+            if (user?.email) await sendAlertEmail(user.email, alert.casa, price, alert.condition, alert.value, alert.language);
           } catch (emailError) {
             console.error(`Error enviando email para alerta #${alert.id}:`, emailError);
           }

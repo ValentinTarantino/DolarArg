@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getDolarRatesSince, isDynamoEnabled } from '@/lib/dynamo';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,15 +21,9 @@ export async function GET(request: NextRequest) {
 
       intervalId = setInterval(async () => {
         try {
-          const newRates = await prisma.dolarRate.findMany({
-            where: {
-              createdAt: {
-                gt: lastChecked
-              }
-            },
-            orderBy: { id: 'desc' },
-            take: 7
-          });
+          const newRates = isDynamoEnabled()
+            ? await getDolarRatesSince(["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"], lastChecked)
+            : await prisma.dolarRate.findMany({ where: { createdAt: { gt: lastChecked } }, orderBy: { id: 'desc' }, take: 7 });
 
           if (newRates.length > 0) {
             sendEvent('rates_update', newRates);

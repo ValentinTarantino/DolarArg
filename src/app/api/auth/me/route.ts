@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { getDynamoUserById, isDynamoEnabled } from '@/lib/dynamo';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,16 +16,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ authenticated: false }, { status: 201 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true }
-    });
+    const user = isDynamoEnabled()
+      ? await getDynamoUserById(payload.userId)
+      : await prisma.user.findUnique({ where: { id: payload.userId }, select: { id: true, email: true } });
 
     if (!user) {
       return NextResponse.json({ authenticated: false }, { status: 201 });
     }
 
-    return NextResponse.json({ authenticated: true, user });
+    return NextResponse.json({ authenticated: true, user: { id: user.id, email: user.email } });
   } catch (error) {
     return NextResponse.json({ authenticated: false, error: 'Error de servidor' }, { status: 500 });
   }

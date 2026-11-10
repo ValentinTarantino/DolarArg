@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { comparePassword, signToken } from '@/lib/auth';
+import { getDynamoUserByEmail, isDynamoEnabled } from '@/lib/dynamo';
 
 export async function POST(request: Request) {
   try {
@@ -11,9 +12,9 @@ export async function POST(request: Request) {
     }
 
     // Buscar usuario
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+    const user = isDynamoEnabled()
+      ? await getDynamoUserByEmail(email)
+      : await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });

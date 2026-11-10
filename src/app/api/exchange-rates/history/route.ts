@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getExchangeHistory, isDynamoEnabled } from '@/lib/dynamo';
+import { saveChangedExchangeRates } from '@/lib/rate-history';
 
 // POST: Guardar nuevos registros de histórico EUR/BRL
 export async function POST(request: Request) {
@@ -14,15 +16,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const record = await prisma.exchangeRateHistory.create({
-      data: {
-        codigo,
-        tipo,
-        compra,
-        venta,
-        fecha: new Date()
-      }
-    });
+    if (isDynamoEnabled()) {
+      await saveChangedExchangeRates([{ codigo, tipo, compra, venta }]);
+      return NextResponse.json({ codigo, tipo, compra, venta, fecha: new Date() });
+    }
+
+    const record = await prisma.exchangeRateHistory.create({ data: { codigo, tipo, compra, venta, fecha: new Date() } });
 
     return NextResponse.json(record);
   } catch (error: any) {
@@ -59,6 +58,10 @@ export async function GET(request: Request) {
 
     if (tipo) {
       where.tipo = tipo;
+    }
+
+    if (isDynamoEnabled()) {
+      return NextResponse.json(await getExchangeHistory(codigo, tipo || undefined, dateFrom));
     }
 
     const history = await prisma.exchangeRateHistory.findMany({

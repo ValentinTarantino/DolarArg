@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getDolarHistory, isDynamoEnabled } from '@/lib/dynamo';
 
 const ARGENTINADATOS_BASE = 'https://api.argentinadatos.com/v1/cotizaciones/dolares';
 
@@ -80,6 +81,11 @@ export async function GET(request: NextRequest) {
 
   // 2. Fallback: local DB (deduplicated by day)
   try {
+    if (isDynamoEnabled()) {
+      const history = await getDolarHistory(casa, cutoffDate);
+      const formatted = normalizeFromDb(history);
+      if (formatted.length >= 2) return NextResponse.json(formatted);
+    }
     const history = await prisma.dolarRate.findMany({
       where: { casa, fecha: { gte: cutoffDate } },
       orderBy: { fecha: 'asc' },

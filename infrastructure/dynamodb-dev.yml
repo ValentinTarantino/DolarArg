@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB development tables for testing DolarARG without changing RDS.
+
+Parameters:
+  TablePrefix:
+    Type: String
+    Default: dolar-dev
+    AllowedPattern: '[a-zA-Z0-9_.-]+'
+    Description: Prefix used to isolate the development tables.
+
+Resources:
+  DolarRatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TablePrefix}-rates
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: tipo_dolar
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: tipo_dolar
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: expira_en
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      Tags:
+        - Key: Project
+          Value: DolarARG
+        - Key: Environment
+          Value: development
+
+  ExchangeRatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TablePrefix}-exchange-rates
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: clave
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: clave
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: expira_en
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      Tags:
+        - Key: Project
+          Value: DolarARG
+        - Key: Environment
+          Value: development
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TablePrefix}-users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      Tags:
+        - Key: Project
+          Value: DolarARG
+        - Key: Environment
+          Value: development
+
+  AlertsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TablePrefix}-alerts
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: N
+        - AttributeName: alert_id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: alert_id
+          KeyType: RANGE
+      Tags:
+        - Key: Project
+          Value: DolarARG
+        - Key: Environment
+          Value: development
+
+  PasswordResetTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TablePrefix}-password-reset-tokens
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expira_en
+        Enabled: true
+      Tags:
+        - Key: Project
+          Value: DolarARG
+        - Key: Environment
+          Value: development
+
+Outputs:
+  DolarRatesTableName:
+    Value: !Ref DolarRatesTable
+  ExchangeRatesTableName:
+    Value: !Ref ExchangeRatesTable
+  UsersTableName:
+    Value: !Ref UsersTable
+  AlertsTableName:
+    Value: !Ref AlertsTable
+  PasswordResetTokensTableName:
+    Value: !Ref PasswordResetTokensTable

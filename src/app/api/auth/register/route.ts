@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import { getDynamoUserByEmail, isDynamoEnabled, putDynamoUser } from '@/lib/dynamo';
 
 export async function POST(request: Request) {
   try {
@@ -15,9 +16,9 @@ export async function POST(request: Request) {
     }
 
     // Verificar si el usuario ya existe
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUser = isDynamoEnabled()
+      ? await getDynamoUserByEmail(email)
+      : await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
       return NextResponse.json({ error: 'El email ya está registrado' }, { status: 400 });
@@ -25,12 +26,9 @@ export async function POST(request: Request) {
 
     // Hashear contraseña y crear usuario
     const hashedPassword = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword
-      }
-    });
+    const user = { id: Date.now(), email: email.toLowerCase(), password: hashedPassword, createdAt: new Date() };
+    if (isDynamoEnabled()) await putDynamoUser(user);
+    else await prisma.user.create({ data: { email, password: hashedPassword } });
 
     return NextResponse.json({
       message: 'Usuario registrado con éxito',

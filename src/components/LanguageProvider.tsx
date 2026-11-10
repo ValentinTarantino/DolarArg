@@ -86,6 +86,7 @@ const translations: Array<[string, string]> = [
   ["Buscar dólar, euro, real...", "Search dollar, euro, real..."],
   ["Buscar criptomoneda...", "Search cryptocurrency..."],
   ["Por debajo de la banda inferior", "Below the lower band"],
+  ["Al", "At"],
   ["Descargar APK para Android", "Download APK for Android"],
   ["Cotizaciones de criptomonedas", "Cryptocurrency Prices"],
   ["Configuración de Alertas", "Alert Settings"],

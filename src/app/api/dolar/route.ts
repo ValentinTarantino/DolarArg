@@ -2,16 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendAlertEmail } from '@/lib/mail';
 import { saveChangedDolarRates } from '@/lib/rate-history';
+import { getDynamoActiveAlerts, getDynamoUserById, getLatestDolarRates, isDynamoEnabled, markDynamoAlertTriggered } from '@/lib/dynamo';
 
 const PUBLIC_API_URL = 'https://dolarapi.com/v1/dolares';
 const REVALIDATION_TIMEOUT_MS = 10 * 60 * 1000; 
 
 async function checkAndTriggerAlerts(rates: any[]) {
   try {
-    const activeAlerts = await prisma.alert.findMany({
-      where: { isTriggered: false },
-      include: { user: true }
-    });
+    const activeAlerts = isDynamoEnabled()
+      ? await getDynamoActiveAlerts()
+      : await prisma.alert.findMany({ where: { isTriggered: false }, include: { user: true } });
 
     for (const alert of activeAlerts) {
       const rate = rates.find(r => r.casa === alert.casa);
@@ -22,14 +22,13 @@ async function checkAndTriggerAlerts(rates: any[]) {
           (alert.condition === 'BELOW' && price <= alert.value);
 
         if (conditionMet) {
-          await prisma.alert.update({
-            where: { id: alert.id },
-            data: { isTriggered: true }
-          });
+          if (isDynamoEnabled()) await markDynamoAlertTriggered(alert.id, alert.userId);
+          else await prisma.alert.update({ where: { id: alert.id }, data: { isTriggered: true } });
           console.log(`[ALERTA DETECTADA] Alerta #${alert.id} para ${alert.user.email} se ha disparado. Dólar ${alert.casa} está a $${price} (${alert.condition} $${alert.value})`);
           
+          const user = isDynamoEnabled() ? await getDynamoUserById(alert.userId) : (alert as any).user;
           try {
-            await sendAlertEmail(alert.user.email, alert.casa, price, alert.condition, alert.value, alert.language);
+            if (user?.email) await sendAlertEmail(user.email, alert.casa, price, alert.condition, alert.value, alert.language);
           } catch (emailError) {
             console.error(`Error enviando email para alerta #${alert.id}:`, emailError);
           }
@@ -47,10 +46,11 @@ export async function GET() {
     let databaseAvailable = true;
 
     try {
-      latestRatesInDb = await prisma.dolarRate.findMany({
-        orderBy: { fecha: 'desc' },
-        take: 7,
-      });
+      if (isDynamoEnabled()) {
+        latestRatesInDb = await getLatestDolarRates(["oficial", "blue", "bolsa", "contadoconliqui", "tarjeta", "cripto", "mayorista"]);
+      } else {
+        latestRatesInDb = await prisma.dolarRate.findMany({ orderBy: { fecha: 'desc' }, take: 7 });
+      }
     } catch (databaseError) {
       databaseAvailable = false;
       console.error('Base de datos no disponible; usando DolarAPI como fallback:', databaseError);
@@ -126,7 +126,12 @@ export async function GET() {
       return NextResponse.json(latestUniqueRates);
     }
 
+    if (isDynamoEnabled()) {
+      latestUniqueRates.push(...await getLatestDolarRates(desiredTypes));
+    }
+
     for (const casa of desiredTypes) {
+      if (isDynamoEnabled()) break;
       try {
         const latestRate = await prisma.dolarRate.findFirst({
           where: { casa },

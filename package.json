@@ -12,6 +12,8 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1165.0",
+    "@aws-sdk/lib-dynamodb": "^3.1165.0",
     "@prisma/client": "^5.22.0",
     "@types/three": "^0.186.0",
     "axios": "^1.16.1",

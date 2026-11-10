@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { sendAlertEmail } from '@/lib/mail';
+import { createDynamoAlert, deleteDynamoAlert, getDynamoAlert, getDynamoAlerts, getDynamoUserById, getLatestDolarRate, isDynamoEnabled } from '@/lib/dynamo';
 
 function getUserIdFromRequest(request: NextRequest): number | null {
   const token = request.cookies.get('token')?.value;
@@ -17,10 +18,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const alerts = await prisma.alert.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' }
-    });
+    const alerts = isDynamoEnabled()
+      ? await getDynamoAlerts(userId)
+      : await prisma.alert.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
 
     return NextResponse.json(alerts);
   } catch (error) {
@@ -58,10 +58,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener la cotización actual desde la base de datos
-    let latestRate = await prisma.dolarRate.findFirst({
-      where: { casa },
-      orderBy: { fecha: 'desc' }
-    });
+    let latestRate = isDynamoEnabled()
+      ? await getLatestDolarRate(casa)
+      : await prisma.dolarRate.findFirst({ where: { casa }, orderBy: { fecha: 'desc' } });
 
     let isTriggered = false;
     const latestRateIsFresh = latestRate
@@ -100,23 +99,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const alert = await prisma.alert.create({
-      data: {
-        userId,
-        casa,
-        condition,
-        value: numericValue,
-        isTriggered,
-        language
-      }
-    });
+    const alert = isDynamoEnabled()
+      ? await createDynamoAlert({ id: Date.now(), userId, casa, condition, value: numericValue, isTriggered, language })
+      : await prisma.alert.create({ data: { userId, casa, condition, value: numericValue, isTriggered, language } });
 
     // Si se disparó de forma inmediata, enviamos el correo electrónico
     if (isTriggered && currentPrice !== undefined) {
       // Buscar el correo del usuario para enviarle la alerta
-      const user = await prisma.user.findUnique({
-        where: { id: userId }
-      });
+      const user = isDynamoEnabled()
+        ? await getDynamoUserById(userId)
+        : await prisma.user.findUnique({ where: { id: userId } });
       if (user?.email) {
         try {
           await sendAlertEmail(user.email, casa, currentPrice, condition, numericValue, language);
@@ -152,9 +144,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verificar propiedad antes de borrar
-    const alert = await prisma.alert.findUnique({
-      where: { id: alertId }
-    });
+    const alert = isDynamoEnabled()
+      ? await getDynamoAlert(alertId)
+      : await prisma.alert.findUnique({ where: { id: alertId } });
 
     if (!alert) {
       return NextResponse.json({ error: 'Alerta no encontrada' }, { status: 404 });
@@ -164,9 +156,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    await prisma.alert.delete({
-      where: { id: alertId }
-    });
+    if (isDynamoEnabled()) await deleteDynamoAlert(alertId, userId);
+    else await prisma.alert.delete({ where: { id: alertId } });
 
     return NextResponse.json({ message: 'Alerta eliminada con éxito' });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import { deleteDynamoPasswordToken, getDynamoPasswordToken, isDynamoEnabled, updateDynamoUserPassword } from '@/lib/dynamo';
 
 export async function POST(request: Request) {
   try {
@@ -14,25 +15,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 });
     }
 
-    const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+    const resetToken = isDynamoEnabled()
+      ? await getDynamoPasswordToken(token)
+      : await prisma.passwordResetToken.findUnique({ where: { token } });
 
     if (!resetToken) {
       return NextResponse.json({ error: 'El enlace no es válido' }, { status: 400 });
     }
 
-    if (new Date() > resetToken.expiresAt) {
-      await prisma.passwordResetToken.delete({ where: { token } });
+    const expiresAt = new Date(resetToken.expiresAt);
+    if (new Date() > expiresAt) {
+      if (isDynamoEnabled()) await deleteDynamoPasswordToken(token);
+      else await prisma.passwordResetToken.delete({ where: { token } });
       return NextResponse.json({ error: 'El enlace expiró. Solicitá uno nuevo.' }, { status: 400 });
     }
 
     const hashedPassword = await hashPassword(password);
 
-    await prisma.user.update({
-      where: { email: resetToken.email },
-      data: { password: hashedPassword }
-    });
-
-    await prisma.passwordResetToken.delete({ where: { token } });
+    if (isDynamoEnabled()) {
+      await updateDynamoUserPassword(resetToken.email, hashedPassword);
+      await deleteDynamoPasswordToken(token);
+    } else {
+      await prisma.user.update({ where: { email: resetToken.email }, data: { password: hashedPassword } });
+      await prisma.passwordResetToken.delete({ where: { token } });
+    }
 
     return NextResponse.json({ message: 'Contraseña actualizada con éxito. Ya podés iniciar sesión.' });
   } catch (error: any) {
