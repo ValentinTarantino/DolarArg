@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Start and stop the DolarARG EC2 instance on an Argentina-time schedule.
+
+Parameters:
+  Ec2InstanceId:
+    Type: AWS::EC2::Instance::Id
+    Default: i-06c3f6d2043ae7f89
+    Description: EC2 instance that hosts DolarARG.
+
+Resources:
+  Ec2ScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Allows EventBridge Scheduler to start and stop only the DolarARG EC2 instance.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StartStopDolarEc2
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:StartInstances
+                  - ec2:StopInstances
+                Resource: !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/${Ec2InstanceId}
+
+  StopDolarEc2Schedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Description: Stops DolarARG EC2 every day at 02:00 Buenos Aires time.
+      ScheduleExpression: cron(0 2 * * ? *)
+      ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
+      FlexibleTimeWindow:
+        Mode: OFF
+      State: ENABLED
+      Target:
+        Arn: arn:aws:scheduler:::aws-sdk:ec2:stopInstances
+        RoleArn: !GetAtt Ec2ScheduleRole.Arn
+        Input: !Sub '{"InstanceIds":["${Ec2InstanceId}"]}'
+
+  StartDolarEc2Schedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Description: Starts DolarARG EC2 every day at 12:00 Buenos Aires time.
+      ScheduleExpression: cron(0 12 * * ? *)
+      ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
+      FlexibleTimeWindow:
+        Mode: OFF
+      State: ENABLED
+      Target:
+        Arn: arn:aws:scheduler:::aws-sdk:ec2:startInstances
+        RoleArn: !GetAtt Ec2ScheduleRole.Arn
+        Input: !Sub '{"InstanceIds":["${Ec2InstanceId}"]}'
+
+Outputs:
+  StopScheduleName:
+    Value: !Ref StopDolarEc2Schedule
+  StartScheduleName:
+    Value: !Ref StartDolarEc2Schedule

@@ -136,7 +136,7 @@ export async function getEurBrlVariants(): Promise<ExchangeRateVariant[]> {
     const dolarOficial  = dolarData.find((d: any) => d.casa === 'oficial');
     const dolarBlue     = dolarData.find((d: any) => d.casa === 'blue');
     const dolarTarjeta  = dolarData.find((d: any) => d.casa === 'tarjeta');
-
+ 
     const usdOficial  = dolarOficial?.venta  || 1435;
     const usdBlue     = dolarBlue?.venta     || 1440;
     const usdTarjeta  = dolarTarjeta?.venta  || (usdOficial * 1.30);
