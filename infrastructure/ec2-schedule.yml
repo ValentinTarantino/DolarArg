@@ -37,7 +37,7 @@ Resources:
       ScheduleExpression: cron(0 2 * * ? *)
       ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
       FlexibleTimeWindow:
-        Mode: OFF
+        Mode: 'OFF'
       State: ENABLED
       Target:
         Arn: arn:aws:scheduler:::aws-sdk:ec2:stopInstances
@@ -51,7 +51,7 @@ Resources:
       ScheduleExpression: cron(0 12 * * ? *)
       ScheduleExpressionTimezone: America/Argentina/Buenos_Aires
       FlexibleTimeWindow:
-        Mode: OFF
+        Mode: 'OFF'
       State: ENABLED
       Target:
         Arn: arn:aws:scheduler:::aws-sdk:ec2:startInstances
