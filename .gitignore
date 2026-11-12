@@ -23,6 +23,9 @@
 # production
 /build
 
+# Infrastructure templates (managed directly in AWS)
+/infrastructure/
+
 # misc
 .DS_Store
 *.pem
